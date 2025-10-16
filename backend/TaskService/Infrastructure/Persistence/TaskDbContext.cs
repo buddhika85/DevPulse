@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskService.Models;
+using TaskService.Domain.Entities;
 
-namespace TaskService.Data
+namespace TaskService.Infrastructure.Persistence
 {
     //  From \DevPulse\backend\TaskService>
     // dotnet ef migrations add InitialCreate

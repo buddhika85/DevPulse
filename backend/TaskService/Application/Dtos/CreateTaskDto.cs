@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaskService.Dtos
+namespace TaskService.Application.Dtos
 {
     public record CreateTaskDto
     {

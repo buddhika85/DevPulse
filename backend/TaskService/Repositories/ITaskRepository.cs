@@ -1,6 +1,8 @@
-﻿using TaskService.Models;
+﻿using TaskService.Application.Common.Models;
+using TaskService.Application.Queries;
+using TaskService.Domain.Entities;
 
-namespace TaskService.Application.Repositories
+namespace TaskService.Repositories
 {
     public interface ITaskRepository
     {
@@ -14,5 +16,7 @@ namespace TaskService.Application.Repositories
         Task<IReadOnlyList<TaskItem>> GetAllAsync(CancellationToken cancellationToken);
         Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken);           
         Task SaveChangesAsync(CancellationToken cancellationToken);
+
+        Task<PaginatedResult<TaskItem>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken);
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TaskService.Application.Repositories;
-using TaskService.Application.Services;
 using TaskService.Configuration;
-using TaskService.Data;
+using TaskService.Infrastructure.Persistence;
+using TaskService.Repositories;
+using TaskService.Services;
 
 namespace TaskService.Extensions
 {
@@ -43,7 +43,7 @@ namespace TaskService.Extensions
 
         private static void SetupServices(IServiceCollection services)
         {
-            services.AddScoped<ITaskService, TaskService.Application.Services.TaskService>();
+            services.AddScoped<ITaskService, Services.TaskService>();
         }
     }
 }

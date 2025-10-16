@@ -1,11 +1,12 @@
-﻿using TaskService.Application.Commands;
+﻿using System.Threading.Tasks;
+using TaskService.Application.Commands;
+using TaskService.Application.Common.Models;
+using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
-using TaskService.Application.Repositories;
-using TaskService.Dtos;
-using TaskService.Models;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using TaskService.Domain.Entities;
+using TaskService.Repositories;
 
-namespace TaskService.Application.Services
+namespace TaskService.Services
 {
     public class TaskService : ITaskService
     {
@@ -88,6 +89,24 @@ namespace TaskService.Application.Services
             _taskRepository.Delete(entity);
             await _taskRepository.SaveChangesAsync(cancellationToken);
             return true;
+        }
+
+        public async Task<PaginatedResult<TaskItemDto>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken)
+        {
+            var pagedEntities = await _taskRepository.GetTasksPaginatedAsync(query, cancellationToken);
+            return new PaginatedResult<TaskItemDto>
+            {
+                PageItems = pagedEntities.PageItems.Select(task => new TaskItemDto {
+                    Id = task.Id,
+                    Title = task.Title,
+                    Description = task.Description,
+                    IsCompleted = task.IsCompleted,
+                    CreatedAt = task.CreatedAt
+                }).ToList(),
+                PageNumber = pagedEntities.PageNumber,
+                PageSize = pagedEntities.PageSize,
+                TotalCount = pagedEntities.TotalCount,
+            };
         }
     }
 }

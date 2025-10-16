@@ -1,6 +1,6 @@
-﻿using TaskService.Models;
+﻿using TaskService.Domain.Entities;
 
-namespace TaskService.Data
+namespace TaskService.Infrastructure.Persistence
 {
     public static class DbInitializer
     {

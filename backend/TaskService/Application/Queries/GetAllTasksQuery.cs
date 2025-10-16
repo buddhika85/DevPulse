@@ -1,10 +1,9 @@
 ﻿using MediatR;
-using TaskService.Dtos;
-
+using TaskService.Application.Dtos;
 
 namespace TaskService.Application.Queries
 {
-    public class GetAllTasksQuery : IRequest<IReadOnlyList<TaskItemDto>>
+    public record GetAllTasksQuery : IRequest<IReadOnlyList<TaskItemDto>>
     {
     }
 }

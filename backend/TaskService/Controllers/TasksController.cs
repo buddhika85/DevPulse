@@ -1,9 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TaskService.Application.Commands;
+using TaskService.Application.Common.Enums;
+using TaskService.Application.Common.Models;
+using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
-using TaskService.Dtos;
-using TaskService.Models;
+using TaskService.Domain.Entities;
 
 namespace TaskService.Controllers
 {
@@ -20,11 +22,11 @@ namespace TaskService.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IReadOnlyList<TaskItemDto>>> GetAll(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Fetching all tasks at {Time}", DateTime.UtcNow);
-            var tasks =  await _mediator.Send(new GetAllTasksQuery(), cancellationToken);
+            var tasks = await _mediator.Send(new GetAllTasksQuery(), cancellationToken);
             return Ok(tasks);
         }
 
@@ -40,7 +42,27 @@ namespace TaskService.Controllers
             return Ok(task);
         }
 
+        [ProducesResponseType(typeof(PaginatedResult<TaskItemDto>), StatusCodes.Status200OK)]
+        [HttpGet("filter")]
+        public async Task<ActionResult<PaginatedResult<TaskItemDto>>> GetPaginatedTasks(
+            [FromQuery] Guid? guid,
+            [FromQuery] string? title,
+            [FromQuery] string? description,
+            [FromQuery] bool? isCompleted,
+            [FromQuery] TaskSortField? sortBy,
+            [FromQuery] bool sortDescending = false,
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 5
+            )
+        {
+            _logger.LogInformation("Fetching paginated tasks at {Time} with filters: Title={Title}, Description={Description}, Status={Status}", DateTime.UtcNow, title, description, isCompleted);
 
+            var query = new GetTasksPaginatedQuery(guid, title, description, isCompleted, pageNumber, pageSize, sortBy, sortDescending);
+            var paginatedResult = await _mediator.Send(query, HttpContext.RequestAborted);
+            return Ok(paginatedResult);
+
+
+        }
 
 
 

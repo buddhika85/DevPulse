@@ -1,9 +1,9 @@
 ﻿using Azure.Core;
 using MediatR;
 using TaskService.Application.Commands;
-using TaskService.Application.Services;
+using TaskService.Services;
 
-namespace TaskService.Application.Handlers
+namespace TaskService.Application.Handlers.CommandHandlers
 {
     public class UpdateTaskHandler : IRequestHandler<UpdateTaskCommand, bool>
     {

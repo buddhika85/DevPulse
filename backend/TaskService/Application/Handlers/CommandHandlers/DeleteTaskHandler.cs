@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using TaskService.Application.Commands;
-using TaskService.Application.Services;
+using TaskService.Services;
 
-namespace TaskService.Application.Handlers
+namespace TaskService.Application.Handlers.CommandHandlers
 {
     public class DeleteTaskHandler : IRequestHandler<DeleteTaskCommand, bool>
     {

@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using TaskService.Dtos;
+using TaskService.Application.Dtos;
 
 namespace TaskService.Application.Queries
 {
-    public class GetTaskByIdQuery : IRequest<TaskItemDto?>
+    public record GetTaskByIdQuery : IRequest<TaskItemDto?>
     {
         public Guid Id { get; set; }
 

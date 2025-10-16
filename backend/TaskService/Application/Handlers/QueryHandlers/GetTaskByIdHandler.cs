@@ -1,9 +1,9 @@
 ﻿using MediatR;
+using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
-using TaskService.Application.Services;
-using TaskService.Dtos;
+using TaskService.Services;
 
-namespace TaskService.Application.Handlers
+namespace TaskService.Application.Handlers.QueryHandlers
 {
     public class GetTaskByIdHandler : IRequestHandler<GetTaskByIdQuery, TaskItemDto?>
     {

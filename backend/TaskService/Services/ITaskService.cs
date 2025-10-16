@@ -1,8 +1,9 @@
 ﻿using TaskService.Application.Commands;
+using TaskService.Application.Common.Models;
+using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
-using TaskService.Dtos;
 
-namespace TaskService.Application.Services
+namespace TaskService.Services
 {
     public interface ITaskService
     {
@@ -14,5 +15,7 @@ namespace TaskService.Application.Services
 
         Task<IReadOnlyList<TaskItemDto>> GetAllTasksAsync(CancellationToken cancellationToken);
         Task<TaskItemDto?> GetTaskByIdAsync(GetTaskByIdQuery query, CancellationToken cancellationToken);
+
+        Task<PaginatedResult<TaskItemDto>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken);
     }
 }

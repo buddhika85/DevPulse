@@ -1,7 +1,6 @@
-using MediatR;
 using Serilog;
-using TaskService.Data;
 using TaskService.Extensions;
+using TaskService.Infrastructure.Persistence;
 
 
 
@@ -10,7 +9,7 @@ using TaskService.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Host.AddSerilogLogging();                                           // Serilog logging
+builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
 // Register services
 builder.Services.AddControllers();                                          // Enables controller routing
@@ -44,7 +43,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();                                                       // Serves Swagger JSON
-    app.UseSwaggerUI();                                                     // Serves Swagger UI
+    app.UseSwaggerUI(x =>
+    {
+        x.ConfigObject.AdditionalItems["showExtensions"] = true;
+
+    });                                                     // Serves Swagger UI
 }
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS

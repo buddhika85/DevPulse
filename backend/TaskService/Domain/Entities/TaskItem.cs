@@ -1,4 +1,4 @@
-﻿namespace TaskService.Models
+﻿namespace TaskService.Domain.Entities
 {
     public class TaskItem
     {
