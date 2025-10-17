@@ -11,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
+
+
 // Register services
 builder.Services.AddControllers();                                          // Enables controller routing
 builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
@@ -23,10 +25,9 @@ builder.Services.AddMediatR(cfg =>                                          // M
 
 
 
-builder.Services.AddTaskServiceDependencies(builder.Configuration);         // DB Context, Repositories, Services
-
-
-
+builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
+builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
+builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
 

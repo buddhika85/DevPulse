@@ -4,7 +4,7 @@ using TaskService.Services;
 
 namespace TaskService.Application.Handlers.CommandHandlers
 {
-    public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, Guid>
+    public class CreateTaskHandler : IRequestHandler<CreateTaskCommand, Guid?>
     {
         private readonly ITaskService _taskService;
 
@@ -13,7 +13,7 @@ namespace TaskService.Application.Handlers.CommandHandlers
             _taskService = taskService;
         }
 
-        public async Task<Guid> Handle(CreateTaskCommand command, CancellationToken cancellationToken)
+        public async Task<Guid?> Handle(CreateTaskCommand command, CancellationToken cancellationToken)
         {
             return await _taskService.CreateTaskAsync(command, cancellationToken);
         }

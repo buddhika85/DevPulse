@@ -31,4 +31,8 @@
     <Folder Include="Application\Validation\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -7,7 +7,7 @@ namespace TaskService.Services
 {
     public interface ITaskService
     {
-        Task<Guid> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken);
+        Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken);
         Task<bool> UpdateTaskAsync(UpdateTaskCommand command, CancellationToken cancellationToken);
         Task<bool> DeleteTaskAsync(DeleteTaskCommand command, CancellationToken cancellationToken);
 
