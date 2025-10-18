@@ -1,18 +1,33 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace TaskService.Controllers
 {   
+    
     [ApiController]
-    public class ErrorController : ControllerBase
+    [Route("[controller]")]
+    [Produces("application/json")]    
+    public class ErrorController : BaseApiController
     {
-        [Route("/error")]
-        public IActionResult HandleError()
+        private readonly ILogger<ErrorController> _logger;
+
+        public ErrorController(ILogger<ErrorController> logger)
         {
+            _logger = logger;
+        }
+
+      
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [HttpGet("/error")]        
+        public IActionResult HandleError()
+        {            
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
             var exception = context?.Error;
 
-            var problem = new ProblemDetails                                                    // RFC 7807 Error Format
+            _logger.LogError(exception, "Unhandled exception at {Path}", HttpContext.Request.Path);
+
+            var problem = new ProblemDetails
             {
                 Title = "An unexpected error occurred.",
                 Status = 500,
@@ -20,8 +35,11 @@ namespace TaskService.Controllers
                 Instance = HttpContext.Request.Path
             };
 
-            return StatusCode(500, problem);
-        }
+            problem.Extensions["traceId"] = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
+            problem.Extensions["timestamp"] = DateTime.UtcNow;
 
+            return StatusCode(500, problem);                                                                // RFC 7807 Error Format
+        }
     }
+
 }

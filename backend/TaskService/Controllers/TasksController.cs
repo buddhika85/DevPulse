@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
 using TaskService.Application.Common.Enums;
 using TaskService.Application.Common.Models;
@@ -25,9 +26,11 @@ namespace TaskService.Controllers
 
 
 
+        
         [HttpGet("all")]
-        [ProducesResponseType(typeof(IReadOnlyList<TaskItemDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Get all tasks", Description = "Returns all task items.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Fetching all tasks at {Time}", DateTime.UtcNow);
@@ -47,9 +50,10 @@ namespace TaskService.Controllers
 
 
         [HttpGet("{id:guid}")]
-        [ProducesResponseType(typeof(TaskItemDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Get task by ID", Description = "Returns a single task item by its unique identifier.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskItemDto))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Fetching task by ID: {Id} at {Time}", id, DateTime.UtcNow);
@@ -72,8 +76,9 @@ namespace TaskService.Controllers
 
 
         [HttpGet("filter")]
-        [ProducesResponseType(typeof(PaginatedResult<TaskItemDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Filter and paginate tasks", Description = "Returns a paginated list of tasks based on filter criteria.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PaginatedResult<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetPaginatedTasks(
             [FromQuery] Guid? guid,
             [FromQuery] string? title,
@@ -116,10 +121,11 @@ namespace TaskService.Controllers
         //Guid(task ID)
         //   ↑
         //Response to Controller
-       
+
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Create a new task", Description = "Creates a new task and returns its location.")]
+        [SwaggerResponse(StatusCodes.Status201Created, "Task created")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Create([FromBody] CreateTaskDto dto, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Creating a new Task at {Time}", DateTime.UtcNow);
@@ -152,11 +158,12 @@ namespace TaskService.Controllers
 
 
 
-        [HttpPut("{id:guid}")]        
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [HttpPut("{id:guid}")]
+        [SwaggerOperation(Summary = "Update an existing task", Description = "Updates a task by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Task updated")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateTaskDto dto, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Updating an existing Task with id {Id} at {Time}", id, DateTime.UtcNow);
@@ -195,9 +202,10 @@ namespace TaskService.Controllers
 
 
         [HttpDelete("{id:guid}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        [SwaggerOperation(Summary = "Delete a task", Description = "Deletes a task by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Task deleted")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Deleting an existing Task with id {Id} at {Time}", id, DateTime.UtcNow);
