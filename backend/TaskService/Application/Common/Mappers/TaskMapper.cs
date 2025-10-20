@@ -11,7 +11,8 @@ namespace TaskService.Application.Common.Mappers
             return new TaskItem
             {
                 Title = command.Title,
-                Description = command.Description ?? string.Empty
+                Description = command.Description ?? string.Empty,
+                TaskStatus = Domain.ValueObjects.TaskStatus.Pending
             };
         }
 
@@ -19,7 +20,7 @@ namespace TaskService.Application.Common.Mappers
         {
             entity.Title = command.Title;
             entity.Description = command.Description;
-            entity.IsCompleted = command.IsCompleted;
+            entity.TaskStatus = Domain.ValueObjects.TaskStatus.From(command.Status);
         }
 
         public static TaskItemDto ToDto(TaskItem entity) 
@@ -30,7 +31,7 @@ namespace TaskService.Application.Common.Mappers
                 Title = entity.Title,
                 Description = entity.Description,
                 CreatedAt = entity.CreatedAt,
-                IsCompleted = entity.IsCompleted,
+                Status = entity.TaskStatus.Value,
             };
         }
 

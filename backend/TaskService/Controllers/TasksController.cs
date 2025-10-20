@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
 using TaskService.Application.Common.Enums;
+using TaskService.Application.Common.Exceptions;
 using TaskService.Application.Common.Models;
 using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
@@ -67,6 +68,11 @@ namespace TaskService.Controllers
                 }
                 return Ok(task);
             }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while fetching task by ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching task ID: {Id} at {Time}", id, DateTime.UtcNow);
@@ -82,22 +88,28 @@ namespace TaskService.Controllers
         public async Task<IActionResult> GetPaginatedTasks(
             [FromQuery] Guid? guid,
             [FromQuery] string? title,
-            [FromQuery] string? description,
-            [FromQuery] bool? isCompleted,
+            [FromQuery] string? description,            
             [FromQuery] TaskSortField? sortBy,
             [FromQuery] bool sortDescending = false,
+            [FromQuery] string? status = "Pending",
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 5
-            )
+        )
         {
             _logger.LogInformation("Fetching paginated tasks at {Time} with filters: Title={Title}, Description={Description}, Status={Status}",
-            DateTime.UtcNow, title, description, isCompleted);
-
+                DateTime.UtcNow, title, description, status); 
             try
             {
-                var query = new GetTasksPaginatedQuery(guid, title, description, isCompleted, pageNumber, pageSize, sortBy, sortDescending);
+               
+                var query = new GetTasksPaginatedQuery(guid, title, description, pageNumber, pageSize, sortBy, sortDescending, status);
                 var paginatedResult = await _mediator.Send(query, HttpContext.RequestAborted);
                 return Ok(paginatedResult);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while fetching paginated tasks at {Time} with filters: Title={Title}, Description={Description}, Status={Status}",
+                                        DateTime.UtcNow, title, description, status);
+                return ValidationProblemList(rex.Failures);
             }
             catch (Exception ex)
             {
@@ -131,23 +143,30 @@ namespace TaskService.Controllers
             _logger.LogInformation("Creating a new Task at {Time}", DateTime.UtcNow);
             try
             {
-                // 0 Map DTO to to appropriate Command in CQRS
+                // 1 MediatR runs its validation piepeline and executes all attached Flunt Validators for DTO / command / query
+                // If fails throws - RequestValidationException - with ValidationFailures
+                // 2 Map DTO to to appropriate Command in CQRS
                 var command = new CreateTaskCommand
                 {
                     Title = dto.Title,
                     Description = dto.Description
                 };
 
-                // 1 passing CreateTaskCommand (IRequest) to MediatR to handle the request
+                // 3 passing CreateTaskCommand (IRequest) to MediatR to handle the request
                 var id = await _mediator.Send(command, cancellationToken);
 
-                // 2 MediatR looks for a class that implements - IRequestHandler<CreateTaskCommand, Guid>
-                // 3 It finds CreateTaskHandler and invokes its Handle method
-                // 4 Handle method calls service layer - TaskService classes CreateTaskAsync passing command object
-                // 5 service maps Command to Entity, calls repository to add to DbSet and save changes to DB 
-                // 6 service returns the new Task's Id back to Handler, which returns it to Controller
+                // 4 MediatR looks for a class that implements - IRequestHandler<CreateTaskCommand, Guid>
+                // 5 It finds CreateTaskHandler and invokes its Handle method
+                // 6 Handle method calls service layer - TaskService classes CreateTaskAsync passing command object
+                // 7 service maps Command to Entity, calls repository to add to DbSet and save changes to DB 
+                // 8 service returns the new Task's Id back to Handler, which returns it to Controller
 
                 return CreatedAtAction(nameof(GetById), new { id }, null);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while creating task at {Time}", DateTime.UtcNow);               
+                return ValidationProblemList(rex.Failures);
             }
             catch (Exception ex)
             {
@@ -181,7 +200,7 @@ namespace TaskService.Controllers
                     Id = id,
                     Title = dto.Title,
                     Description = dto.Description,
-                    IsCompleted = dto.IsCompleted
+                    Status = dto.Status
                 };
 
                 // MediatR
@@ -192,6 +211,11 @@ namespace TaskService.Controllers
 
                 _logger.LogWarning("Task not found for update: {Id}", id);
                 return NotFoundProblem(detail: $"Task with ID {id} not found.");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while updating an existing Task with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
             }
             catch (Exception ex)
             {
@@ -224,6 +248,11 @@ namespace TaskService.Controllers
                     return NoContent();
 
                 return NotFoundProblem(detail: $"Task with ID {id} not found.");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while deleting an existing Task with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
             }
             catch (Exception ex)
             {

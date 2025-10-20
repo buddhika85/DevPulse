@@ -1,14 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TaskService.Application.Dtos
+﻿namespace TaskService.Application.Dtos
 {
+    // No Attributes/Data Annotations used - FluentValidator class contains validation rules - CreateTaskDtoValidator
     public record CreateTaskDto
-    {
-        [Required]
-        [MaxLength(100)]
+    {     
         public string Title { get; set; } = string.Empty;
-
-        [MaxLength(500)]
+        
         public string Description { get; set; } = string.Empty;
     }
 }

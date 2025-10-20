@@ -69,7 +69,7 @@ namespace TaskService.Services
                     Id = taskId,
                     Title = command.Title,
                     Description = command.Description ?? string.Empty,
-                    IsCompleted = false,
+                    TaskStatus = Domain.ValueObjects.TaskStatus.Pending,
                     CreatedAt = DateTime.UtcNow
                 };
 

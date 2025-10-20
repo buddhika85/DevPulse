@@ -7,6 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\Validation\**" />
+    <Content Remove="Application\Validation\**" />
+    <EmbeddedResource Remove="Application\Validation\**" />
+    <None Remove="Application\Validation\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.0.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
     <PackageReference Include="MediatR" Version="13.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.0" />
@@ -28,7 +37,6 @@
 
   <ItemGroup>
     <Folder Include="Application\Mapping\" />
-    <Folder Include="Application\Validation\" />
   </ItemGroup>
 
   <ItemGroup>

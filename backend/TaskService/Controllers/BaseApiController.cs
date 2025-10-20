@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace TaskService.Controllers
@@ -20,6 +21,33 @@ namespace TaskService.Controllers
                 type: "https://httpstatuses.com/400"
             );
         }
+
+        /// <summary>
+        /// Returns 400 BadRequest in RFC 7807 Error Format
+        /// </summary>
+        /// <param name="errors">Validation Errors (RequestValidationException) thrown by MediatoR pipeline when executing Fluent validators on DTOs, Commands, Queries</param>
+        /// <returns></returns>
+        protected IActionResult ValidationProblemList(List<ValidationFailure>? errors, string title = "Validation Error", string detail = "One of the attributes did not meet validation rules")
+        {
+            var problemDetails = new ValidationProblemDetails
+            {
+                Title = title,
+                Detail = detail,
+                Status = 400,
+                Type = "https://httpstatuses.com/400"
+            };
+
+            if (errors != null)
+            {
+                foreach (var error in errors)
+                {
+                    problemDetails.Errors.Add(error.PropertyName, new[] { error.ErrorMessage });
+                }
+            }
+
+            return BadRequest(problemDetails);
+        }
+
 
         /// <summary>
         /// Returns model state errors in RFC 7807 Error Format like below

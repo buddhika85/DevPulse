@@ -131,7 +131,7 @@ namespace TaskService.Repositories
                 // Option 1: Update only allowed fields
                 existing.Title = entity.Title;
                 existing.Description = entity.Description;
-                existing.IsCompleted = entity.IsCompleted;
+                existing.TaskStatus = entity.TaskStatus;
 
                 // Option 2 (if we are trusting the incoming object): 
                 // _dbContext.Entry(existing).CurrentValues.SetValues(entity);
@@ -157,8 +157,8 @@ namespace TaskService.Repositories
         public async Task<PaginatedResult<TaskItem>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken)
         {
             _logger.LogInformation(
-                "Attempting to retrieve paginated TaskItems with filters: TaskId={TaskId}, Title={Title}, Description={Description}, IsCompleted={IsCompleted}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, Desc={SortDescending} at {Time}",
-                query.TaskId, query.Title, query.Description, query.IsCompleted, query.PageNumber, query.PageSize, query.SortBy, query.SortDescending, DateTime.UtcNow);
+                "Attempting to retrieve paginated TaskItems with filters: TaskId={TaskId}, Title={Title}, Description={Description}, Status={Status}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, Desc={SortDescending} at {Time}",
+                query.TaskId, query.Title, query.Description, query.Status, query.PageNumber, query.PageSize, query.SortBy, query.SortDescending, DateTime.UtcNow);
 
             try
             {
@@ -173,14 +173,24 @@ namespace TaskService.Repositories
                 if (!string.IsNullOrWhiteSpace(query.Description))
                     queryable = queryable.Where(x => EF.Functions.Like(x.Description, $"%{query.Description}%"));
 
-                if (query.IsCompleted.HasValue)
-                    queryable = queryable.Where(x => x.IsCompleted == query.IsCompleted.Value);
+                if (!string.IsNullOrWhiteSpace(query.Status))
+                {
+                    try
+                    {
+                        var taskStatus = Domain.ValueObjects.TaskStatus.From(query.Status);
+                        queryable = queryable.Where(x => x.TaskStatus == taskStatus);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        _logger.LogWarning(ex, "Invalid TaskStatus filter value: {Status}", query.Status);
+                    }
+                }
 
                 queryable = query.SortBy switch
                 {
                     TaskSortField.Title => query.SortDescending ? queryable.OrderByDescending(x => x.Title) : queryable.OrderBy(x => x.Title),
                     TaskSortField.Description => query.SortDescending ? queryable.OrderByDescending(x => x.Description) : queryable.OrderBy(x => x.Description),
-                    TaskSortField.IsCompleted => query.SortDescending ? queryable.OrderByDescending(x => x.IsCompleted) : queryable.OrderBy(x => x.IsCompleted),
+                    TaskSortField.Status => query.SortDescending ? queryable.OrderByDescending(x => x.TaskStatus) : queryable.OrderBy(x => x.TaskStatus),
                     _ => queryable.OrderBy(x => x.CreatedAt),
                 };
 

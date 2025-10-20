@@ -15,7 +15,6 @@
   <ItemGroup>
     <Folder Include="Domain\Enums\" />
     <Folder Include="Domain\Events\" />
-    <Folder Include="Domain\ValueObjects\" />
   </ItemGroup>
 
 </Project>

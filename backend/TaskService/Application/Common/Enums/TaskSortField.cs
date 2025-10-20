@@ -4,7 +4,7 @@
     {
         Title,
         Description,
-        IsCompleted,
+        Status,
         CreatedAt
     }
 }

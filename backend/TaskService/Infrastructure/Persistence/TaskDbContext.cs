@@ -13,5 +13,19 @@ namespace TaskService.Infrastructure.Persistence
         }
 
         public DbSet<TaskItem> Tasks => Set<TaskItem>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TaskItem>(builder =>
+            {
+                builder.OwnsOne(entity => entity.TaskStatus, statusBuilder =>
+                {
+                    statusBuilder.Property(status => status.Value)
+                    .IsRequired().HasColumnName("Status")
+                    .HasMaxLength(50)
+                    .IsRequired();
+                });
+            });
+        }
     }
 }

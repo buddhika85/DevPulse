@@ -1,18 +1,13 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TaskService.Application.Dtos
+﻿namespace TaskService.Application.Dtos
 {
+    // No Attributes/Data Annotations used - FluentValidator class contains validation rules - UpdateTaskDtoValidator
     public record UpdateTaskDto
     {
-        public Guid Id { get; init; }
-
-        [Required]
-        [MaxLength(100)]
+        public Guid Id { get; init; }       
         public string Title { get; set; } = string.Empty;
-
-        [MaxLength(500)]
+       
         public string Description { get; set; } = string.Empty;
 
-        public bool IsCompleted { get; set; }
+        public string Status { get; set; } = "Pending";
     }
 }
