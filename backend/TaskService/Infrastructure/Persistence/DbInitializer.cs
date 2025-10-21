@@ -8,11 +8,14 @@ namespace TaskService.Infrastructure.Persistence
         {
             if (context.Tasks.Any()) return; // Already seeded
 
+
+            var completedTask = TaskItem.Create("Publish LinkedIn post", "Share CQRS insights");
+            completedTask.MarkCompleted();
             var tasks = new[]
             {
-                new TaskItem { Id = Guid.NewGuid(), Title = "Design dashboard", Description = "Sketch layout for DevPulse", TaskStatus = Domain.ValueObjects.TaskStatus.Pending },
-                new TaskItem { Id = Guid.NewGuid(), Title = "Write API tests", Description = "Cover TaskService endpoints", TaskStatus = Domain.ValueObjects.TaskStatus.Pending },
-                new TaskItem { Id = Guid.NewGuid(), Title = "Publish LinkedIn post", Description = "Share CQRS insights", TaskStatus = Domain.ValueObjects.TaskStatus.Completed }
+                TaskItem.Create("Design dashboard", "Sketch layout for DevPulse"),
+                TaskItem.Create("Write API tests", "Cover TaskService endpoints"),
+                completedTask
             };
 
             context.Tasks.AddRange(tasks);

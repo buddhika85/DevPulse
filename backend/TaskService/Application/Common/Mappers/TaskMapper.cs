@@ -6,21 +6,9 @@ namespace TaskService.Application.Common.Mappers
 {
     public static class TaskMapper
     {
-        public static TaskItem ToEntity(CreateTaskCommand command)
-        {
-            return new TaskItem
-            {
-                Title = command.Title,
-                Description = command.Description ?? string.Empty,
-                TaskStatus = Domain.ValueObjects.TaskStatus.Pending
-            };
-        }
-
         public static void MapToEntity(TaskItem entity, UpdateTaskCommand command)
         {
-            entity.Title = command.Title;
-            entity.Description = command.Description;
-            entity.TaskStatus = Domain.ValueObjects.TaskStatus.From(command.Status);
+            entity.Update(command.Title, command.Description, Domain.ValueObjects.TaskStatus.From(command.Status));
         }
 
         public static TaskItemDto ToDto(TaskItem entity) 
