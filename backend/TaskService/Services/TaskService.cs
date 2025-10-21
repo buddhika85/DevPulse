@@ -60,18 +60,10 @@ namespace TaskService.Services
         public async Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken)
         {
             try
-            {
-                var taskId = Guid.NewGuid();
+            {                
                 _logger.LogInformation("Creating new task: {Title}", command.Title);
 
-                var task = new TaskItem
-                {
-                    Id = taskId,
-                    Title = command.Title,
-                    Description = command.Description ?? string.Empty,
-                    TaskStatus = Domain.ValueObjects.TaskStatus.Pending,
-                    CreatedAt = DateTime.UtcNow
-                };
+                var task = TaskItem.Create(command.Title, command.Description);                                     // create domain object and raise created event               
 
                 var result = await _taskRepository.AddAsync(task, cancellationToken);
                 if (result is not null)

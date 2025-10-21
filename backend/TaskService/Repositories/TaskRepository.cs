@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using TaskService.Application.Common.Enums;
 using TaskService.Application.Common.Models;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
+using TaskService.Infrastructure.Common.Extensions;
 using TaskService.Infrastructure.Persistence;
 
 namespace TaskService.Repositories
@@ -11,11 +13,13 @@ namespace TaskService.Repositories
     {
         private readonly TaskDbContext _dbContext;
         private readonly ILogger<TaskRepository> _logger;
+        private readonly IMediator _mediator;
 
-        public TaskRepository(TaskDbContext dbContext, ILogger<TaskRepository> logger)
+        public TaskRepository(TaskDbContext dbContext, ILogger<TaskRepository> logger, IMediator mediator)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _mediator = mediator;
         }
 
         public async Task<TaskItem?> AddAsync(TaskItem entity, CancellationToken cancellationToken)
@@ -24,7 +28,7 @@ namespace TaskService.Repositories
             try
             {
                 await _dbContext.Tasks.AddAsync(entity, cancellationToken);
-                var result = await _dbContext.SaveChangesAsync(cancellationToken);
+                var result = await SaveChangesAsync(cancellationToken);
 
                 if (result > 0)
                 {
@@ -55,6 +59,7 @@ namespace TaskService.Repositories
                 }
 
                 _dbContext.Tasks.Remove(entity);
+                entity.RaiseDeletedEvent();
                 var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
                 if (result > 0)
@@ -115,41 +120,38 @@ namespace TaskService.Repositories
             }
         }        
              
-        public async Task<bool> UpdateAsync(Guid id, TaskItem entity, CancellationToken cancellationToken)
+        public async Task<bool> UpdateAsync(Guid id, TaskItem updated, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Attempting to update Task with Id: {Id}, Title: {Title} at {Time}", id, entity.Title, DateTime.UtcNow);
+            _logger.LogInformation("Attempting to update Task with Id: {Id}, Title: {Title} at {Time}", id, updated.Title, DateTime.UtcNow);
 
             try
             {
                 var existing = await _dbContext.Tasks.FindAsync(new object[] { id }, cancellationToken);
+
+               
                 if (existing is null)
                 {
                     _logger.LogWarning("No Task found with Id: {Id} at {Time}. Update aborted.", id, DateTime.UtcNow);
                     return false;
                 }
 
-                // Option 1: Update only allowed fields
-                existing.Title = entity.Title;
-                existing.Description = entity.Description;
-                existing.TaskStatus = entity.TaskStatus;
-
-                // Option 2 (if we are trusting the incoming object): 
-                // _dbContext.Entry(existing).CurrentValues.SetValues(entity);
+                // applies changes to Db record and and raises events
+                ApplyChanges(existing, updated);
 
                 var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
                 if (result > 0)
                 {
-                    _logger.LogInformation("Successfully updated Task with Id: {Id}, Title: {Title} at {Time}", id, entity.Title, DateTime.UtcNow);
+                    _logger.LogInformation("Successfully updated Task with Id: {Id}, Title: {Title} at {Time}", id, updated.Title, DateTime.UtcNow);
                     return true;
                 }
 
-                _logger.LogWarning("Update operation for Task with Id: {Id}, Title: {Title} at {Time} did not affect any records.", id, entity.Title, DateTime.UtcNow);
+                _logger.LogWarning("Update operation for Task with Id: {Id}, Title: {Title} at {Time} did not affect any records.", id, updated.Title, DateTime.UtcNow);
                 return false;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while updating Task with Id: {Id}, Title: {Title} at {Time}", id, entity.Title, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while updating Task with Id: {Id}, Title: {Title} at {Time}", id, updated.Title, DateTime.UtcNow);
                 throw;
             }
         }
@@ -216,6 +218,34 @@ namespace TaskService.Repositories
                 _logger.LogError(ex, "Exception occurred while retrieving paginated TaskItems at {Time}", DateTime.UtcNow);
                 throw;
             }
+        }
+
+
+        private async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            var countOfWrites = await _dbContext.SaveChangesAsync(cancellationToken);
+
+            // Dispatches all domain events raised by tracked entities
+            // Happens after the database commit, ensuring events only fire if persistence succeeds
+            await _mediator.DispatchDomainEventsAsync(_dbContext);
+
+            return countOfWrites;
+        }
+
+
+        // a helper method for updates, it applies changes and raises domain events as needed
+        private void ApplyChanges(TaskItem existing, TaskItem incoming)
+        {
+            // raise completed event if needed
+            if (existing.TaskStatus == Domain.ValueObjects.TaskStatus.Pending && incoming.TaskStatus == Domain.ValueObjects.TaskStatus.Completed)
+                existing.MarkCompleted();
+            // raise reopened event if needed
+            if (existing.TaskStatus == Domain.ValueObjects.TaskStatus.Completed && incoming.TaskStatus == Domain.ValueObjects.TaskStatus.Pending)
+                existing.Reopen();
+
+            // raise updated event if its a true update with a change           
+            if (existing.Title != incoming.Title || existing.Description != incoming.Description)
+                existing.Update(incoming.Title, incoming.Description, incoming.TaskStatus);
         }
     }
 }
