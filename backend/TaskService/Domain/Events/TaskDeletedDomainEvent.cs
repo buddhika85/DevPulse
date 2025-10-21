@@ -2,7 +2,7 @@
 
 namespace TaskService.Domain.Events
 {
-    // This event is Raised when a task deleted
+    // This event is Raised when a task deleted: permenently removed from DB
     public class TaskDeletedDomainEvent : INotification
     {
         public Guid DeletedTaskId { get; }

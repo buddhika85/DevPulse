@@ -17,6 +17,28 @@ namespace TaskService.Domain.Entities
         private TaskItem() { }                      // Enforces controlled instantiation via Create()
 
 
+        public bool IsDeleted { get; private set; }
+
+        public void SoftDelete()
+        {
+            if (!IsDeleted)
+            {
+                IsDeleted = true;
+                RaiseSoftDeletedEvent();
+            }
+        }
+
+        // when IsDelete is set from true to false
+        public void UndoSoftDelete()
+        {
+            if (IsDeleted)
+            {
+                IsDeleted = false;
+                RaiseRestoreDeletedEvent();
+            }
+        }
+
+
         #region domain_events
 
         public static TaskItem Create(string title, string? description)
@@ -58,6 +80,16 @@ namespace TaskService.Domain.Entities
                 TaskStatus = Domain.ValueObjects.TaskStatus.Pending;
                 DomainEvents.Add(new TaskReopenedDomainEvent(this));
             }
+        }
+
+        public void RaiseSoftDeletedEvent()
+        {
+            DomainEvents.Add(new TaskSoftDeletedDomainEvent(Id));
+        }
+
+        public void RaiseRestoreDeletedEvent()
+        {
+            DomainEvents.Add(new TaskRestoredDomainEvent(Id));
         }
 
         public void RaiseDeletedEvent()

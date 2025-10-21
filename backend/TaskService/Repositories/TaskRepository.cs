@@ -58,8 +58,11 @@ namespace TaskService.Repositories
                     return false;
                 }
 
-                _dbContext.Tasks.Remove(entity);
-                entity.RaiseDeletedEvent();
+                // _dbContext.Tasks.Remove(entity);             // this permenently deletes from DB
+                // entity.RaiseDeletedEvent();
+
+                entity.SoftDelete();
+               
                 var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
                 if (result > 0)
@@ -85,7 +88,8 @@ namespace TaskService.Repositories
             {
                 var entities = await _dbContext.Tasks
                     .AsNoTracking()
-                    .OrderByDescending(t => t.CreatedAt)
+                    .Where(x => !x.IsDeleted)
+                    .OrderByDescending(t => t.CreatedAt)                    
                     .ToListAsync(cancellationToken);
 
                 _logger.LogInformation("Successfully retrieved {Count} TaskItems at {Time}", entities.Count, DateTime.UtcNow);
@@ -164,7 +168,7 @@ namespace TaskService.Repositories
 
             try
             {
-                var queryable = _dbContext.Tasks.AsNoTracking().AsQueryable();
+                var queryable = _dbContext.Tasks.AsNoTracking().Where(x => !x.IsDeleted).AsQueryable();
 
                 if (query.TaskId.HasValue)
                     queryable = queryable.Where(x => x.Id == query.TaskId.Value);
