@@ -63,7 +63,9 @@ namespace TaskService.Services
             {                
                 _logger.LogInformation("Creating new task: {Title}", command.Title);
 
-                var task = TaskItem.Create(command.Title, command.Description);                                     // create domain object and raise created event               
+
+                // create domain object and raise created event      
+                var task = TaskItem.Create(command.Title, command.Description);                                             
 
                 var result = await _taskRepository.AddAsync(task, cancellationToken);
                 if (result is not null)

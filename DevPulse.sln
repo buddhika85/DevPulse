@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService", "backend\Task
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLib", "backend\SharedLib\SharedLib.csproj", "{0E39330C-22FC-1FCA-A784-83584590301E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Tests", "backend\TaskService.Tests\TaskService.Tests.csproj", "{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,11 +45,24 @@ Global
 		{0E39330C-22FC-1FCA-A784-83584590301E}.Release|x64.Build.0 = Release|Any CPU
 		{0E39330C-22FC-1FCA-A784-83584590301E}.Release|x86.ActiveCfg = Release|Any CPU
 		{0E39330C-22FC-1FCA-A784-83584590301E}.Release|x86.Build.0 = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|x64.Build.0 = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Debug|x86.Build.0 = Debug|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x64.ActiveCfg = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x64.Build.0 = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x86.ActiveCfg = Release|Any CPU
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{24CA8B9E-9C10-4396-8D63-90EBC4B70BAD} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 	EndGlobalSection
 EndGlobal
