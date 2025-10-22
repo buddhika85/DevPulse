@@ -66,7 +66,9 @@ namespace TaskService.Tests.Domain
             updatedEvent.TaskUpdated.TaskStatus.Should().Be(TaskService.Domain.ValueObjects.TaskStatus.Completed);
         }
 
-        // Update_
         // SoftDelete_WhenCalled_SetsIsDeletedAndRaises...
+
+        // Update_
+
     }
 }

@@ -1,11 +1,8 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
-using TaskService.Application.Common.Behaviors;
-using TaskService.Application.Validators;
-using TaskService.Extensions;
-using TaskService.Infrastructure.Persistence;
+
 
 
 
@@ -14,7 +11,7 @@ using TaskService.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
+//builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
 
 
@@ -22,7 +19,7 @@ builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);        
 builder.Services.AddControllers(options =>                                  // Enables controller routing
 {
     options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicityly - Ensures consistent content negotiation and Swagger documentation
-});                                          
+});
 builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
 builder.Services.AddSwaggerGen(options =>                                   // Swagger generation
 {
@@ -30,10 +27,10 @@ builder.Services.AddSwaggerGen(options =>                                   // S
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
     {
         Version = "v1",
-        Title = "DevPulse Task API",
-        Description = "API for managing developer tasks in DevPulse microservice."
+        Title = "DevPulse User API",
+        Description = "API for managing user authentication and authorisation in DevPulse microservice suite."
     });
-});                                           
+});
 
 
 builder.Services.AddMediatR(cfg =>                                          // MediatR for CQRS pattern - considers all MediatR handlers (commands, queries) are in the same project as Program.cs.
@@ -41,12 +38,12 @@ builder.Services.AddMediatR(cfg =>                                          // M
 //builder.Services.AddMediatR(typeof(CreateTaskHandler).Assembly);
 
 
-builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskDtoValidator>();                 // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
+//builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskDtoValidator>();                 // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
+//builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
 
-builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
-builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
-builder.Services.InjectServices(builder.Configuration);                     // inject Services
+//builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
+//builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
+//builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
 
@@ -73,7 +70,7 @@ if (app.Environment.IsDevelopment())
     {
         x.ConfigObject.AdditionalItems["showExtensions"] = true;
         x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse Task API v1");
-    });                                                     
+    });
 }
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS
@@ -84,8 +81,8 @@ app.MapControllers();                                                       // M
 // seeding the database
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-    DbInitializer.Seed(db);
+    //var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    //DbInitializer.Seed(db);
 }
 
 
@@ -96,7 +93,7 @@ using (var scope = app.Services.CreateScope())
 // starting application
 try
 {
-    app.Run();                                                                  
+    app.Run();
 }
 catch (Exception ex)
 {

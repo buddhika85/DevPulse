@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLib", "backend\Shared
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskService.Tests", "backend\TaskService.Tests\TaskService.Tests.csproj", "{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService", "backend\UserService\UserService.csproj", "{BEDD1DB6-0A72-4F8A-8686-12092B690806}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,18 @@ Global
 		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x64.Build.0 = Release|Any CPU
 		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x86.ActiveCfg = Release|Any CPU
 		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63}.Release|x86.Build.0 = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|x64.Build.0 = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Debug|x86.Build.0 = Debug|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|x64.ActiveCfg = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|x64.Build.0 = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|x86.ActiveCfg = Release|Any CPU
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,5 +78,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{24CA8B9E-9C10-4396-8D63-90EBC4B70BAD} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 		{2D7C6F02-ACAB-4137-A258-F282FDC8AA63} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
+		{BEDD1DB6-0A72-4F8A-8686-12092B690806} = {1AE8ACA6-933B-BF2A-3671-3E2EAC007D16}
 	EndGlobalSection
 EndGlobal
