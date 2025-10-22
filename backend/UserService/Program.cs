@@ -2,6 +2,9 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using UserService.Application.Common.Behaviors;
+using UserService.Extensions;
+using UserService.Infrastructure.Persistence;
 
 
 
@@ -11,14 +14,14 @@ using Serilog;
 var builder = WebApplication.CreateBuilder(args);
 
 
-//builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
+builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
 
 
 // Register services
 builder.Services.AddControllers(options =>                                  // Enables controller routing
 {
-    options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicityly - Ensures consistent content negotiation and Swagger documentation
+    options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicitly - Ensures consistent content negotiation and Swagger documentation
 });
 builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
 builder.Services.AddSwaggerGen(options =>                                   // Swagger generation
@@ -39,11 +42,11 @@ builder.Services.AddMediatR(cfg =>                                          // M
 
 
 //builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskDtoValidator>();                 // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
-//builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
 
-//builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
-//builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
-//builder.Services.InjectServices(builder.Configuration);                     // inject Services
+builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
+builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
+builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
 
@@ -81,8 +84,8 @@ app.MapControllers();                                                       // M
 // seeding the database
 using (var scope = app.Services.CreateScope())
 {
-    //var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-    //DbInitializer.Seed(db);
+    var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    DbInitializer.Seed(db);
 }
 
 

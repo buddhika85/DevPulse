@@ -46,24 +46,24 @@
     <Folder Include="Application\Commands\" />
     <Folder Include="Application\Dtos\" />
     <Folder Include="Application\EventHandlers\" />
-    <Folder Include="Application\Common\" />
     <Folder Include="Application\Handlers\" />
     <Folder Include="Application\Mapping\" />
     <Folder Include="Application\Validators\" />
     <Folder Include="Application\Queries\" />
-    <Folder Include="Configuration\" />
-    <Folder Include="Controllers\" />
     <Folder Include="Domain\Entities\" />
     <Folder Include="Domain\Events\" />
     <Folder Include="Domain\ValueObjects\" />
-    <Folder Include="Extensions\" />
     <Folder Include="Infrastructure\Identity\" />
-    <Folder Include="Infrastructure\Persistence\" />
-    <Folder Include="Infrastructure\Common\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
     <Folder Include="Repositories\" />
     <Folder Include="Services\" />
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj" />
   </ItemGroup>
 
 </Project>
