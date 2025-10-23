@@ -21,9 +21,9 @@ namespace TaskService.Infrastructure.Persistence
                 builder.OwnsOne(entity => entity.TaskStatus, statusBuilder =>
                 {
                     statusBuilder.Property(status => status.Value)
-                    .IsRequired().HasColumnName("Status")
-                    .HasMaxLength(50)
-                    .IsRequired();
+                    .IsRequired()
+                    .HasColumnName("Status")
+                    .HasMaxLength(50);
                 });
             });
         }

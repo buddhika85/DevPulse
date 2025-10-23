@@ -1,4 +1,5 @@
-﻿//using UserService.Services;
+﻿using UserService.Services;
+
 
 namespace UserService.Extensions
 {
@@ -13,7 +14,7 @@ namespace UserService.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {            
-            //services.AddScoped<ITaskService, Services.TaskService>();
+            services.AddScoped<IUserService, Services.UserService>();
             return services;
         }
     }

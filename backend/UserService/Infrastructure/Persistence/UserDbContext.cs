@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using UserService.Domain.Entities;
 //using UserService.Domain.Entities;
 
 namespace UserService.Infrastructure.Persistence
 {
     //  From \DevPulse\backend\UserService>
-    // dotnet ef migrations add InitialCreate
+    // dotnet ef migrations add InitialUserMigration 
     // dotnet ef database update
     public class UserDbContext : DbContext
     {
@@ -12,20 +13,21 @@ namespace UserService.Infrastructure.Persistence
         {
         }
 
-        //public DbSet<TaskItem> Tasks => Set<TaskItem>();
+        public DbSet<UserAccount> UserAccounts => Set<UserAccount>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            //modelBuilder.Entity<TaskItem>(builder =>
-            //{
-            //    builder.OwnsOne(entity => entity.TaskStatus, statusBuilder =>
-            //    {
-            //        statusBuilder.Property(status => status.Value)
-            //        .IsRequired().HasColumnName("Status")
-            //        .HasMaxLength(50)
-            //        .IsRequired();
-            //    });
-            //});
+        {           
+
+            modelBuilder.Entity<UserAccount>(builder =>
+            {
+                builder.OwnsOne(entity => entity.Role, roleBuilder =>
+                {
+                    roleBuilder.Property(role => role.Value)
+                    .IsRequired()
+                    .HasColumnName("Role")
+                    .HasMaxLength(50);
+                });
+            });
         }
     }
 }

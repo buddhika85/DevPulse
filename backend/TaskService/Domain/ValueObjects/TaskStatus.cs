@@ -39,5 +39,7 @@ namespace TaskService.Domain.ValueObjects
         {
             yield return Value;
         }
+
+        public override string ToString() => Value;
     }
 }

@@ -1,5 +1,7 @@
 ﻿//using UserService.Repositories;
 
+using UserService.Repositories;
+
 namespace UserService.Extensions
 {
     public static class RepositoryExtensions
@@ -13,7 +15,7 @@ namespace UserService.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectRepositories(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddScoped<ITaskRepository, TaskRepository>();    
+            services.AddScoped<IUserRepository, UserRepository>();    
 
             return services;
         }

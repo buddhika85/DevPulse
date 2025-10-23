@@ -1,25 +1,22 @@
-﻿//using UserService.Domain.Entities;
+﻿using UserService.Domain.Entities;
 
 namespace UserService.Infrastructure.Persistence
 {
     public static class DbInitializer
     {
+
         public static void Seed(UserDbContext context)
         {
-            //if (context.Tasks.Any()) return; // Already seeded
+            if (context.UserAccounts.Any()) return; // Already seeded
 
+            var users = new[]
+            {
+                UserAccount.Create("admin@devpulse.local", "Admin User", "admin"),                
+                UserAccount.Create("manager@devpulse.local", "Manager", "manager"),
+                UserAccount.Create("user@devpulse.local", "User", "user")
+            } ;
 
-            //var completedTask = TaskItem.Create("Publish LinkedIn post", "Share CQRS insights");
-            //completedTask.MarkCompleted();
-            //var tasks = new[]
-            //{
-            //    TaskItem.Create("Design dashboard", "Sketch layout for DevPulse"),
-            //    TaskItem.Create("Write API tests", "Cover TaskService endpoints"),
-            //    completedTask
-            //};
-
-            //context.Tasks.AddRange(tasks);
-
+            context.UserAccounts.AddRange(users);
             context.SaveChanges();
         }
 

@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using UserService.Application.Common.Behaviors;
+using UserService.Application.Validators;
 using UserService.Extensions;
 using UserService.Infrastructure.Persistence;
 
@@ -41,15 +42,15 @@ builder.Services.AddMediatR(cfg =>                                          // M
 //builder.Services.AddMediatR(typeof(CreateTaskHandler).Assembly);
 
 
-//builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskDtoValidator>();                 // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();                   // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));             // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
 
 builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
 builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
-
+builder.Services.InjectAzureAdB2CAccessService(builder.Configuration);      // inject Azure AD B2C for JWT auth, author
 
 
 var app = builder.Build();
@@ -77,6 +78,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();                                                       // Maps controller endpoints
 
 
