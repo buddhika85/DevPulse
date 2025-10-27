@@ -1,4 +1,4 @@
-﻿namespace TaskService.Application.Common.Models
+﻿namespace UserService.Application.Common.Models
 {
     public record class PaginatedResult<T> where T : class
     {

@@ -1,4 +1,5 @@
 ﻿using UserService.Application.Commands;
+using UserService.Application.Dtos;
 using UserService.Domain.Entities;
 using UserService.Repositories;
 
@@ -13,6 +14,11 @@ namespace UserService.Services
         {
             _userRepository = userRepository;
             _logger = logger;
+        }
+
+        public Task<IReadOnlyList<UserAccountDto>> GetAllUsersAsync(CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<Guid?> RegisterUserAsync(RegisterUserCommand command, CancellationToken cancellationToken)

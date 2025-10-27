@@ -14,10 +14,10 @@ namespace TaskService.Domain.Entities
 
         public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
-        private TaskItem() { }                      // Enforces controlled instantiation via Create()
-
-
         public bool IsDeleted { get; private set; }
+
+        private TaskItem() { }   // Enforces controlled instantiation via Create()
+                      
 
         public void SoftDelete()
         {

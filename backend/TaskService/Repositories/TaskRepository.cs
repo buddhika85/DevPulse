@@ -200,21 +200,31 @@ namespace TaskService.Repositories
                     _ => queryable.OrderBy(x => x.CreatedAt),
                 };
 
-                var totalCount = await queryable.CountAsync(cancellationToken);
+                // commented at these sends 2 queries to DB
+                //var totalCount = await queryable.CountAsync(cancellationToken);
+                //var pagedData = await queryable
+                //    .Skip((query.PageNumber - 1) * query.PageSize)
+                //    .Take(query.PageSize)
+                //    .ToListAsync(cancellationToken);
 
-                var pagedData = await queryable
-                    .Skip((query.PageNumber - 1) * query.PageSize)
-                    .Take(query.PageSize)
-                    .ToListAsync(cancellationToken);
+                // this is to avoid sending 2 DB calls for counting and getting paged results
+                var projectedResult = await
+                                        (from x in queryable
+                                          group x by 1 into fakeGroup
+                                          select new
+                                          {
+                                              TotalCount = fakeGroup.Count(),
+                                              PageItems = fakeGroup.Skip((query.PageNumber - 1) * query.PageSize).Take(query.PageSize).ToList(),
+                                          }).SingleAsync(cancellationToken);
 
-                _logger.LogInformation("Successfully retrieved {Count} TaskItems for page {PageNumber} at {Time}", pagedData.Count, query.PageNumber, DateTime.UtcNow);
+                _logger.LogInformation("Successfully retrieved {Count} TaskItems for page {PageNumber} at {Time}", projectedResult.PageItems.Count, query.PageNumber, DateTime.UtcNow);
 
                 return new PaginatedResult<TaskItem>
                 {
-                    PageItems = pagedData,
+                    PageItems = projectedResult.PageItems,
                     PageNumber = query.PageNumber,
                     PageSize = query.PageSize,
-                    TotalCount = totalCount
+                    TotalCount = projectedResult.TotalCount
                 };
             }
             catch (Exception ex)

@@ -43,10 +43,7 @@
 
 
   <ItemGroup>
-    <Folder Include="Application\Dtos\" />
-    <Folder Include="Application\Handlers\QueryHandlers\" />
     <Folder Include="Application\Mapping\" />
-    <Folder Include="Application\Queries\" />
     <Folder Include="Infrastructure\Identity\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />

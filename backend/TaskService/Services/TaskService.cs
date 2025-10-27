@@ -67,7 +67,9 @@ namespace TaskService.Services
                 // create domain object and raise created event      
                 var task = TaskItem.Create(command.Title, command.Description);                                             
 
+                // calling reposistory method
                 var result = await _taskRepository.AddAsync(task, cancellationToken);
+
                 if (result is not null)
                 {
                     _logger.LogInformation("Task created successfully with ID: {Id}", result.Id);

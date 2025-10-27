@@ -5,6 +5,9 @@ namespace UserService.Application.Validators
 {
     public class RegisterUserCommandValidator  : AbstractValidator<RegisterUserCommand>
     {
+        private static readonly string[] AllowedRoles = { "user", "manager", "admin" };
+
+
         public RegisterUserCommandValidator()
         {
             RuleFor(x => x.Email)
@@ -18,6 +21,11 @@ namespace UserService.Application.Validators
                 .NotEmpty()
                 .MinimumLength(6)
                 .MaximumLength(50);
+
+            RuleFor(x => x.Role)            // manager, Manager, User, user, admin, Admin
+                .NotEmpty()
+                .Must(role => AllowedRoles.Contains(role.ToLower()))
+                .WithMessage("Role must be one of: User, Manager, Admin.");
         }
     }
 }

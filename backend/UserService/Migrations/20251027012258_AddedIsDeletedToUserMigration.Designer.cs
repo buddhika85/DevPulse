@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserService.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using UserService.Infrastructure.Persistence;
 namespace UserService.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    partial class UserDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251027012258_AddedIsDeletedToUserMigration")]
+    partial class AddedIsDeletedToUserMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,19 +40,12 @@ namespace UserService.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique()
-                        .HasDatabaseName("IX_UserAccount_Email");
-
-                    b.HasIndex("IsDeleted")
-                        .HasDatabaseName("IX_UserAccount_IsDeleted");
 
                     b.ToTable("UserAccounts");
                 });
@@ -68,9 +64,6 @@ namespace UserService.Migrations
                                 .HasColumnName("Role");
 
                             b1.HasKey("UserAccountId");
-
-                            b1.HasIndex("Value")
-                                .HasDatabaseName("IX_UserAccount_Role");
 
                             b1.ToTable("UserAccounts");
 

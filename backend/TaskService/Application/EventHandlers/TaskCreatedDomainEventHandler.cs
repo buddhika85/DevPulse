@@ -14,8 +14,15 @@ namespace TaskService.Application.EventHandlers
 
         public Task Handle(TaskCreatedDomainEvent notification, CancellationToken cancellationToken)
         {
+            // log event which is handled
             _logger.LogInformation("TaskCreatedDomainEvent handled: Title='{Title}', ID={Id}, Timestamp={Time}",
                 notification.TaskCreated.Title, notification.TaskCreated.Id, DateTime.UtcNow);
+
+            // publish to azure service bus topic
+
+            // send an email / sms
+
+            // call another micro service
 
             return Task.CompletedTask;
         }

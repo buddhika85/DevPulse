@@ -9,9 +9,9 @@ namespace UserService.Domain.Events
     {
         public UserAccount UserAccountCreated { get; set; }
 
-        public UserCreatedDomainEvent(UserAccount userAccount)
+        public UserCreatedDomainEvent(UserAccount userAccountCreated)
         {
-            UserAccountCreated = userAccount;
+            UserAccountCreated = userAccountCreated;
         }
     }
 }
