@@ -3,7 +3,7 @@ using UserService.Application.Dtos;
 
 namespace UserService.Application.Queries
 {
-    public record GetAllUsersQuery : IRequest<IReadOnlyList<UserAccountDto>>
+    public record GetAllUsersQuery(bool IncludeDeleted) : IRequest<IReadOnlyList<UserAccountDto>>
     {
     }
 }

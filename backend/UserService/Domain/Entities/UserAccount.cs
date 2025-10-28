@@ -30,11 +30,11 @@ namespace UserService.Domain.Entities
             return user;
         }
 
-        public void UpdateDisplayName(UserAccount entity)
+        public void UpdateDisplayName(string displayName)
         {
             var oldName = DisplayName;
-            DisplayName = entity.DisplayName;
-            DomainEvents.Add(new UserDisplaNameChangedDomainEvent(this, oldName, entity.DisplayName));
+            DisplayName = displayName;
+            DomainEvents.Add(new UserDisplaNameChangedDomainEvent(this, oldName, displayName));
         }
 
         public void UpdateEmail(string email)

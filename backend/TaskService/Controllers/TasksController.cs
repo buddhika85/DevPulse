@@ -195,13 +195,7 @@ namespace TaskService.Controllers
             try
             {
                 // map
-                var command = new UpdateTaskCommand
-                {
-                    Id = id,
-                    Title = dto.Title,
-                    Description = dto.Description,
-                    Status = dto.Status
-                };
+                var command = new UpdateTaskCommand(id, dto.Title, dto.Description, dto.Status);                
 
                 // MediatR
                 var result = await _mediator.Send(command, cancellationToken);

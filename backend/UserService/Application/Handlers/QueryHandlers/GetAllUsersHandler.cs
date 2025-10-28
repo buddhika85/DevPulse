@@ -16,10 +16,10 @@ namespace UserService.Application.Handlers.QueryHandlers
             _service = service;
         }
 
-        public Task<IReadOnlyList<UserAccountDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+        public Task<IReadOnlyList<UserAccountDto>> Handle(GetAllUsersQuery query, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Handling GetAllTasksQuery at {Time}", DateTime.UtcNow);
-            return _service.GetAllUsersAsync(cancellationToken);
+            return _service.GetAllUsersAsync(query, cancellationToken);
         }
     }
 }

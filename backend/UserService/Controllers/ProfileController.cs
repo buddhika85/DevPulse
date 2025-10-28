@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using UserService.Application.Commands;
@@ -44,12 +43,12 @@ namespace UserService.Controllers
         [SwaggerOperation(Summary = "Get all users", Description = "Returns all the users")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] bool includeDeleted = false)
         {
-            _logger.LogInformation("Fetching all users at {Time}", DateTime.UtcNow);
+            _logger.LogInformation("Fetching all users with include Deleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
             try
             {
-                var query = new GetAllUsersQuery();
+                var query = new GetAllUsersQuery(includeDeleted);
                 _logger.LogDebug("Dispatching GetAllUsersQuery: {@Query}", query);
 
                 var users = await _mediator.Send(query);
@@ -57,8 +56,8 @@ namespace UserService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching all users at {Time}", DateTime.UtcNow);
-                return InternalError("An error occurred while retrieving all users");
+                _logger.LogError(ex, "Error fetching all users with include Deleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving all users with include Deleted: {includeDeleted}");
             }
         }
 

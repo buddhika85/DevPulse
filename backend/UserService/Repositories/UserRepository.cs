@@ -8,6 +8,7 @@ using UserService.Application.Queries;
 using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
 using UserService.Infrastructure.Persistence;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 namespace UserService.Repositories
 {
     public class UserRepository : IUserRepository
@@ -86,6 +87,28 @@ namespace UserService.Repositories
             }
         }
 
+
+        public async Task<IReadOnlyList<UserAccount>> GetAllAsync(bool includeDeleted, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all users with includeDeleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
+            try
+            {
+                var entities = await _dbContext.UserAccounts
+                    .AsNoTracking()
+                    .Where(x => x.IsDeleted == includeDeleted)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Retrieved {UserCount} users with includeDeleted: {IncludeDeleted} at {Time}", entities.Count, includeDeleted, DateTime.UtcNow);
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all users with includeDeleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
+
         // List all users by role
         public async Task<IReadOnlyList<UserAccount>> GetAllAsync(UserRole role, CancellationToken cancellationToken)
         {
@@ -135,34 +158,32 @@ namespace UserService.Repositories
         {
             try
             {
-                _logger.LogInformation("Starting update for user with Id: {Id} at {Time}", id, DateTime.UtcNow);
-                var existing = await _dbContext.UserAccounts.FindAsync([id], cancellationToken);
-                if (existing is null)
+                _logger.LogInformation("Saving updated user with Id: {Id} at {Time}", updated.Id, DateTime.UtcNow);
+
+                // if entity was received from AsNoTracking() query, we need to manualy re attach it
+                if (_dbContext.Entry(updated).State == EntityState.Detached)
                 {
-                    _logger.LogWarning("No User found with Id: {Id} at {Time}. Update aborted.", id, DateTime.UtcNow);
-                    return false;
+                    _dbContext.UserAccounts.Update(updated);
                 }
 
-                ApplyChanges(existing, updated);
-                var writeCount = await SaveChangesAsync(cancellationToken);
-                if (writeCount > 0) 
+                var writeCount = await _dbContext.SaveChangesAsync(cancellationToken);
+                if (writeCount > 0)
                 {
-                    _logger.LogInformation("Successfully updated user with Id: {Id}, Email: {Email} at {Time}", id, updated.Email, DateTime.UtcNow);
+                    _logger.LogInformation("Successfully persisted user with Id: {Id}, Email: {Email} at {Time}", updated.Id, updated.Email, DateTime.UtcNow);
                     return true;
                 }
 
-                _logger.LogWarning("Update operation for User with Id: {Id}, Email: {Email} at {Time} did not affect any records.", id, updated.Email, DateTime.UtcNow);
+                _logger.LogWarning("No changes persisted for user with Id: {Id}, Email: {Email} at {Time}", updated.Id, updated.Email, DateTime.UtcNow);
                 return false;
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while updating User with Id: {Id}, Email: {Email} at {Time}", id, updated.Email, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while updating User with Id: {Id}, Email: {Email} at {Time}", updated.Id, updated.Email, DateTime.UtcNow);
                 throw;
             }
         }
 
-        
+
 
         // Soft delete user
         public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken)
@@ -202,40 +223,61 @@ namespace UserService.Repositories
             }
         }
 
-        // Undo soft delete / restore user
-        public async Task<bool> RestoreUser(Guid id, CancellationToken cancellationToken)
+        public async Task<bool> SoftDeleteUserAsync(UserAccount userToSoftDelete, CancellationToken cancellationToken)
         {
             try
             {
-                _logger.LogInformation("Attempting to restore a user with Id:{Id} at {Time}", id, DateTime.UtcNow);
-                var user = await _dbContext.UserAccounts.FindAsync([id], cancellationToken);
-                if (user is null)
+                _logger.LogInformation("Attempting to soft delete a user with Id:{Id} at {Time}", userToSoftDelete.Id, DateTime.UtcNow);
+
+                // if entity was received from AsNoTracking() query, we need to manualy re attach it
+                if (_dbContext.Entry(userToSoftDelete).State == EntityState.Detached)
                 {
-                    _logger.LogError("No user with Id: {Id} at {Time}. Restore user aborted.", id, DateTime.UtcNow);
-                    return false;
+                    _dbContext.UserAccounts.Update(userToSoftDelete);
                 }
 
-                if (!user.IsDeleted)
-                {
-                    _logger.LogWarning("User with Id: {Id} is not soft deleted. No action taken at {Time}.", id, DateTime.UtcNow);
-                    return false;
-                }
-
-                user.RestoreUser();
                 var writeCount = await SaveChangesAsync(cancellationToken);
                 if (writeCount > 0)
                 {
-                    _logger.LogInformation("Successfully restored user with Id: {Id}, Email: {Email} at {Time}", id, user.Email, DateTime.UtcNow);
+                    _logger.LogInformation("Successfully soft deleted user with Id: {Id}, Email: {Email} at {Time}", userToSoftDelete.Id, userToSoftDelete.Email, DateTime.UtcNow);
                     return true;
                 }
 
-                _logger.LogWarning("Restoring User with Id: {Id}, Email: {Email} at {Time} did not affect any records.", id, user.Email, DateTime.UtcNow);
+                _logger.LogWarning("Soft deleting User with Id: {Id}, Email: {Email} at {Time} did not affect any records.", userToSoftDelete.Id, userToSoftDelete.Email, DateTime.UtcNow);
                 return false;
 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while restoring User with Id: {Id} at {Time}", id, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while soft deleting User with Id: {Id} at {Time}", userToSoftDelete.Id, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        // Undo soft delete / restore user
+        public async Task<bool> RestoreUserAsync(UserAccount userToRestore, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to restore a user with Id:{Id} at {Time}", userToRestore.Id, DateTime.UtcNow);
+                // if entity was received from AsNoTracking() query, we need to manualy re attach it
+                if (_dbContext.Entry(userToRestore).State == EntityState.Detached)
+                {
+                    _dbContext.UserAccounts.Update(userToRestore);
+                }
+
+                var writeCount = await SaveChangesAsync(cancellationToken);
+                if (writeCount > 0)
+                {
+                    _logger.LogInformation("Successfully restored user with Id: {Id}, Email: {Email} at {Time}", userToRestore.Id, userToRestore.Email, DateTime.UtcNow);
+                    return true;
+                }
+
+                _logger.LogWarning("Restoring User with Id: {Id}, Email: {Email} at {Time} did not affect any records.", userToRestore.Id, userToRestore.Email, DateTime.UtcNow);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while restoring User with Id: {Id} at {Time}", userToRestore.Id, DateTime.UtcNow);
                 throw;
             }
         }
@@ -251,17 +293,7 @@ namespace UserService.Repositories
             return writeCount;
         }
 
-        private void ApplyChanges(UserAccount existing, UserAccount updated)
-        {
-            if (!existing.Email.Equals(updated.Email, StringComparison.OrdinalIgnoreCase))
-                existing.UpdateEmail(updated.Email);
-
-            if (existing.Role != updated.Role)
-                existing.UpdateRole(updated.Role);
-
-            if (existing.DisplayName != updated.DisplayName)
-                existing.UpdateDisplayName(updated);
-        }
+       
 
         public async Task<PaginatedResult<UserAccount>> GetUserAccountsPaginatedAsync(GetUsersPaginatedQuery query, CancellationToken cancellationToken)
         {

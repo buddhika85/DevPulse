@@ -5,13 +5,13 @@ using UserService.Application.Dtos;
 
 namespace UserService.Application.Queries
 {
-    public record GetUsersPaginatedQuery(      
-        string? Email, 
-        string? DisplayName, 
+    public record GetUsersPaginatedQuery(
+        string? Email,
+        string? DisplayName,
         string? Role,
         int PageNumber,
         int PageSize,
-        UserSortField? SortBy, 
+        UserSortField? SortBy,
         bool SortDescending
         ) : IRequest<PaginatedResult<UserAccountDto>>
     {
