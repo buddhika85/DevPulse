@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
@@ -53,7 +54,8 @@ namespace TaskService.Controllers
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get task by ID", Description = "Returns a single task item by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskItemDto))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetById([FromRoute] Guid id, CancellationToken cancellationToken)
         {
@@ -84,6 +86,7 @@ namespace TaskService.Controllers
         [HttpGet("filter")]
         [SwaggerOperation(Summary = "Filter and paginate tasks", Description = "Returns a paginated list of tasks based on filter criteria.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PaginatedResult<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetPaginatedTasks(
             [FromQuery] Guid? guid,
@@ -97,7 +100,10 @@ namespace TaskService.Controllers
         )
         {
             _logger.LogInformation("Fetching paginated tasks at {Time} with filters: Title={Title}, Description={Description}, Status={Status}",
-                DateTime.UtcNow, title, description, status); 
+                DateTime.UtcNow, title, description, status);
+            _logger.LogInformation("Pagination: PageNumber={PageNumber}, PageSize={PageSize}, SortBy={SortBy}, Descending={SortDescending}",
+                pageNumber, pageSize, sortBy, sortDescending);
+
             try
             {
                
@@ -137,6 +143,7 @@ namespace TaskService.Controllers
         [HttpPost]
         [SwaggerOperation(Summary = "Create a new task", Description = "Creates a new task and returns its location.")]
         [SwaggerResponse(StatusCodes.Status201Created, "Task created")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Create([FromBody] CreateTaskDto dto, CancellationToken cancellationToken)
         {
@@ -177,11 +184,11 @@ namespace TaskService.Controllers
 
 
 
-        [HttpPut("{id:guid}")]
+        [HttpPatch("{id:guid}")]            // Partial update - so patch is used, for full updates [HTTPPut] needs to be used
         [SwaggerOperation(Summary = "Update an existing task", Description = "Updates a task by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Task updated")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateTaskDto dto, CancellationToken cancellationToken)
         {
@@ -222,7 +229,8 @@ namespace TaskService.Controllers
         [HttpDelete("{id:guid}")]
         [SwaggerOperation(Summary = "Delete a task", Description = "Deletes a task by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Task deleted")]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> Delete([FromRoute] Guid id, CancellationToken cancellationToken)
         {

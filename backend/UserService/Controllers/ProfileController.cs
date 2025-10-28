@@ -1,10 +1,14 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using UserService.Application.Commands;
+using UserService.Application.Common.Enums;
 using UserService.Application.Common.Exceptions;
+using UserService.Application.Common.Models;
 using UserService.Application.Dtos;
 using UserService.Application.Queries;
+using UserService.Domain.ValueObjects;
 
 namespace UserService.Controllers
 {
@@ -23,19 +27,38 @@ namespace UserService.Controllers
         }
 
         // Get By Id
-        [HttpGet("getById")]
-        public IActionResult GetProfile(Guid id)
+        [HttpGet("{id:guid}")]
+        [SwaggerOperation(Summary = "Get user by ID", Description = "Returns a single user by its unique identifier.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
         {
-            return Ok(id);
-            //try
-            //{
+            _logger.LogInformation("Fetching a user by ID: {Id} at {Time}", id, DateTime.UtcNow);
+            try
+            {
+                var query = new GetUserByIdQuery(id);
+                var dto = await _mediator.Send(query, cancellationToken);
+                if (dto is null)
+                {
+                    _logger.LogWarning("User not found for ID: {Id}", id);
+                    return NotFound();
+                }
 
-            //}
-            //catch (Exception ex)
-            //{
-
-            //    throw;
-            //}
+                _logger.LogInformation("User found for ID: {Id}", id);
+                return Ok(dto);
+            }
+            catch(RequestValidationException rex)
+            {
+                _logger.LogError(rex, "Validation failed while fetching a user by ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching a user ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving the user with Id: {id}");
+            }
         }
 
         // Get all
@@ -43,7 +66,7 @@ namespace UserService.Controllers
         [SwaggerOperation(Summary = "Get all users", Description = "Returns all the users")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
-        public async Task<IActionResult> GetAll([FromQuery] bool includeDeleted = false)
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
         {
             _logger.LogInformation("Fetching all users with include Deleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
             try
@@ -51,7 +74,7 @@ namespace UserService.Controllers
                 var query = new GetAllUsersQuery(includeDeleted);
                 _logger.LogDebug("Dispatching GetAllUsersQuery: {@Query}", query);
 
-                var users = await _mediator.Send(query);
+                var users = await _mediator.Send(query, cancellationToken);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -62,12 +85,193 @@ namespace UserService.Controllers
         }
 
         // Get all users by role
+        [HttpGet("by-role")]
+        [SwaggerOperation(Summary = "Get users by role", Description = "Returns users by their role.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]      
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetAllByRole(string role, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching users by role: {Role} at {Time}", role, DateTime.UtcNow);
+
+                var query = new GetAllUsersByRoleQuery(UserRole.From(role));
+                var dtos = await _mediator.Send(query, cancellationToken);
+                _logger.LogInformation("Fetched {Count} users by role: {Role} at {Time}", dtos.Count, role, DateTime.UtcNow);
+                
+                return Ok(dtos);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogError(rex, "Validation failed while fetching users by role: {Role} at {Time}", role, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching users with role: {Role} at {Time}", role, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving the users with role: {role}");
+            }
+        }
 
         // Get paginated result
+        [HttpGet("search")]
+        [SwaggerOperation(Summary = "Filter and paginate users", Description = "Returns a paginated list of users based on filter criteria.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PaginatedResult<UserAccountDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> SearchUsers(
+            [FromQuery] string? email,
+            [FromQuery] string? displayName, 
+            [FromQuery] string? role, 
+            [FromQuery] UserSortField? sortBy, 
+            [FromQuery] bool sortDescending, 
+            [FromQuery] int pageNumber = 1, 
+            [FromQuery] int pageSize = 5)
+        {
+            try
+            {
+                _logger.LogInformation("Searching for paginated users at {Time} with filters: Email={Email}, DisplayName={DisplayName}, Role={Role}",
+                                            DateTime.UtcNow, email, displayName, role);
+                _logger.LogInformation("Pagination: PageNumber={PageNumber}, PageSize={PageSize}, SortBy={SortBy}, Descending={SortDescending}",
+                    pageNumber, pageSize, sortBy, sortDescending);
 
-        // Update
+
+                var query = new GetUsersPaginatedQuery(email, displayName, role, pageNumber, pageSize, sortBy, sortDescending);
+                var pagedResult = await _mediator.Send(query, HttpContext.RequestAborted);
+                return Ok(pagedResult);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogError(rex, "Validation failed on searching for paginated users at {Time} with filters: Email={Email}, DisplayName={DisplayName}, Role={Role}",
+                                        DateTime.UtcNow, email, displayName, role);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error on searching for paginated users at {Time} with filters: Email={Email}, DisplayName={DisplayName}, Role={Role}",
+                                        DateTime.UtcNow, email, displayName, role);
+                return InternalError($"Error on searching for paginated users at {DateTime.UtcNow} with filters: Email={email}, DisplayName={displayName}, Role={role}");
+            }
+        }
+
+
+        // Partial update - so patch is used, for full updates [HTTPPut] needs to be used
+        [HttpPatch("update/{id:guid}")]
+        [SwaggerOperation(Summary = "Update an existing user", Description = "Updates a user by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "User updated")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> UpdateUser([FromRoute]Guid id, [FromBody]UpdateUserDto updateUserDto, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Updating user {Id} with Email={Email}, DisplayName={DisplayName}, Role={Role}",
+                                id, updateUserDto.Email, updateUserDto.DisplayName, updateUserDto.Role);
+                UserRole? role = null;
+                if (updateUserDto.Role is not null)
+                {
+                    role = UserRole.From(updateUserDto.Role);
+                    _logger.LogInformation("Updating user with id={Id}: role string:{RoleString} mapped to role: {Role} at {Time}", id, updateUserDto.Role, role, DateTime.UtcNow);
+                }
+
+                var command = new UpdateUserCommand(id, updateUserDto.Email, updateUserDto.DisplayName, role);
+                var result = await _mediator.Send(command, cancellationToken);
+                if (result)
+                {
+                    _logger.LogInformation("Successfully updated an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                    return NoContent();
+                }
+                
+
+                 _logger.LogError("User not found for update: {Id}", id);
+                return NotFoundProblem($"User not found for update: {id}");
+            }
+            catch(RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while updating an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating user with ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while updating the user with Id: {id}.");
+            }
+        }
 
         // Soft delete
+        [HttpPatch]             // not [HTTPDelete] as it is not a - permanent removal
+        [SwaggerOperation(Summary = "Soft deleting an existing user", Description = "Soft deletes a user by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "User soft deleted")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> SoftDeleteUser([FromRoute]Guid id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Soft deleting user with Id:{Id} at {Time}", id, DateTime.UtcNow);
+                var command = new DeleteUserCommand(id);
+                var result = await _mediator.Send(command, cancellationToken);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully soft deleted an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                    return NoContent();
+                }
+
+                _logger.LogError("User not found for soft deletion: {Id}", id);
+                return NotFoundProblem($"User not found for soft deletion: {id}");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while soft deleting an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error soft deleting user with ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while soft deleting the user with Id: {id}.");
+            }
+        }
+
+
+        // restore
+        [HttpPatch]
+        [SwaggerOperation(Summary = "Restoring an existing user", Description = "Restoring a soft deleted user by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "User restored")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> RestoreUser([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Restoring soft deleted user with Id:{Id} at {Time}", id, DateTime.UtcNow);
+                var command = new RestoreUserCommand(id);
+                var result = await _mediator.Send(command, cancellationToken);
+
+                if (result)
+                {
+                    _logger.LogInformation("Successfully restored an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                    return NoContent();
+                }
+
+                _logger.LogError("User not found for restoration: {Id}", id);
+                return NotFoundProblem($"User not found for restoration: {id}");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while restoring an existing User with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error restoring user with ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while restoring the user with Id: {id}.");
+            }
+        }
 
         [HttpPost]
         [SwaggerOperation(Summary = "Register a new user", Description = "Registers a new user and returns its location.")]
@@ -88,7 +292,7 @@ namespace UserService.Controllers
                     throw new Exception($"An error occurred while registering a user with email: {dto.Email} and display name: {dto.DisplayName}. Service returned null as Id.");
                 }
 
-                return CreatedAtAction(nameof(GetProfile), new { id },  null);
+                return CreatedAtAction(nameof(GetById), new { id },  null);
             }
             catch(RequestValidationException rex)
             {

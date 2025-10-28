@@ -15,7 +15,7 @@ namespace UserService.Application.Validators
 
             RuleFor(x => x.PageSize)
                 .LessThanOrEqualTo(100)
-                .WithMessage("Page size must not exceed 100.");
+                .WithMessage("Page size must not exceed 100.");             // prevent abuse with unusual inputs
 
             RuleFor(x => x.PageSize)
                 .GreaterThanOrEqualTo(2)
