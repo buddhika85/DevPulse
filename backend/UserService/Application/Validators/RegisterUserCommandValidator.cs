@@ -7,15 +7,13 @@ namespace UserService.Application.Validators
     {
         private static readonly string[] AllowedRoles = { "user", "manager", "admin" };
 
-
         public RegisterUserCommandValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty()
                 .EmailAddress()
                 .Matches(@"^[\w\.-]+@([\w-]+\.)+(com|net|org|edu)$")                            // regex
-                .WithMessage("Email must be a valid domain (e.g., .com, .net, .org)");
-            
+                .WithMessage("Email must be a valid domain (e.g., .com, .net, .org)");            
 
             RuleFor(x => x.DisplayName)
                 .NotEmpty()

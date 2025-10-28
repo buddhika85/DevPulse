@@ -8,7 +8,7 @@ using UserService.Application.Queries;
 using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
 using UserService.Infrastructure.Persistence;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 namespace UserService.Repositories
 {
     public class UserRepository : IUserRepository
