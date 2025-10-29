@@ -50,7 +50,7 @@ builder.Services.InjectRepositories(builder.Configuration);                 // i
 builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
-builder.Services.InjectAzureAdB2CAccessService(builder.Configuration);      // inject Azure AD B2C for JWT auth, author
+builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);      // inject Azure AD B2C for JWT auth, author
 
 
 var app = builder.Build();

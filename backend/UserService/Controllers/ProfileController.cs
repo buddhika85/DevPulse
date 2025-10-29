@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -201,7 +202,7 @@ namespace UserService.Controllers
         }
 
         // Soft delete
-        [HttpPatch]             // not [HTTPDelete] as it is not a - permanent removal
+        [HttpPatch("soft-delete/{id:guid}")]             // not [HTTPDelete] as it is not a - permanent removal
         [SwaggerOperation(Summary = "Soft deleting an existing user", Description = "Soft deletes a user by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "User soft deleted")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
@@ -238,7 +239,7 @@ namespace UserService.Controllers
 
 
         // restore
-        [HttpPatch]
+        [HttpPatch("restore/{id:guid}")]
         [SwaggerOperation(Summary = "Restoring an existing user", Description = "Restoring a soft deleted user by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "User restored")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
@@ -305,6 +306,19 @@ namespace UserService.Controllers
                 return InternalError($"An error occurred while registering a user with email: {dto.Email} and display name: {dto.DisplayName}");
             }
         }
+
+
+        // Secure Test End point to test Az Microsft Entral External ID
+        [Authorize(Policy = "ValidToken")]
+        [HttpGet("secure-ping")]
+        [SwaggerOperation(Summary = "JWT validation test", Description = "Returns success if JWT token is valid.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Token is valid")]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Missing or invalid token")]
+        public IActionResult SecurePing()
+        {
+            return Ok("Token is valid. Access granted.");
+        }
+
 
     }
 }
