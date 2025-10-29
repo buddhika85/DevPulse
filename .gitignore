@@ -491,3 +491,7 @@ frontend/dist/
 # DevPulse architecture docs
 docs/*.drawio
 docs/*.vsdx
+
+
+# Local development config from all services
+**/appsettings.Development.json
