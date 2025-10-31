@@ -33,6 +33,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(), // required by Cosmos DB
                     eventType = "UserCreated",
                     userId = user.Id,
                     email = user.Email,
@@ -62,6 +63,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserDisplayNameChanged",
                     userId = notification.UpdatedAccount.Id,
                     email = notification.UpdatedAccount.Email,
@@ -102,6 +104,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserUpdated",
                     userId = notification.UpdatedUserAccount.Id,
                     email = notification.UpdatedUserAccount.Email,
@@ -142,6 +145,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserLoggedIn",
                     userId = notification.UserAccount.Id,
                     email = notification.UserAccount.Email,
@@ -176,6 +180,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserEmailChanged",
                     userId = notification.UserAccount.Id,
                     previousEmail = notification.PreviousEmail,
@@ -209,6 +214,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserLoggedOut",
                     userId = notification.UserAccount.Id,
                     email = notification.UserAccount.Email,
@@ -243,6 +249,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserRestored",
                     userId = notification.RestoredUserAccount.Id,
                     email = notification.RestoredUserAccount.Email,
@@ -276,6 +283,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserRoleChanged",
                     userId = notification.UserAccount.Id,
                     previousRole = notification.PreviousRole,
@@ -309,6 +317,7 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
             {
                 var evt = new
                 {
+                    id = Guid.NewGuid().ToString(),
                     eventType = "UserSoftDeleted",
                     userId = notification.UserAccountDeleted.Id,
                     email = notification.UserAccountDeleted.Email,

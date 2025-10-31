@@ -212,7 +212,7 @@ namespace UserService.Services
         {
             var timestamp = DateTime.UtcNow;
 
-            if (!existing.Email.Equals(updateCommand.Email, StringComparison.OrdinalIgnoreCase))
+            if (updateCommand.Email is not null && !existing.Email.Equals(updateCommand.Email, StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogInformation("Updating Email for user Id: {Id} from '{OldEmail}' to '{NewEmail}' at {Time}",
                     existing.Id, existing.Email, updateCommand.Email, timestamp);
@@ -220,7 +220,7 @@ namespace UserService.Services
                 existing.UpdateEmail(updateCommand.Email);
             }
 
-            if (existing.Role != updateCommand.Role)
+            if (updateCommand.Role is not null && existing.Role != updateCommand.Role)
             {
                 _logger.LogInformation("Updating Role for user Id: {Id} from '{OldRole}' to '{NewRole}' at {Time}",
                     existing.Id, existing.Role, updateCommand.Role, timestamp);
@@ -228,7 +228,7 @@ namespace UserService.Services
                 existing.UpdateRole(updateCommand.Role);
             }
 
-            if (existing.DisplayName != updateCommand.DisplayName)
+            if (updateCommand.DisplayName is not null && existing.DisplayName != updateCommand.DisplayName)
             {
                 _logger.LogInformation("Updating DisplayName for user Id: {Id} from '{OldDisplayName}' to '{NewDisplayName}' at {Time}",
                     existing.Id, existing.DisplayName, updateCommand.DisplayName, timestamp);

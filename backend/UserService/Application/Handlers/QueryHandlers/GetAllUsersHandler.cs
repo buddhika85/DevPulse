@@ -3,6 +3,7 @@ using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Services;
 
+
 namespace UserService.Application.Handlers.QueryHandlers
 {
     public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, IReadOnlyList<UserAccountDto>>
