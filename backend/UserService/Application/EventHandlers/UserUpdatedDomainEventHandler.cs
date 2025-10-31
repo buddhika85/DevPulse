@@ -1,22 +1,32 @@
 ﻿using MediatR;
 using UserService.Domain.Events;
+using UserService.Infrastructure.Persistence.ComosEvents;
 
 namespace UserService.Application.EventHandlers
 {
     public class UserUpdatedDomainEventHandler : INotificationHandler<UserUpdatedDomainEvent>
     {
         private readonly ILogger<UserUpdatedDomainEvent> _logger;
-
-        public UserUpdatedDomainEventHandler(ILogger<UserUpdatedDomainEvent> logger)
+        private readonly UserCosmosEventService _userCosmosEventService;
+        public UserUpdatedDomainEventHandler(ILogger<UserUpdatedDomainEvent> logger, UserCosmosEventService userCosmosEventService)
         {
             _logger = logger;
+            _userCosmosEventService = userCosmosEventService;
         }
-        public Task Handle(UserUpdatedDomainEvent notification, CancellationToken cancellationToken)
+
+        public async Task Handle(UserUpdatedDomainEvent notification, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("UserUpdatedDomainEvent handled: Email='{Email}', Display Name={DisplayName}, Timestamp={Time}",
+            try
+            {
+                _logger.LogInformation("UserUpdatedDomainEvent handled: Email='{Email}', Display Name={DisplayName}, Timestamp={Time}",
                 notification.UpdatedUserAccount.Email, notification.UpdatedUserAccount.DisplayName, DateTime.UtcNow);
 
-            return Task.CompletedTask;
+                await _userCosmosEventService.LogUserUpdatedAsync(notification);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }

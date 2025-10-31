@@ -34,7 +34,7 @@ namespace UserService.Domain.Entities
         {
             var oldName = DisplayName;
             DisplayName = displayName;
-            DomainEvents.Add(new UserDisplaNameChangedDomainEvent(this, oldName, displayName));
+            DomainEvents.Add(new UserDisplayNameChangedDomainEvent(this, oldName, displayName));
         }
 
         public void UpdateEmail(string email)
