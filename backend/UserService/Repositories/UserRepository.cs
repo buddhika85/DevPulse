@@ -285,12 +285,20 @@ namespace UserService.Repositories
 
         private async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
         {
-            var writeCount = await _dbContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                var writeCount = await _dbContext.SaveChangesAsync(cancellationToken);
 
-            // Dispatches all domain events raised by tracked entities
-            // Happens after the database commit, ensuring events only fire if persistence succeeds
-            await _mediator.DispatchDomainEventsAsync(_dbContext);
-            return writeCount;
+                // Dispatches all domain events raised by tracked entities
+                // Happens after the database commit, ensuring events only fire if persistence succeeds
+                await _mediator.DispatchDomainEventsAsync(_dbContext, _logger);
+                return writeCount;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during SaveChangesAsync or domain event dispatch.");
+                throw;
+            }
         }
 
        

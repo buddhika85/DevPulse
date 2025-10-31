@@ -50,7 +50,8 @@ builder.Services.InjectRepositories(builder.Configuration);                 // i
 builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
 
-builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);      // inject Azure AD B2C for JWT auth, author
+builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);         // inject Azure Microsoft Entra External Id for JWT auth, author
+builder.Services.InjectCosmosDbServices();                                          // inject services which logs to Azure Cosmos DB 
 
 
 var app = builder.Build();

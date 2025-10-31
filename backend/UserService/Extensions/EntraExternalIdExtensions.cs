@@ -56,5 +56,4 @@ namespace UserService.Extensions
             return services;
         }
     }
-
 }
