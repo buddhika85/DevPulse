@@ -6,10 +6,10 @@ namespace UserService.Application.Handlers.CommandHandlers
 {
     public class DeleteUserCommandHandler : IRequestHandler<DeleteUserCommand, bool>
     {
-        private readonly Logger<DeleteUserCommand> _logger;
+        private readonly ILogger<DeleteUserCommandHandler> _logger;
         private readonly IUserService _userService;
 
-        public DeleteUserCommandHandler(Logger<DeleteUserCommand> logger, IUserService userService)
+        public DeleteUserCommandHandler(ILogger<DeleteUserCommandHandler> logger, IUserService userService)
         {
             _logger = logger;
             _userService = userService;

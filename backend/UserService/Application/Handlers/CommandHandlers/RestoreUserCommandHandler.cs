@@ -6,10 +6,10 @@ namespace UserService.Application.Handlers.CommandHandlers
 {
     public class RestoreUserCommandHandler : IRequestHandler<RestoreUserCommand, bool>
     {
-        private readonly Logger<RestoreUserCommandHandler> _logger;
+        private readonly ILogger<RestoreUserCommandHandler> _logger;
         private readonly IUserService _userService;
 
-        public RestoreUserCommandHandler(Logger<RestoreUserCommandHandler> logger, IUserService userService)
+        public RestoreUserCommandHandler(ILogger<RestoreUserCommandHandler> logger, IUserService userService)
         {
             _logger = logger;
             _userService = userService;

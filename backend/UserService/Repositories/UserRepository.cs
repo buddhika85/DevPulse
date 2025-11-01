@@ -166,7 +166,7 @@ namespace UserService.Repositories
                     _dbContext.UserAccounts.Update(updated);
                 }
 
-                var writeCount = await _dbContext.SaveChangesAsync(cancellationToken);
+                var writeCount = await SaveChangesAsync(cancellationToken);
                 if (writeCount > 0)
                 {
                     _logger.LogInformation("Successfully persisted user with Id: {Id}, Email: {Email} at {Time}", updated.Id, updated.Email, DateTime.UtcNow);
