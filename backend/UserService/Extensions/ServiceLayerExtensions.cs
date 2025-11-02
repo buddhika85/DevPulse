@@ -1,4 +1,5 @@
-﻿using UserService.Services;
+﻿using UserService.Infrastructure.Identity;
+using UserService.Services;
 
 
 namespace UserService.Extensions
@@ -15,6 +16,11 @@ namespace UserService.Extensions
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {            
             services.AddScoped<IUserService, Services.UserService>();
+
+
+            // External API calls with resilience and reuse - To Micro Az Entra Extrenal ID for token related workflows
+            services.AddHttpClient<IExternalIdentityProvider, EntraIdentityProvider>();
+
             return services;
         }
     }

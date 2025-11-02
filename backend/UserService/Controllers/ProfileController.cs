@@ -319,6 +319,50 @@ namespace UserService.Controllers
             return Ok("Token is valid. Access granted.");
         }
 
+        [Authorize(Policy = "ValidToken")]
+        [HttpGet("me")]
+        [SwaggerOperation(Summary = "Get current user", Description = "Returns the profile of the authenticated user by talking with Microsoft Entra External ID.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
+        [SwaggerResponse(StatusCodes.Status401Unauthorized, "Missing or invalid token")]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error")]
+        public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
+        {
+            var objectId = User.FindFirst("oid")?.Value;
 
+            if (string.IsNullOrEmpty(objectId))
+            {
+                _logger.LogWarning("Missing 'oid' claim in token.");
+                return Unauthorized("Missing user identifier.");
+            }
+
+            _logger.LogInformation("Initiating fetch for current user with OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+
+            try
+            {
+                var query = new GetUserByObjectIdQuery(objectId);
+                _logger.LogDebug("Dispatching GetUserByObjectIdQuery: {@Query}", query);
+
+                var dto = await _mediator.Send(query, cancellationToken);
+
+                if (dto is null)
+                {
+                    _logger.LogWarning("User not found for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+                    return NotFound();
+                }
+
+                _logger.LogInformation("Successfully retrieved user profile for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+                return Ok(dto);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while fetching user profile for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while fetching user profile for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving the user profile for OID: {objectId}");
+            }
+        }
     }
 }

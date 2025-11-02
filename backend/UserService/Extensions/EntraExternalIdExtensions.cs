@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 
 namespace UserService.Extensions
