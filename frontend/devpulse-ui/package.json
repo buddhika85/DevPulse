@@ -20,14 +20,14 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/cdk": "^20.2.11",
     "@angular/common": "^20.1.0",
     "@angular/compiler": "^20.1.0",
     "@angular/core": "^20.1.0",
     "@angular/forms": "^20.1.0",
-    "@angular/material": "^20.2.11",
     "@angular/platform-browser": "^20.1.0",
     "@angular/router": "^20.1.0",
+    "@azure/msal-angular": "^4.0.21",
+    "@azure/msal-browser": "^4.26.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

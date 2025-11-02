@@ -1,31 +1,22 @@
 import { Routes } from '@angular/router';
+import { Shell } from './layout/shell/shell'; // ✅ Layout wrapper for all child routes
 
-// Define the application's route configuration
+// ✅ Define the main route configuration for DevPulse
 export const routes: Routes = [
   {
-    path: '', // Root path of the app
-    loadComponent: () => import('./layout/layout').then((m) => m.Layout), // Load shell layout component
+    path: '', // ✅ Root path of the app (e.g., http://localhost:4200/)
+    component: Shell, // ✅ Shell component acts as layout (e.g., toolbar, sidenav)
+
+    // ✅ Child routes rendered inside <router-outlet> of Shell
     children: [
-      // Nested routes rendered inside the layout
       {
-        path: 'profile', // URL: /profile
+        path: '', // ✅ Default child route (e.g., dashboard)
         loadComponent: () =>
-          import('./features/user-profile/user-profile').then(
-            (m) => m.UserProfile // Lazy-load UserProfile component
-          ),
-      },
-      {
-        path: 'admin', // URL: /admin
-        loadComponent: () =>
-          import('./features/admin-dashboard/admin-dashboard').then(
-            (m) => m.AdminDashboard // Lazy-load AdminDashboard component
-          ),
-      },
-      {
-        path: '', // Empty child path
-        redirectTo: 'profile', // Redirect to /profile by default
-        pathMatch: 'full', // Match full path to trigger redirect
+          import('./features/dashboard/dashboard').then((m) => m.Dashboard), // ✅ Lazy-load standalone Dashboard component
       },
     ],
   },
+
+  // ✅ Wildcard route: redirect unknown paths to root
+  { path: '**', redirectTo: '' },
 ];
