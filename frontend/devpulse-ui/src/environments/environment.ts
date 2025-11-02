@@ -1,10 +1,12 @@
-export const environment = {
+import { MsalConfig } from '../app/core/models/msal-config';
+
+export const environment: { production: boolean; msal: MsalConfig } = {
   production: true,
   msal: {
     clientId: '',
     tenantId: '',
     redirectUri: '',
-    apiScope: '',
+    apiScope: '', // ✅ This must match exactly what you configured in Expose an API → Scopes in the Azure portal for your backend app registration.
 
     // ✅ Define scopes and URLs for each microservice
     protectedResources: {

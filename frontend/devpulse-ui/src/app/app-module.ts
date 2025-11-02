@@ -18,7 +18,7 @@ import { PublicClientApplication, InteractionType } from '@azure/msal-browser';
 // Root component and layout shell
 import { App } from './app';
 import { routes } from './app.routes';
-import { environment } from '../environments/environment.development';
+import { environment } from '../environments/environment';
 
 @NgModule({
   // ✅ Import core Angular modules and configure routing

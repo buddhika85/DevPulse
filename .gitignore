@@ -495,3 +495,7 @@ docs/*.vsdx
 
 # Local development config from all services
 **/appsettings.Development.json
+
+
+# Ignore local dev environment
+**/environment.dev.ts
