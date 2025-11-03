@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using UserService.Configuration;
 
 namespace UserService.Extensions
 {
@@ -16,6 +17,8 @@ namespace UserService.Extensions
         {
             // Retrieves the bound EntraExternalIdSettings object directly from configuration.
             var entraSettingsSection = configuration.GetSection("EntraExternalIdSettings");
+            
+
 
             // Defensive check: ensures the section exists and is properly bound.
             // If null: fails fast during startup.
@@ -23,6 +26,8 @@ namespace UserService.Extensions
                 throw new InvalidOperationException("EntraExternalIdSettings section is missing or invalid.");
 
             var audiences = entraSettingsSection.GetSection("Audiences").Get<string[]>();
+
+            
 
             // Register Az Microsoft Entra External Id Access service           
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -48,11 +53,29 @@ namespace UserService.Extensions
                 {
                     // This ensures that any token with a valid signature and lifetime is accepted — even if it lacks scope or roles.
                     policy.RequireAuthenticatedUser();
+                    policy.RequireClaim("http://schemas.microsoft.com/identity/claims/objectidentifier");
                 });
             });
 
 
             return services;
         }
+
+        /// <summary>
+        /// Binds EntraExternalIdSettings from configuration using the Options pattern.
+        /// This makes the settings injectable via IOptions<EntraExternalIdSettings>.
+        /// </summary>
+        /// <param name="services">The service collection</param>
+        /// <param name="configuration">The app configuration</param>
+        /// <returns>The updated service collection</returns>
+        public static IServiceCollection BindEntraExternalIdSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            // ✅ Bind the "EntraExternalIdSettings" section to a strongly-typed class
+            services.Configure<EntraExternalIdSettings>(
+                configuration.GetSection("EntraExternalIdSettings"));
+
+            return services;
+        }
+
     }
 }

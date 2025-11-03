@@ -27,6 +27,11 @@ export class AuthService {
     return this.msal.instance.getActiveAccount();
   }
 
+  // ✅ getAllAccounts() returns an array of signed-in accounts - as per local browser state
+  isLoggedIn(): boolean {
+    return this.msal.instance.getAllAccounts().length > 0;
+  }
+
   // ✅ Get access token for a specific API
   async getAccessToken(resourceUrl: string): Promise<string | null> {
     const scopes = this.getScopesForResource(resourceUrl);

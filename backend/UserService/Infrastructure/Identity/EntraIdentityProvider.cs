@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
 using UserService.Application.Dtos;
 
 namespace UserService.Infrastructure.Identity
@@ -7,49 +8,55 @@ namespace UserService.Infrastructure.Identity
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<EntraIdentityProvider> _logger;
+        private readonly GraphTokenService _graphTokenService;
 
-        public EntraIdentityProvider(HttpClient httpClient, ILogger<EntraIdentityProvider> logger)
+        public EntraIdentityProvider(HttpClient httpClient, ILogger<EntraIdentityProvider> logger, GraphTokenService graphTokenService)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _graphTokenService = graphTokenService;
         }
 
-
-       
         public async Task<UserAccountDto?> GetUserByObjectIdAsync(string objectId, CancellationToken cancellationToken)
         {
             // 🔐 Construct the Microsoft Graph URL using the user's Object ID
-            // 🔐 Replace with actual call to Microsoft Graph or Entra External ID
             var url = $"https://graph.microsoft.com/v1.0/users/{objectId}";
 
             try
             {
-                // 🌐 Make an HTTP GET request to Microsoft Graph
-                var response = await _httpClient.GetAsync(url, cancellationToken);
-
-                // ❌ If the response is not successful (e.g., 404, 401), log and return null
-                if (!response.IsSuccessStatusCode)
+                // 🧪 Step 1: Request token from Microsoft Identity Platform
+                var token = await _graphTokenService.GetAccessTokenAsync(cancellationToken);
+                if (string.IsNullOrWhiteSpace(token))
                 {
-                    _logger.LogWarning("Failed to fetch user from Entra. Status: {Status}", response.StatusCode);
+                    _logger.LogWarning("Failed to acquire Graph token from GraphTokenService.");
                     return null;
                 }
 
-                // 📦 Read the response body as JSON
-                var json = await response.Content.ReadAsStringAsync(cancellationToken);
+                // 🧵 Step 2: Attach token to HttpClient for Graph call
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                // 🔄 Deserialize the JSON into your DTO, ignoring case differences
+                // 🌐 Step 3: Call Microsoft Graph to fetch user profile
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Failed to fetch user from Graph. Status: {Status}", response.StatusCode);
+                    return null;
+                }
+
+                // 🔄 Step 4: Deserialize response into DTO
+                var json = await response.Content.ReadAsStringAsync(cancellationToken);
                 var dto = JsonSerializer.Deserialize<UserAccountDto>(json, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
 
-                // ✅ Return the user profile
+                // ✅ Step 5: Return the user profile
                 return dto;
             }
             catch (Exception ex)
             {
                 // 🧨 Log any unexpected errors and return null
-                _logger.LogError(ex, "Error fetching user from Entra for ObjectId: {ObjectId}", objectId);
+                _logger.LogError(ex, "Error fetching user from Graph for ObjectId: {ObjectId}", objectId);
                 return null;
             }
         }

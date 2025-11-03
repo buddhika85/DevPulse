@@ -319,7 +319,8 @@ namespace UserService.Controllers
             return Ok("Token is valid. Access granted.");
         }
 
-        [Authorize(Policy = "ValidToken")]
+        //[Authorize(Policy = "ValidToken")]
+        [Authorize]
         [HttpGet("me")]
         [SwaggerOperation(Summary = "Get current user", Description = "Returns the profile of the authenticated user by talking with Microsoft Entra External ID.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
@@ -327,7 +328,14 @@ namespace UserService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error")]
         public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
-            var objectId = User.FindFirst("oid")?.Value;
+            foreach (var claim in User.Claims)
+            {
+                _logger.LogInformation($"Claim: {claim.Type} = {claim.Value}");
+                Console.WriteLine($"--> Claim: {claim.Type} = {claim.Value}");
+            }
+
+
+            var objectId = User.FindFirst("oid")?.Value ?? User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
 
             if (string.IsNullOrEmpty(objectId))
             {

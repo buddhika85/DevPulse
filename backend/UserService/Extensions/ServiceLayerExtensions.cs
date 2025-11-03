@@ -18,8 +18,11 @@ namespace UserService.Extensions
             services.AddScoped<IUserService, Services.UserService>();
 
 
-            // External API calls with resilience and reuse - To Micro Az Entra Extrenal ID for token related workflows
+            // External API calls with resilience and reuse (its transient) - To Micro Az Entra Extrenal ID for token related workflows
             services.AddHttpClient<IExternalIdentityProvider, EntraIdentityProvider>();
+
+            // transient Http Client with GraphTokenService
+            services.AddHttpClient<GraphTokenService>();
 
             return services;
         }

@@ -1,0 +1,21 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  background: #1e1e2f;
+  color: white;
+  height: 64px;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user-info {
+  margin-right: 1rem;
+}

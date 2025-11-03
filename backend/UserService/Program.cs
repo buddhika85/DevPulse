@@ -2,6 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
+using System.IdentityModel.Tokens.Jwt;
 using UserService.Application.Common.Behaviors;
 using UserService.Application.Validators;
 using UserService.Extensions;
@@ -13,6 +14,9 @@ using UserService.Infrastructure.Persistence;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// This disables ASP.NET Core’s automatic remapping of claims like oid, sub, email, etc., to legacy .NET types.
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
@@ -48,6 +52,9 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBeh
 builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
 builder.Services.InjectServices(builder.Configuration);                     // inject Services
+
+
+builder.Services.BindEntraExternalIdSettings(builder.Configuration);                // Binds EntraExternalIdSettings from configuration using the Options pattern.
 
 
 builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);         // inject Azure Microsoft Entra External Id for JWT auth, author

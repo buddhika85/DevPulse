@@ -1,1 +1,24 @@
-<p>shell works!</p>
+<!-- src/app/shell/shell.component.html -->
+<header class="toolbar">
+  <span class="logo">DevPulse</span>
+
+  <div class="spacer"></div>
+
+  @if (isLoading) {
+  <mat-progress-spinner
+    diameter="24"
+    mode="indeterminate"
+  ></mat-progress-spinner>
+  } @else { #authBlock }
+
+  <ng-template #authBlock>
+    @if (user) {
+    <span class="user-info">👤 {{ userDto?.displayName }}</span>
+    <button mat-button color="warn" (click)="logout()">Logout</button>
+    } @else {
+    <button mat-raised-button color="primary" (click)="login()">Login</button>
+    }
+  </ng-template>
+</header>
+
+<router-outlet></router-outlet>
