@@ -7,6 +7,8 @@ export const environment: { production: boolean; msal: MsalConfig } = {
     tenantId: '',
     redirectUri: '',
     apiScope: '', // ✅ This must match exactly what you configured in Expose an API → Scopes in the Azure portal for your backend app registration.
+    authority:
+      'https://login.microsoftonline.com/6d90d58a-c9e3-4438-98a6-99ef5c8fc64b/v2.0',
 
     // ✅ Define scopes and URLs for each microservice
     protectedResources: {

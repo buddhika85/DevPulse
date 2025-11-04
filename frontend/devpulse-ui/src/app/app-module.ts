@@ -20,10 +20,19 @@ import { App } from './app';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
 
+import { APP_INITIALIZER } from '@angular/core';
+import { initializeMsal } from './msal-initializer';
+
 @NgModule({
+  declarations: [
+    App, // ✅ Declare the root component here
+  ],
+
   // ✅ Import core Angular modules and configure routing
   imports: [
     BrowserModule,
+
+    RouterModule,
 
     // ✅ Define app routes with lazy-loaded standalone components
     RouterModule.forRoot(routes),
@@ -33,7 +42,7 @@ import { environment } from '../environments/environment';
       new PublicClientApplication({
         auth: {
           clientId: environment.msal.clientId, // Replace with actual client ID
-          authority: `https://login.microsoftonline.com/${environment.msal.tenantId}`, // Replace with tenant
+          authority: environment.msal.authority,
           redirectUri: environment.msal.redirectUri, // Local dev redirect
         },
         cache: {
@@ -94,6 +103,13 @@ import { environment } from '../environments/environment';
     MsalService, // Core MSAL service
     MsalGuard, // Route protection
     provideHttpClient(withInterceptorsFromDi()), // Angular 20+ HttpClient setup
+
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeMsal,
+      deps: [MsalService],
+      multi: true,
+    },
   ],
 
   // ✅ Bootstrap the root component (must be non-standalone)

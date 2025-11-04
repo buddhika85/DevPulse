@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { AccountInfo } from '@azure/msal-browser';
 import { CommonModule } from '@angular/common';
 import { UserAccountDto, UserApiService } from '../../core/services/user-api';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-shell',
@@ -15,30 +16,28 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './shell.scss',
 })
 export class Shell implements OnInit {
-  user: AccountInfo | null = null; // Entra External Id user
-  userDto: UserAccountDto | null = null;
-  isLoading = false;
+  user = signal<AccountInfo | null>(null); // Entra External Id user
+  userDto = signal<UserAccountDto | null>(null);
+  isLoading = signal(false);
 
   constructor(
     private authService: AuthService,
-    private userApi: UserApiService
+    private userApi: UserApiService,
+    private msal: MsalService
   ) {}
 
+  // ✅ Called on app load or after redirect login
   ngOnInit(): void {
-    if (this.authService.isLoggedIn()) {
-      this.isLoading = true;
-      this.user = this.authService.getUser();
-      this.userApi.getUserProfile().subscribe({
-        next: (profile) => {
-          this.userDto = profile;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('Failed to load user profile', err);
-          this.isLoading = false;
-        },
-      });
-    }
+    debugger;
+    this.msal.instance.handleRedirectPromise().then((result) => {
+      // Make sure MSAL finishes processing the redirect
+      if (result) {
+        this.msal.instance.setActiveAccount(result.account);
+      }
+
+      // ✅ Now it's safe to check login state and load user
+      this.getUserDetails();
+    });
   }
 
   login(): void {
@@ -47,5 +46,28 @@ export class Shell implements OnInit {
 
   logout(): void {
     this.authService.logout();
+    this.user.set(null);
+    this.userDto.set(null);
+  }
+
+  private getUserDetails() {
+    if (this.authService.isLoggedIn()) {
+      this.isLoading.set(true);
+
+      // set active user received from Entra ID
+      this.user.set(this.authService.getUser());
+
+      // getting backend user meta data
+      this.userApi.getUserProfile().subscribe({
+        next: (profile) => {
+          this.userDto.set(profile);
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to load user profile', err);
+          this.isLoading.set(false);
+        },
+      });
+    }
   }
 }

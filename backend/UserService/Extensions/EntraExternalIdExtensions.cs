@@ -33,14 +33,26 @@ namespace UserService.Extensions
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
-                    options.Authority = $"{entraSettingsSection["Instance"]}{entraSettingsSection["TenantId"]}/v2.0";
+                    var tenantId = entraSettingsSection["TenantId"];
+                    var instance = entraSettingsSection["Instance"];
+
+
+                    options.Authority = $"{instance}{tenantId}/v2.0";
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidAudiences = audiences,
                         ValidateAudience = true,
                         ValidateIssuer = true,
                         ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true
+                        ValidateIssuerSigningKey = true,
+                        NameClaimType = "name",
+
+                        // ✅ Accept both v1 and v2 issuers
+                        ValidIssuers =
+                        [
+                            $"https://login.microsoftonline.com/{tenantId}/v2.0",           // v2 
+                            $"https://sts.windows.net/{tenantId}/"                          // v1 
+                        ]
                     };
                 });
 

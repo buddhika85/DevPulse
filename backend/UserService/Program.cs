@@ -18,6 +18,9 @@ var builder = WebApplication.CreateBuilder(args);
 // This disables ASP.NET Core’s automatic remapping of claims like oid, sub, email, etc., to legacy .NET types.
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
+
+
 
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
@@ -86,6 +89,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS
+
+app.UseRouting();
+
+app.UseConfiguredCors();                                                    // using CORS configurations with CORS middleware
 
 app.UseAuthentication();
 app.UseAuthorization();

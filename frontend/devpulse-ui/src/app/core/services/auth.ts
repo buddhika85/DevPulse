@@ -12,7 +12,9 @@ export class AuthService {
 
   // ✅ Trigger login using redirect
   login(): void {
-    this.msal.loginRedirect();
+    this.msal.loginRedirect({
+      scopes: environment.msal.protectedResources.userApi.scopes,
+    });
   }
 
   // ✅ Trigger logout and redirect to home
@@ -24,7 +26,7 @@ export class AuthService {
 
   // ✅ Get active user account info
   getUser(): AccountInfo | null {
-    return this.msal.instance.getActiveAccount();
+    return this.msal.instance.getActiveAccount() ?? null;
   }
 
   // ✅ getAllAccounts() returns an array of signed-in accounts - as per local browser state

@@ -26,6 +26,7 @@
     "@angular/forms": "^20.1.0",
     "@angular/material": "^20.2.11",
     "@angular/platform-browser": "^20.1.0",
+    "@angular/platform-browser-dynamic": "^20.3.9",
     "@angular/router": "^20.1.0",
     "@azure/msal-angular": "^4.0.21",
     "@azure/msal-browser": "^4.26.0",

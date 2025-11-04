@@ -16,5 +16,6 @@ export interface MsalConfig {
   tenantId: string;
   redirectUri: string;
   apiScope: string;
+  authority: string;
   protectedResources: Record<ResourceKey, ProtectedResource>;
 }
