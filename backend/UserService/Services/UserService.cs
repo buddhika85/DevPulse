@@ -4,7 +4,10 @@ using UserService.Application.Common.Models;
 using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
+using UserService.Domain.ValueObjects;
+using UserService.Infrastructure.Identity;
 using UserService.Repositories;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace UserService.Services
 {
@@ -12,11 +15,13 @@ namespace UserService.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ILogger<UserService> _logger;
+        private readonly IExternalIdentityProvider _identityProvider;               // communicates with Micro Az Entra External ID
 
-        public UserService(IUserRepository userRepository, ILogger<UserService> logger)
+        public UserService(IUserRepository userRepository, ILogger<UserService> logger, IExternalIdentityProvider identityProvider)
         {
             _userRepository = userRepository;
             _logger = logger;
+            _identityProvider = identityProvider;
         }
 
         
@@ -312,5 +317,66 @@ namespace UserService.Services
             }
         }
 
+        /// <summary>
+        /// From a given object id (of entra maintaining guid),
+        /// Trying to resolve - find user in DB and return
+        /// OR 
+        /// Trying to create - Get more user info from Entra and create a new user and return
+        /// </summary>
+        /// <param name="objectId">entra maintaining guid</param>
+        /// <param name="cancellationToken">for termination</param>
+        /// <returns></returns>
+        public async Task<UserAccountDto?> ResolveOrCreateAsync(string objectId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to Resolve Or CreateAsync a user with object id: {ObjectId} at {Time}", objectId, DateTime.UtcNow);
+            if (!Guid.TryParse(objectId, out _))
+            {
+                _logger.LogWarning("Invalid objectId format: {ObjectId}", objectId);
+                return null;
+            }
+
+
+            try
+            {
+                // Trying to resolve - find user in DB and return
+                var entity = await _userRepository.GetByIdAsync(new Guid(objectId), cancellationToken);
+                if (entity is not null)
+                {
+                    _logger.LogInformation("For object id: {ObjectId} - successfully retrieved an existing user with email '{Email}' with Id: {Id} at {Time} from UserAccounts table", objectId, entity.Email, entity.Id, DateTime.UtcNow);
+                    var dto = UserAccountMapper.ToDto(entity);
+                    return dto;
+                }
+
+                _logger.LogInformation("No existing user with object id: {Id} at {Time} in UserAccounts table, next checking entra to make sure", objectId, DateTime.UtcNow);
+                var entraUser = await _identityProvider.GetUserByObjectIdAsync(objectId, cancellationToken);
+                if (entraUser is null)
+                {
+                    _logger.LogError("No existing user with object id: {Id} at {Time} in Entra also, possibly a malicious request. retuning null.", objectId, DateTime.UtcNow);
+                    return null;
+                }
+
+                // Trying to create - Get more user info from Entra and create a new user and return
+                _logger.LogInformation("Fetched user from Entra for object id: {ObjectId}. Creating new user with email '{Email}' and display name '{DisplayName}' at {Time} in SQL UserAccounts table.",
+                                objectId, entraUser.Email, entraUser.DisplayName, DateTime.UtcNow);
+
+                var userAccount = UserAccount.Create(entraUser.Email, entraUser.DisplayName, entraUser.UserRole, objectId);
+
+                var result = await _userRepository.AddAsync(userAccount, cancellationToken);
+
+                if (result is not null)
+                {
+                    _logger.LogInformation("User account created successfully with object id: {ObjectID} email: {Email}, display name: {DisplayName} at {Time}", userAccount.Id, userAccount.Email, userAccount.DisplayName, DateTime.UtcNow);
+                    return UserAccountMapper.ToDto(userAccount);
+                }
+
+                _logger.LogWarning("User account creation failed for object id: {ObjectID} email: {Email}, display name: {DisplayName} at {Time}", userAccount.Id, userAccount.Email, userAccount.DisplayName, DateTime.UtcNow);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while resolving or creating a user account with object id: {ObjectID} at {Time}", objectId, DateTime.UtcNow);
+                throw;
+            }
+        }
     }
 }

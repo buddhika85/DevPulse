@@ -3,9 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { AccountInfo } from '@azure/msal-browser';
 import { CommonModule } from '@angular/common';
-import { UserAccountDto, UserApiService } from '../../core/services/user-api';
+import { UserApiService } from '../../core/services/user-api';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MsalService } from '@azure/msal-angular';
+import { UserAccountDto } from '../../core/models/user-account.dto';
+import { UserStoreService } from '../../core/services/user-store.service';
 
 @Component({
   selector: 'app-shell',
@@ -21,6 +23,7 @@ export class Shell implements OnInit {
   isLoading = signal(false);
 
   constructor(
+    private userStoreService: UserStoreService,
     private authService: AuthService,
     private userApi: UserApiService,
     private msal: MsalService
@@ -28,7 +31,6 @@ export class Shell implements OnInit {
 
   // ✅ Called on app load or after redirect login
   ngOnInit(): void {
-    debugger;
     this.msal.instance.handleRedirectPromise().then((result) => {
       // Make sure MSAL finishes processing the redirect
       if (result) {
@@ -61,10 +63,16 @@ export class Shell implements OnInit {
       this.userApi.getUserProfile().subscribe({
         next: (profile) => {
           this.userDto.set(profile);
+          this.userStoreService.setUserDto(profile);
           this.isLoading.set(false);
+
+          console.log(this.userDto());
         },
         error: (err) => {
           console.error('Failed to load user profile', err);
+
+          this.userDto.set(null);
+          this.userStoreService.setUserDto(null);
           this.isLoading.set(false);
         },
       });

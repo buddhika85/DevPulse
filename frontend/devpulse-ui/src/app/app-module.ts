@@ -7,6 +7,7 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 import {
+  HTTP_INTERCEPTORS,
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
@@ -22,6 +23,7 @@ import { environment } from '../environments/environment';
 
 import { APP_INITIALIZER } from '@angular/core';
 import { initializeMsal } from './msal-initializer';
+import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -108,6 +110,11 @@ import { initializeMsal } from './msal-initializer';
       provide: APP_INITIALIZER,
       useFactory: initializeMsal,
       deps: [MsalService],
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor, // Auth Interceptor to attach JWT token as a header
       multi: true,
     },
   ],

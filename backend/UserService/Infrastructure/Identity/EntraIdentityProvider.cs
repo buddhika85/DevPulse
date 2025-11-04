@@ -1,6 +1,8 @@
 ﻿using System.Net.Http.Headers;
 using System.Text.Json;
+using TaskService.Application.Common.Mappers;
 using UserService.Application.Dtos;
+using UserService.Domain.Entities;
 
 namespace UserService.Infrastructure.Identity
 {
@@ -45,10 +47,15 @@ namespace UserService.Infrastructure.Identity
 
                 // 🔄 Step 4: Deserialize response into DTO
                 var json = await response.Content.ReadAsStringAsync(cancellationToken);
-                var dto = JsonSerializer.Deserialize<UserAccountDto>(json, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                //var dto = JsonSerializer.Deserialize<UserAccountDto>(json, new JsonSerializerOptions
+                //{
+                //    PropertyNameCaseInsensitive = true
+                //});
+
+                // Parse the JSON string into a JsonDocument
+                using var document = JsonDocument.Parse(json);
+
+                var dto = UserAccountMapper.FromGraphUser(document.RootElement);
 
                 // ✅ Step 5: Return the user profile
                 return dto;

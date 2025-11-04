@@ -18,5 +18,9 @@ namespace UserService.Services
         Task<bool> UpdateUserAsync(UpdateUserCommand command, CancellationToken cancellationToken);
         Task<bool> DeleteUserAsync(DeleteUserCommand command, CancellationToken cancellationToken);
         Task<bool> RestoreUserAsync(RestoreUserCommand command, CancellationToken cancellationToken);
+
+
+        Task<UserAccountDto?> ResolveOrCreateAsync(string userId, CancellationToken cancellationToken);         // userId == entra tokens oid
+
     }
 }

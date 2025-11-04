@@ -328,11 +328,11 @@ namespace UserService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error")]
         public async Task<IActionResult> GetCurrentUser(CancellationToken cancellationToken)
         {
-            foreach (var claim in User.Claims)
-            {
-                _logger.LogInformation($"Claim: {claim.Type} = {claim.Value}");
-                Console.WriteLine($"--> Claim: {claim.Type} = {claim.Value}");
-            }
+            //foreach (var claim in User.Claims)
+            //{
+            //    _logger.LogInformation($"Claim: {claim.Type} = {claim.Value}");
+            //    Console.WriteLine($"--> Claim: {claim.Type} = {claim.Value}");
+            //}
 
 
             var objectId = User.FindFirst("oid")?.Value ?? User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;

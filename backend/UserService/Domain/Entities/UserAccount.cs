@@ -17,10 +17,11 @@ namespace UserService.Domain.Entities
         
 
         #region domain_events
-        public static UserAccount Create(string email, string displayName, string role)
+        public static UserAccount Create(string email, string displayName, string role, string? objectId = null)
         {
             var user = new UserAccount
             {
+                Id = objectId != null ? new Guid(objectId) : Guid.NewGuid(),
                 Email = email,
                 DisplayName = displayName,
                 CreatedAt = DateTime.UtcNow,
