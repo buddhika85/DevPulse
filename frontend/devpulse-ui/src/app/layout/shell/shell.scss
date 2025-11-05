@@ -1,21 +1,38 @@
 .toolbar {
   display: flex;
   align-items: center;
-  padding: 0 1rem;
-  background: #1e1e2f;
+  justify-content: space-between;
+
+  background: linear-gradient(to right, #1565c0, #1e88e5);
+
   color: white;
-  height: 64px;
+  padding: 0.5rem 1rem;
 }
 
 .logo {
-  font-weight: bold;
   font-size: 1.2rem;
+  font-weight: bold;
 }
 
-.spacer {
+.nav-links {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
   flex: 1;
 }
 
-.user-info {
-  margin-right: 1rem;
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a.active {
+  border-bottom: 2px solid white;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }

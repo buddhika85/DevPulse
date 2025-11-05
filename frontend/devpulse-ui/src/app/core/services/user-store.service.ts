@@ -8,11 +8,15 @@ import { UserAccountDto } from '../models/user-account.dto';
 export class UserStoreService {
   private _userDto = signal<UserAccountDto | null>(null);
 
+  private hydrated = signal(false);
+  isHydrated = this.hydrated;
+
   setUserDto(dto: UserAccountDto | null) {
     this._userDto.set(dto);
+    this.hydrated.set(true);
   }
 
-  userDto() {
+  userDto(): UserAccountDto | null {
     return this._userDto();
   }
 }

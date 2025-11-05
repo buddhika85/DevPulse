@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { Shell } from './layout/shell/shell'; // ✅ Layout wrapper for all child routes
+import { roleguardGuard } from './core/guards/roleguard-guard';
 
 // ✅ Define the main route configuration for DevPulse
 // SHELL component is eager loaded, eveything else are child compoenents and they are lazy loaded inside router outlet of Shell
@@ -16,14 +17,15 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then((m) => m.Dashboard), // ✅ Lazy-load standalone Dashboard component
       },
 
-      // 🔹 Developer Routes
+      // 🔹 User Routes
       {
         path: 'tasks',
         loadComponent: () =>
           import('./features/developer/tasks/task-logger/task-logger').then(
             (m) => m.TaskLogger
           ),
-        data: { roles: ['Developer'] },
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'mood',
@@ -31,7 +33,8 @@ export const routes: Routes = [
           import('./features/developer/mood/mood-tracker/mood-tracker').then(
             (m) => m.MoodTracker
           ),
-        data: { roles: ['Developer'] },
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'journal',
@@ -39,7 +42,8 @@ export const routes: Routes = [
           import(
             './features/developer/journal/journal-entry/journal-entry'
           ).then((m) => m.JournalEntry),
-        data: { roles: ['Developer'] },
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'export',
@@ -47,7 +51,8 @@ export const routes: Routes = [
           import(
             './features/developer/summary/summary-export/summary-export'
           ).then((m) => m.SummaryExport),
-        data: { roles: ['Developer'] },
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
       },
 
       // 🔹 Manager Routes
@@ -58,6 +63,7 @@ export const routes: Routes = [
             './features/manager/team-dashboard/team-dashboard/team-dashboard'
           ).then((m) => m.TeamDashboard),
         data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'feedback',
@@ -66,6 +72,7 @@ export const routes: Routes = [
             (m) => m.Feedback
           ),
         data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'goals',
@@ -74,6 +81,7 @@ export const routes: Routes = [
             (m) => m.GoalSetter
           ),
         data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
       },
 
       // 🔹 Admin Routes
@@ -84,6 +92,7 @@ export const routes: Routes = [
             './features/admin/user-management/user-management/user-management'
           ).then((m) => m.UserManagement),
         data: { roles: ['Admin'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'limits',
@@ -92,6 +101,7 @@ export const routes: Routes = [
             (m) => m.ApiLimits
           ),
         data: { roles: ['Admin'] },
+        canActivate: [roleguardGuard],
       },
       {
         path: 'health',
@@ -100,17 +110,29 @@ export const routes: Routes = [
             './features/admin/system-health/system-health/system-health'
           ).then((m) => m.SystemHealth),
         data: { roles: ['Admin'] },
+        canActivate: [roleguardGuard],
+      },
+
+      // 🔹 For Developmnent -  a hidden route for debugging, inspecting identity
+      {
+        path: 'devtools',
+        loadComponent: () =>
+          import('./features/devtools/devtools/devtools').then(
+            (m) => m.Devtools
+          ),
+        data: { roles: ['Admin', 'Manager', 'User'] },
+        canActivate: [roleguardGuard],
+      },
+
+      // 🔹 Unauthorized
+      {
+        path: 'unauthorized',
+        loadComponent: () =>
+          import('./features/errors/unauthorized/unauthorized').then(
+            (m) => m.Unauthorized
+          ),
       },
     ],
-  },
-
-  // 🔹 Unauthorized
-  {
-    path: 'unauthorized',
-    loadComponent: () =>
-      import('./features/errors/unauthorized/unauthorized').then(
-        (m) => m.Unauthorized
-      ),
   },
 
   // ✅ Wildcard route: redirect unknown paths to root

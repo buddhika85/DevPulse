@@ -1,19 +1,66 @@
 <!-- src/app/shell/shell.component.html -->
 <header class="toolbar">
   <span class="logo">DevPulse</span>
-  <div class="spacer"></div>
 
-  @if (isLoading()) {
-  <mat-progress-spinner
-    diameter="24"
-    mode="indeterminate"
-  ></mat-progress-spinner>
-  } @else { @if (user()) {
-  <span class="user-info">👤 {{ userDto()?.displayName }}</span>
-  <button mat-button color="warn" (click)="logout()">Logout</button>
-  } @else {
-  <button mat-raised-button color="primary" (click)="login()">Login</button>
-  } }
+  <nav class="nav-links">
+    <!-- if user dto exists -->
+    @if (userDto()) {
+
+    <!-- role based links display-->
+    @let dto = userDto();
+    <nav class="nav-links">
+      @switch (dto?.userRole) {
+
+      <!-- User -->
+      @case ('User') {
+      <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
+      <a routerLink="/mood" routerLinkActive="active">Mood</a>
+      <a routerLink="/journal" routerLinkActive="active">Journal</a>
+      <a routerLink="/export" routerLinkActive="active">Export</a>
+      <a routerLink="/devtools" routerLinkActive="active"> Dev Tools </a>
+      }
+
+      <!-- Manager -->
+      @case ('Manager') {
+      <a routerLink="/team-dashboard" routerLinkActive="active">Team</a>
+      <a routerLink="/feedback" routerLinkActive="active">Feedback</a>
+      <a routerLink="/goals" routerLinkActive="active">Goals</a>
+      <a routerLink="/devtools" routerLinkActive="active"> Dev Tools </a>
+      }
+
+      <!-- Admin -->
+      @case ('Admin') {
+      <a routerLink="/users" routerLinkActive="active">Users</a>
+      <a routerLink="/limits" routerLinkActive="active">Limits</a>
+      <a routerLink="/health" routerLinkActive="active">Health</a>
+      <a routerLink="/devtools" routerLinkActive="active"> Dev Tools </a>
+      } }
+    </nav>
+    }
+  </nav>
+
+  <div class="user-section">
+    @if (isLoading()) {
+    <mat-progress-spinner
+      diameter="24"
+      mode="indeterminate"
+    ></mat-progress-spinner>
+    }
+
+    <!-- no pogress spinner display -->
+    @else {
+    <!-- if MSAL user exists -->
+    @if (user()) {
+    <span class="user-info">👤 {{ userDto()?.displayName }}</span>
+    <button mat-button color="warn" (click)="logout()">Logout</button>
+
+    }
+    <!-- if NO MSAL user exists -->
+    @else {
+    <button mat-raised-button color="primary" (click)="login()">Login</button>
+
+    } }
+  </div>
 </header>
 
 <router-outlet></router-outlet>

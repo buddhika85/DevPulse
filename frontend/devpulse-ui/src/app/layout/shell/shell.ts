@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 import { AccountInfo } from '@azure/msal-browser';
 import { CommonModule } from '@angular/common';
@@ -12,7 +12,13 @@ import { UserStoreService } from '../../core/services/user-store.service';
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, MatProgressSpinnerModule],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    MatProgressSpinnerModule,
+    RouterLink,
+    RouterLinkActive,
+  ],
 
   templateUrl: './shell.html',
   styleUrl: './shell.scss',

@@ -1,0 +1,52 @@
+<h2>🔧 DevPulse DevTools</h2>
+
+<section>
+  <h3>🧑 Identity</h3>
+  @if (userDto) {
+  <pre>{{ userDto | json }}</pre>
+  } @else {
+  <p>Nothing to display</p>
+  }
+</section>
+
+<section>
+  <h3>🔐 MSAL Token Claims</h3>
+  <pre>{{ msalUser?.idTokenClaims | json }}</pre>
+</section>
+
+<section>
+  <h3>🧭 Current Route</h3>
+  <pre>{{ router.url }}</pre>
+</section>
+
+<section>
+  <h3>🧪 Feature Flags</h3>
+  <ul>
+    <li>TaskLoger: {{ userFeatureFlagByRole.TaskLoger ? "✅" : "❌" }}</li>
+    <li>
+      EnableExport: {{ userFeatureFlagByRole.EnableExport ? "✅" : "❌" }}
+    </li>
+    <li>
+      ShowMoodTracker: {{ userFeatureFlagByRole.ShowMoodTracker ? "✅" : "❌" }}
+    </li>
+    <li>
+      JournalEntry: {{ userFeatureFlagByRole.JournalEntry ? "✅" : "❌" }}
+    </li>
+
+    <li>
+      TeamDashboard: {{ userFeatureFlagByRole.TeamDashboard ? "✅" : "❌" }}
+    </li>
+    <li>Feedback: {{ userFeatureFlagByRole.Feedback ? "✅" : "❌" }}</li>
+    <li>GoalSetter: {{ userFeatureFlagByRole.GoalSetter ? "✅" : "❌" }}</li>
+
+    <li>
+      UserManagement: {{ userFeatureFlagByRole.UserManagement ? "✅" : "❌" }}
+    </li>
+    <li>ApiLimits: {{ userFeatureFlagByRole.ApiLimits ? "✅" : "❌" }}</li>
+    <li>
+      SystemHealth: {{ userFeatureFlagByRole.SystemHealth ? "✅" : "❌" }}
+    </li>
+
+    <li>DevPanel: {{ userFeatureFlagByRole.DevPanel ? "✅" : "❌" }}</li>
+  </ul>
+</section>
