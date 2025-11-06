@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using UserService.Application.Common.Behaviors;
@@ -15,7 +16,7 @@ using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// This disables ASP.NET Core�s automatic remapping of claims like oid, sub, email, etc., to legacy .NET types.
+// This disables ASP.NET Core’s automatic remapping of claims like oid, sub, email, etc., to legacy .NET types.
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
@@ -78,7 +79,7 @@ app.UseStatusCodePages();                                                   // i
 
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();                                                       // Serves Swagger JSON
     app.UseSwaggerUI(x =>                                                   // Serves Swagger UI
@@ -105,6 +106,7 @@ app.MapControllers();                                                       // M
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    db.Database.Migrate();                                                  // ✅ Apply pending migrations before seeding
     DbInitializer.Seed(db);
 }
 

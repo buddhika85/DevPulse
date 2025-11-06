@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using TaskService.Configuration;
 using TaskService.Infrastructure.Persistence;
 
@@ -27,6 +28,11 @@ namespace TaskService.Extensions
             // If null: fails fast during startup.
             if (dbSettings is null)
                 throw new InvalidOperationException("DatabaseSettings section is missing or invalid.");
+
+            // For Testing connection string
+            // Console.WriteLine("Resolved connection string: " + dbSettings.ConnectionString);
+            // var builder = new SqlConnectionStringBuilder(dbSettings.ConnectionString);
+            // Console.WriteLine("Resolved DB host: " + builder.DataSource);
 
 
             // Registers TaskDbContext with dependency injection.

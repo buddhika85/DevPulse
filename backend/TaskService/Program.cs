@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using TaskService.Application.Common.Behaviors;
 using TaskService.Application.Validators;
@@ -66,7 +67,7 @@ app.UseStatusCodePages();                                                   // i
 
 
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();                                                       // Serves Swagger JSON
     app.UseSwaggerUI(x =>                                                   // Serves Swagger UI
@@ -85,6 +86,7 @@ app.MapControllers();                                                       // M
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    db.Database.Migrate();                                                  // ✅ Apply pending migrations before seeding
     DbInitializer.Seed(db);
 }
 
