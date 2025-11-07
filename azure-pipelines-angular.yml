@@ -49,9 +49,9 @@ steps:
   # Deploy to Azure Static Web Apps
   - task: AzureStaticWebApp@0
     inputs:
-      app_location: 'frontend/devpulse-ui/dist/devpulse-ui'
-      output_location: 'dist/devpulse-ui'
-      skip_app_build: true                     # ✅ Skip Oryx build and use CI/CD pipeline generated build
-      skip_api_build: true                     # ✅ Skip API build (if no backend here)
+      app_location: 'frontend/devpulse-ui/dist/devpulse-ui'             # where angular project souce folder
+      output_location: '/home/vsts/work/1/s/frontend/devpulse-ui/dist/devpulse-ui'                               # where build files available
+      skip_app_build: true                                              # Skip Oryx build and use CI/CD pipeline generated build
+      skip_api_build: true                                              # Skip API build (if no backend here)
       azure_static_web_apps_api_token: $(deployment_token)
     displayName: 'Deploy to Azure Static Web Apps'
