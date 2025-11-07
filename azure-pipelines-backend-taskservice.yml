@@ -37,7 +37,7 @@ steps:
   - task: AzureWebApp@1
     inputs:
       azureSubscription: 'DevPulse-Azure-Connection'                                                #  Azure service connection name configured in azure dev ops to azure subscription
-      appType: 'apiApp'                                                                             #  Specifies App Service type
+      appType: 'webApp'                                                                             #  Specifies App Service type
       appName: 'devpulse-task-api'                                                                  #  Targets the specific App Service
       package: '$(Build.ArtifactStagingDirectory)/taskservice'                                      #  Points to the published output
     displayName: 'Deploy TaskService'
