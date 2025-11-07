@@ -30,14 +30,20 @@ steps:
     displayName: 'Run TaskService tests'
 
   # Publish TaskService
-  - script: dotnet publish backend/TaskService/TaskService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/taskservice        #  ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+  - script: dotnet publish backend/TaskService/TaskService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/taskservice
     displayName: 'Publish TaskService'
+    # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
 
   # Deploy TaskService to Azure App Service
   - task: AzureWebApp@1
     inputs:
-      azureSubscription: 'DevPulse-Azure-Connection'                                                #  Azure service connection name configured in azure dev ops to azure subscription
-      appType: 'webApp'                                                                             #  Specifies App Service type
-      appName: 'devpulse-task-api'                                                                  #  Targets the specific App Service
-      package: '$(Build.ArtifactStagingDirectory)/taskservice'                                      #  Points to the published output
+      azureSubscription: 'DevPulse-Azure-Connection'  # Azure service connection name configured in Azure DevOps to Azure subscription
+      appType: 'webApp'                               # Specifies App Service type
+      appName: 'devpulse-task-api'                    # Targets the specific App Service
+      package: '$(Build.ArtifactStagingDirectory)/taskservice'  # Points to the published output
     displayName: 'Deploy TaskService'
+
+  # Warm up the App Service to avoid cold start latency
+  - script: |
+      curl -s https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/health
+    displayName: 'Warm up TaskService after deploy'
