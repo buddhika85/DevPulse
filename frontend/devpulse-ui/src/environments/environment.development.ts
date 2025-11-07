@@ -12,12 +12,23 @@ export const environment: { production: boolean; msal: MsalConfig } = {
 
     // ✅ Define scopes and URLs for each microservice
     protectedResources: {
+      // userApi: {
+      //   url: 'https://localhost:7249/',
+      //   scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
+      // },
+      // taskApi: {
+      //   url: 'https://localhost:7218/',
+      //   scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
+      // },
+
       userApi: {
-        url: 'https://localhost:7249/',
+        //url: 'https://devpulse-user-api-defhbme5gpabcced.australiasoutheast-01.azurewebsites.net/',
+        url: 'https://devpulse-apim-consumption.azure-api.net/user/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
       taskApi: {
-        url: 'https://localhost:7218/',
+        //url: 'https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/',
+        url: 'https://devpulse-apim-consumption.azure-api.net/task/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
 

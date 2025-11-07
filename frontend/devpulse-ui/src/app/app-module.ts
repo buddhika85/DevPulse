@@ -24,6 +24,7 @@ import { environment } from '../environments/environment';
 import { APP_INITIALIZER } from '@angular/core';
 import { initializeMsal } from './msal-initializer';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscription-interceptor';
 
 @NgModule({
   declarations: [
@@ -115,6 +116,11 @@ import { AuthInterceptor } from './core/interceptors/auth.interceptor';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor, // Auth Interceptor to attach JWT token as a header
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ApimSubscriptionInterceptor, // Apim SubscriptionI nterceptor to attach Azure Subscription as a header
       multi: true,
     },
   ],

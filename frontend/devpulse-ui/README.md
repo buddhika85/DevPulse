@@ -57,3 +57,11 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## 🔐 Runtime Config: env.js
+
+This app uses `env.js` for runtime secrets like the APIM subscription key.
+
+- `src/assets/env.js` is excluded from source control for security
+- To run locally, copy `env.template.js` → `env.js` and inject your key manually
+- During CI/CD, `env.js` is generated dynamically using Azure Static Web App settings
