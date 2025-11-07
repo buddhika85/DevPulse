@@ -18,6 +18,7 @@ steps:
   - task: NodeTool@0
     inputs:
       versionSpec: '20.19.x'
+      checkLatest: true                                                 # This forces the agent to install the latest matching version, even if an older one is already present.
     displayName: 'Install Node.js 20.19+'
 
   # ✅ Restore frontend dependencies from package.json
