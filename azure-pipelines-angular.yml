@@ -49,7 +49,7 @@ steps:
   # Deploy to Azure Static Web Apps
   - task: AzureStaticWebApp@0
     inputs:
-      app_location: 'frontend/devpulse-ui'
+      app_location: 'frontend/devpulse-ui/dist/devpulse-ui'
       output_location: 'dist/devpulse-ui'
       skip_app_build: true                     # ✅ Skip Oryx build and use CI/CD pipeline generated build
       skip_api_build: true                     # ✅ Skip API build (if no backend here)
