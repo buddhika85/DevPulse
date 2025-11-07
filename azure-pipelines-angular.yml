@@ -8,11 +8,10 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# Secure runtime config: APIM subscription key injected into env.js
-# ✅ Set this directly in Azure DevOps → Pipeline → Variables or Variable Group
-# ❌ Do NOT use $(...) inside the value field — that causes a cyclical reference
+# ✅ Import secrets from Azure DevOps Library variable group
+# Includes NG_APP_APIM_SUBSCRIPTION_KEY and deployment_token
 variables:
-  NG_APP_APIM_SUBSCRIPTION_KEY: $(NG_APP_APIM_SUBSCRIPTION_KEY)               # Read from Dev Ops Library variable
+  - group: DevPulse-Frontend-Secrets
 
 steps:
   # ✅ Install Node.js 20.19+ (Angular 20 requires this minimum version)
@@ -45,7 +44,6 @@ steps:
 
   # ✅ Deploy to Azure Static Web Apps
   # Set output_location to match Angular 20 build output: dist/devpulse-ui/browser
-  # deployment_token must is read from Azure DevOps Library
   - task: AzureStaticWebApp@0
     inputs:
       app_location: 'frontend/devpulse-ui'
