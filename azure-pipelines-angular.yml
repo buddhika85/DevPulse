@@ -1,0 +1,49 @@
+# Trigger pipeline on changes to main branch
+trigger:
+  branches:
+    include:
+      - main
+
+# Use latest Ubuntu VM for build agent
+pool:
+  vmImage: 'ubuntu-latest'
+
+# Secure runtime config: APIM subscription key injected into env.js
+# Must be set in Azure DevOps → Pipeline → Variables or Variable Group
+variables:
+  NG_APP_APIM_SUBSCRIPTION_KEY: $(NG_APP_APIM_SUBSCRIPTION_KEY)
+
+steps:
+  # Install Node.js (Angular 20 requires Node 18+)
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '18.x'
+    displayName: 'Install Node.js'
+
+  # Restore frontend dependencies
+  - script: |
+      npm install
+    displayName: 'Install dependencies'
+
+  # Inject runtime config into env.js (used by Angular at runtime)
+  # This file is excluded from source control and generated dynamically
+  - script: |
+      echo "window.__env = {" > src/assets/env.js
+      echo "  NG_APP_APIM_SUBSCRIPTION_KEY: '$(NG_APP_APIM_SUBSCRIPTION_KEY)'," >> src/assets/env.js
+      echo "};" >> src/assets/env.js
+    displayName: 'Inject runtime config into env.js'
+
+  # Build Angular app using production configuration
+  # Output will be in dist/devpulse-ui/browser
+  - script: |
+      npm run build -- --configuration=production
+    displayName: 'Build Angular app'
+
+  # Deploy to Azure Static Web Apps
+  # Set output_location to match Angular 20 build output: dist/devpulse-ui/browser
+  - task: AzureStaticWebApp@0
+    inputs:
+      app_location: '/'
+      output_location: 'dist/devpulse-ui/browser'
+      azure_static_web_apps_api_token: $(deployment_token)
+    displayName: 'Deploy to Azure Static Web Apps'
