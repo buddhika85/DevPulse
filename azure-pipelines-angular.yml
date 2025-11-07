@@ -20,6 +20,13 @@ steps:
       versionSpec: '20.19.x'
       checkLatest: true                                                 # This forces the agent to install the latest matching version, even if an older one is already present.
     displayName: 'Install Node.js 20.19+'
+    
+    # ✅ Explicitly set the installed Node.js version in the shell
+   - script: |
+      echo "##vso[task.prependpath]$(NODE_JS_HOME)"
+      node -v
+      npm -v
+    displayName: 'Use installed Node.js 20.19+'
 
   # ✅ Restore frontend dependencies from package.json
   - script: |
