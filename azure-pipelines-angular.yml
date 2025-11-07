@@ -22,7 +22,7 @@ steps:
     displayName: 'Install Node.js 20.19+'
     
     # ✅ Explicitly set the installed Node.js version in the shell
-   - script: |
+  - script: |
       echo "##vso[task.prependpath]$(NODE_JS_HOME)"
       node -v
       npm -v
