@@ -22,10 +22,9 @@ steps:
 
   # Show installed Node and npm versions
   - script: |
-      echo "##vso[task.prependpath]$(NODE_JS_HOME)"
       node -v
       npm -v
-    displayName: 'Verify Node.js version'
+    displayName: 'Check Node.js version'
 
   # Install frontend dependencies
   - script: |
