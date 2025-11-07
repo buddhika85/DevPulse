@@ -45,5 +45,5 @@ steps:
 
   # Warm up the App Service to avoid cold start latency
   - script: |
-      curl -s https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/health
+      curl -s https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health
     displayName: 'Warm up TaskService after deploy'
