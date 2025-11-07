@@ -498,4 +498,8 @@ docs/*.vsdx
 
 
 # Ignore local dev environment
-**/environment.dev.ts
+**/environment.development.ts
+
+
+# Ignore local env.js with APIM key
+**/env.js
