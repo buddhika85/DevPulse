@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: DevPulse-Backend-Secrets
+
+steps:
+  # Install .NET SDK
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '8.0.x'
+    displayName: 'Install .NET SDK'
+
+  # Restore TaskService dependencies
+  - script: dotnet restore backend/TaskService/TaskService.csproj
+    displayName: 'Restore TaskService dependencies'
+
+  # Build TaskService
+  - script: dotnet build backend/TaskService/TaskService.csproj --configuration Release
+    displayName: 'Build TaskService'
+
+  # Run TaskService tests
+  - script: dotnet test backend/TaskService.Tests/TaskService.Tests.csproj --configuration Release
+    displayName: 'Run TaskService tests'
+
+  # Publish TaskService
+  - script: dotnet publish backend/TaskService/TaskService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/taskservice        #  ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+    displayName: 'Publish TaskService'
+
+  # Deploy TaskService to Azure App Service
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: '1e4464b8-43cf-4b3b-83dd-ae1e62152a86'                                     #  Azure subscription ID
+      appType: 'webApp'                                                                             #  Specifies App Service type
+      appName: 'devpulse-task-api'                                                                  #  Targets the specific App Service
+      package: '$(Build.ArtifactStagingDirectory)/taskservice'                                      #  Points to the published output
+    displayName: 'Deploy TaskService'
