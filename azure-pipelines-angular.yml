@@ -22,12 +22,14 @@ steps:
 
   # Restore frontend dependencies
   - script: |
+      cd frontend/devpulse-ui
       npm install
     displayName: 'Install dependencies'
 
   # Inject runtime config into env.js (used by Angular at runtime)
   # This file is excluded from source control and generated dynamically
   - script: |
+      cd frontend/devpulse-ui
       echo "window.__env = {" > src/assets/env.js
       echo "  NG_APP_APIM_SUBSCRIPTION_KEY: '$(NG_APP_APIM_SUBSCRIPTION_KEY)'," >> src/assets/env.js
       echo "};" >> src/assets/env.js
@@ -36,6 +38,7 @@ steps:
   # Build Angular app using production configuration
   # Output will be in dist/devpulse-ui/browser
   - script: |
+      cd frontend/devpulse-ui
       npm run build -- --configuration=production
     displayName: 'Build Angular app'
 
