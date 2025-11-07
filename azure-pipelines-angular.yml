@@ -1,57 +1,53 @@
-# Trigger pipeline on changes to main branch
+# Trigger pipeline when changes are pushed to main
 trigger:
   branches:
     include:
       - main
 
-# Use latest Ubuntu VM for build agent
+# Use Ubuntu build agent
 pool:
   vmImage: 'ubuntu-latest'
 
-# ✅ Import secrets from Azure DevOps Library variable group
-# Includes NG_APP_APIM_SUBSCRIPTION_KEY and deployment_token
+# Load secrets from Azure DevOps variable group
 variables:
   - group: DevPulse-Frontend-Secrets
 
 steps:
-  # ✅ Install Node.js 20.19+ (Angular 20 requires this minimum version)
+  # Install Node.js 20.19+ (required by Angular 20)
   - task: NodeTool@0
     inputs:
       versionSpec: '20.19.x'
-      checkLatest: true                                                 # This forces the agent to install the latest matching version, even if an older one is already present.
-    displayName: 'Install Node.js 20.19+'
-    
-    # ✅ Explicitly set the installed Node.js version in the shell
+      checkLatest: true
+    displayName: 'Install Node.js'
+
+  # Show installed Node and npm versions
   - script: |
       echo "##vso[task.prependpath]$(NODE_JS_HOME)"
       node -v
       npm -v
-    displayName: 'Use installed Node.js 20.19+'
+    displayName: 'Verify Node.js version'
 
-  # ✅ Restore frontend dependencies from package.json
+  # Install frontend dependencies
   - script: |
       cd frontend/devpulse-ui
       npm install
     displayName: 'Install dependencies'
 
-  # ✅ Inject runtime config into env.js (used by Angular at runtime)
-  # This file is excluded from source control and generated dynamically
+  # Inject runtime config into env.js
   - script: |
       cd frontend/devpulse-ui
       echo "window.__env = {" > src/assets/env.js
       echo "  NG_APP_APIM_SUBSCRIPTION_KEY: '$(NG_APP_APIM_SUBSCRIPTION_KEY)'," >> src/assets/env.js
       echo "};" >> src/assets/env.js
-    displayName: 'Inject runtime config into env.js'
+    displayName: 'Inject config into env.js'
 
-  # ✅ Build Angular app using production configuration
-  # Output will be in dist/devpulse-ui/browser
+  # Build Angular app (production mode)
   - script: |
       cd frontend/devpulse-ui
       npm run build -- --configuration=production
     displayName: 'Build Angular app'
 
-  # ✅ Deploy to Azure Static Web Apps
-  # Set output_location to match Angular 20 build output: dist/devpulse-ui/browser
+  # Deploy to Azure Static Web Apps
   - task: AzureStaticWebApp@0
     inputs:
       app_location: 'frontend/devpulse-ui'
