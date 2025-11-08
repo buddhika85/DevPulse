@@ -34,10 +34,10 @@ steps:
 
   # Inject runtime config into env.js
   - script: |
-      cd frontend/devpulse-ui
-      echo "window.__env = {" > src/assets/env.js
-      echo "  NG_APP_APIM_SUBSCRIPTION_KEY: '$(NG_APP_APIM_SUBSCRIPTION_KEY)'," >> src/assets/env.js
-      echo "};" >> src/assets/env.js
+      cd frontend/devpulse-ui                                                                                       # Step 1: Navigate to the Angular project folder
+      echo "window.__env = {" > src/assets/env.js                                                                   # Step 2: Create env.js and start defining a global object
+      echo "  NG_APP_APIM_SUBSCRIPTION_KEY: '$(NG_APP_APIM_SUBSCRIPTION_KEY)'," >> src/assets/env.js                # Step 3: Inject the APIM subscription key from pipeline variable available Azure DevOps Library            
+      echo "};" >> src/assets/env.js                                                                                # Step 4: Close the object
     displayName: 'Inject config into env.js'
 
   # Build Angular app (production mode)
