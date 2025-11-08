@@ -43,7 +43,16 @@ steps:
       package: '$(Build.ArtifactStagingDirectory)/taskservice'  # Points to the published output
     displayName: 'Deploy TaskService'
 
-  # Warm up the App Service to avoid cold start latency
+  # Warm up the App Service to avoid cold start latency - Retries up to 10 times with a 5-second delay, Checks for HTTP 200 to confirm readiness, - Avoids false positives from cold-start 503s or timeouts
   - script: |
-      curl -s https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health
+      echo "Warming up TaskService..."          
+      for i in {1..10}; do                                      
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health)
+        echo "Attempt $i: HTTP $response"
+        if [ "$response" -eq 200 ]; then
+          echo "Success - Service is warm."
+          break
+        fi
+        sleep 5
+      done
     displayName: 'Warm up TaskService after deploy'
