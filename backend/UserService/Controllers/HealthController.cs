@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace TaskService.Controllers
+namespace UserService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -9,7 +9,7 @@ namespace TaskService.Controllers
         [HttpGet]
         public IActionResult Get() => Ok(new
         {
-            status = "Healthy - Task API",
+            status = "Healthy - User API",
             timestamp = DateTime.UtcNow
         });
     }

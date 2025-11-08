@@ -1,0 +1,48 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+variables:
+  - group: DevPulse-Backend-Secrets
+
+steps:
+  # Install .NET SDK
+  - task: UseDotNet@2
+    inputs:
+      packageType: "sdk"
+      version: "8.0.x"
+    displayName: "Install .NET SDK"
+
+  # Restore UserService dependencies
+  - script: dotnet restore backend/UserService/UserService.csproj
+    displayName: "Restore UserService dependencies"
+
+  # Build UserService
+  - script: dotnet build backend/UserService/UserService.csproj --configuration Release
+    displayName: "Build UserService"
+
+  # # Run UserService tests
+  # - script: dotnet test backend/UserService.Tests/UserService.Tests.csproj --configuration Release
+  #   displayName: "Run UserService tests"
+  # Publish UserService
+  - script: dotnet publish backend/UserService/UserService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/userservice
+    displayName: "Publish UserService"
+    # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+
+  # Deploy UserService to Azure App Service
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: "DevPulse-Azure-Connection" # Azure service connection name configured in Azure DevOps to Azure subscription
+      appType: "webApp" # Specifies App Service type
+      appName: "devpulse-user-api" # Targets the specific App Service
+      package: "$(Build.ArtifactStagingDirectory)/userservice" # Points to the published output
+    displayName: "Deploy UserService"
+
+  # Warm up the App Service to avoid cold start latency
+  - script: |
+      curl -s https://devpulse-user-api-defhbme5gpabcced.australiasoutheast-01.azurewebsites.net/api/Health
+    displayName: "Warm up UserService after deploy"
