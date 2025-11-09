@@ -11,6 +11,7 @@
 	</ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Configuration\" />
     <Folder Include="Domain\Enums\" />
     <Folder Include="Domain\Events\" />
   </ItemGroup>
