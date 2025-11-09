@@ -1,5 +1,5 @@
-﻿using TaskService.Application.Commands;
-using TaskService.Application.Dtos;
+﻿using SharedLib.DTOs.Task;
+using TaskService.Application.Commands;
 using TaskService.Domain.Entities;
 
 namespace TaskService.Application.Common.Mappers

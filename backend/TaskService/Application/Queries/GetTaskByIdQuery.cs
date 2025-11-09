@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using TaskService.Application.Dtos;
+using SharedLib.DTOs.Task;
 
 namespace TaskService.Application.Queries
 {

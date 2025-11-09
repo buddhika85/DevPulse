@@ -1,4 +1,4 @@
-﻿namespace TaskService.Application.Dtos
+﻿namespace SharedLib.DTOs.Task
 {
     public record TaskItemDto
     {

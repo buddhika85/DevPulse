@@ -1,7 +1,7 @@
-﻿using TaskService.Application.Commands;
+﻿using SharedLib.DTOs.Task;
+using TaskService.Application.Commands;
 using TaskService.Application.Common.Mappers;
 using TaskService.Application.Common.Models;
-using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 using TaskService.Repositories;
