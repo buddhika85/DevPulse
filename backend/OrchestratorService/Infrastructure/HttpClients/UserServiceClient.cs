@@ -12,13 +12,13 @@ namespace OrchestratorService.Infrastructure.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<UserAccountDto> GetUserAsync(string userId)
+        public async Task<UserAccountDto> GetUserAsync(string userId, CancellationToken cancellationToken)
         {
             if (!Guid.TryParse(userId, out var userIdGuid))
                 throw new ArgumentException("Invalid user ID format");
 
             // call user API to get user by Id
-            var user = await _httpClient.GetFromJsonAsync<UserAccountDto>($"api/profile/{userIdGuid}");
+            var user = await _httpClient.GetFromJsonAsync<UserAccountDto>($"api/profile/{userIdGuid}", cancellationToken);
 
             return user  
                 ?? throw new InvalidOperationException("User not found");

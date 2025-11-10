@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCore.CacheOutput;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;
@@ -12,10 +13,12 @@ namespace OrchestratorService.Controllers
     public class DashboardController : BaseApiController
     {
         private readonly DashboardService _dashboardService;
+        private readonly IOutputCacheStore _outputCacheStore;
 
-        public DashboardController(DashboardService dashboardService)
+        public DashboardController(DashboardService dashboardService, IOutputCacheStore outputCacheStore)
         {
             _dashboardService = dashboardService;
+            _outputCacheStore = outputCacheStore;
         }
 
         /// <summary>
@@ -23,7 +26,7 @@ namespace OrchestratorService.Controllers
         /// Uses output caching to store full HTTP response for repeated GETs.
         /// </summary>
         [HttpGet("{userId}")]
-        [OutputCache(Duration = 300)] // Cache full response for 5 minutes
+        [OutputCache(Duration = 300, Tags = ["dashboard-{userId}"])] // Cache full response for 5 minutes
         [SwaggerOperation(
             Summary = "Get dashboard for a user",
             Description = "Returns a composed dashboard view including user info and tasks"
@@ -32,11 +35,11 @@ namespace OrchestratorService.Controllers
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid user ID", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User or tasks not found", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
-        public async Task<IActionResult> GetDashboard(string userId)
+        public async Task<IActionResult> GetDashboard(string userId, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _dashboardService.GetDashboardAsync(userId);
+                var result = await _dashboardService.GetDashboardAsync(userId, cancellationToken);
                 return OkOrNotFound(result, "Dashboard not found for the given user");
             }
             catch (ArgumentException ex)
@@ -53,6 +56,31 @@ namespace OrchestratorService.Controllers
             }
         }
 
+
+        //[InvalidateCacheOutput("dashboard-{userId}")]             // Invalidate Output cach
+        [HttpPost("invalidate/{userId}")]
+        [ApiExplorerSettings(IgnoreApi = true)]                     // hide from Swagger       
+        public async Task<IActionResult> InvalidateDashboard(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _outputCacheStore.EvictByTagAsync("dashboard-{userId}", cancellationToken);
+                _dashboardService.InvalidateDashboardCache(userId);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return ValidationProblem(detail: ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFoundProblem(detail: ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return InternalError(detail: ex.Message);
+            }
+        }
 
     }
 }

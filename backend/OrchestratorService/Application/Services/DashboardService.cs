@@ -24,7 +24,7 @@ namespace OrchestratorService.Application.Services
         /// Composes dashboard data from multiple services.
         /// Uses in-memory caching to avoid redundant downstream API calls.
         /// </summary>
-        public async Task<DashboardDto> GetDashboardAsync(string userId)
+        public async Task<DashboardDto> GetDashboardAsync(string userId, CancellationToken cancellationToken)
         {
             if (!Guid.TryParse(userId, out var userGuid))
                 throw new ArgumentException("Invalid user ID format");
@@ -37,8 +37,8 @@ namespace OrchestratorService.Application.Services
 
             // No cache found - so call APIs
             // Fetch from downstream services
-            var user = await _userClient.GetUserAsync(userId);
-            var tasks = await _taskClient.GetTasksAsync(userId);
+            var user = await _userClient.GetUserAsync(userId, cancellationToken);
+            var tasks = await _taskClient.GetTasksAsync(userId, cancellationToken);
 
             var dashboard = new DashboardDto { User = user, Tasks = tasks };
 
@@ -48,5 +48,21 @@ namespace OrchestratorService.Application.Services
             return dashboard;
         }
 
+        /// <summary>
+        /// Invalidates the dashboard cache for a specific user if it exists.
+        /// Ensures the 
+        public void InvalidateDashboardCache(string userId)
+        {
+            if (!Guid.TryParse(userId, out var userGuid))
+                throw new ArgumentException("Invalid user ID format");
+
+            var cacheKey = $"dashboard:{userGuid}";
+
+            // Check in-memory cache first
+            if (!_inMemoryCache.TryGetValue(cacheKey, out DashboardDto? cachedDashboard) || cachedDashboard is null)
+                return;         // no cache to remove
+
+            _inMemoryCache.Remove(cacheKey);
+        }
     }
 }

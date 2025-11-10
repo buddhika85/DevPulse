@@ -12,13 +12,13 @@ namespace OrchestratorService.Infrastructure.HttpClients
             _httpClient = httpClient;
         }
 
-        public async Task<List<TaskItemDto>> GetTasksAsync(string userId)
+        public async Task<List<TaskItemDto>> GetTasksAsync(string userId, CancellationToken cancellationToken)
         {
             if (!Guid.TryParse(userId, out var userIdGuid))
                 throw new ArgumentException("Invalid user ID format");
 
             // call user API to get tasks by user Id
-            var tasks = await _httpClient.GetFromJsonAsync<List<TaskItemDto>>($"api/tasks/by-user/{userIdGuid}");
+            var tasks = await _httpClient.GetFromJsonAsync<List<TaskItemDto>>($"api/tasks/by-user/{userIdGuid}", cancellationToken);
 
             return tasks
                 ?? [];

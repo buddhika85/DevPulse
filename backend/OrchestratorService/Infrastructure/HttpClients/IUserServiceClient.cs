@@ -5,6 +5,6 @@ namespace OrchestratorService.Infrastructure.HttpClients
 {
     public interface IUserServiceClient
     {
-        Task<UserAccountDto> GetUserAsync(string userId);
+        Task<UserAccountDto> GetUserAsync(string userId, CancellationToken cancellationToken);
     }
 }
