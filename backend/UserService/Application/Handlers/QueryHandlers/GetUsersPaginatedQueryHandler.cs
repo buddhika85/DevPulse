@@ -1,6 +1,6 @@
 ﻿using MediatR;
+using SharedLib.DTOs.User;
 using UserService.Application.Common.Models;
-using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Services;
 

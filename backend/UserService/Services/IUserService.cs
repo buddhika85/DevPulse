@@ -1,6 +1,6 @@
-﻿using UserService.Application.Commands;
+﻿using SharedLib.DTOs.User;
+using UserService.Application.Commands;
 using UserService.Application.Common.Models;
-using UserService.Application.Dtos;
 using UserService.Application.Queries;
 
 namespace UserService.Services

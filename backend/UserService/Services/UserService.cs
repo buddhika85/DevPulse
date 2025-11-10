@@ -1,13 +1,11 @@
-﻿using TaskService.Application.Common.Mappers;
+﻿using SharedLib.DTOs.User;
+using TaskService.Application.Common.Mappers;
 using UserService.Application.Commands;
 using UserService.Application.Common.Models;
-using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
-using UserService.Domain.ValueObjects;
 using UserService.Infrastructure.Identity;
 using UserService.Repositories;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace UserService.Services
 {

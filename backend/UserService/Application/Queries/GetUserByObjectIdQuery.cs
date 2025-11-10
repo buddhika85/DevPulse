@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using UserService.Application.Dtos;
+using SharedLib.DTOs.User;
 
 namespace UserService.Application.Queries
 {

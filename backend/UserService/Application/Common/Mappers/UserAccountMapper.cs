@@ -1,6 +1,5 @@
-﻿using System.Text.Json;
-using UserService.Application.Commands;
-using UserService.Application.Dtos;
+﻿using SharedLib.DTOs.User;
+using System.Text.Json;
 using UserService.Domain.Entities;
 using UserService.Domain.ValueObjects;
 
