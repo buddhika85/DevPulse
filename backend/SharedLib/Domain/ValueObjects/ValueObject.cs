@@ -46,5 +46,4 @@
             return !Equals(left, right);
         }
     }
-
 }
