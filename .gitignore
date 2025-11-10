@@ -503,3 +503,6 @@ docs/*.vsdx
 
 # Ignore local env.js with APIM key
 **/env.js
+
+# Ignore local.settings.json which contains Azure Service Bus Primary connection string
+**/local.settings.json

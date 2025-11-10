@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace UserService.Controllers
+namespace SharedLib.Presentation.Controllers
 {
     [ApiController]
     public class BaseApiController : ControllerBase

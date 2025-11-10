@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Presentation.Controllers;
 using System.Diagnostics;
 
 namespace UserService.Controllers

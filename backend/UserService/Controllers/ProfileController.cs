@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.DTOs.User;
+using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using UserService.Application.Commands;
 using UserService.Application.Common.Enums;
