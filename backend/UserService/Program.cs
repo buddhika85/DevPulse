@@ -53,10 +53,6 @@ builder.Services.AddMediatR(cfg =>                                          // M
 builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();                   // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));             // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
 
-builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
-builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
-builder.Services.InjectServices(builder.Configuration);                     // inject Services
-
 
 builder.Services.BindEntraExternalIdSettings(builder.Configuration);                // Binds EntraExternalIdSettings from configuration using the Options pattern.
 
@@ -64,6 +60,15 @@ builder.Services.BindEntraExternalIdSettings(builder.Configuration);            
 builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);         // inject Azure Microsoft Entra External Id for JWT auth, author
 builder.Services.InjectCosmosDbServices();                                          // inject services which logs to Azure Cosmos DB 
 builder.Services.InjectAzureServiceBusServices();                                   // inject services which publishes messages to Azure servuice Bus topics
+
+
+
+builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
+builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
+builder.Services.InjectServices(builder.Configuration);                     // inject Services
+
+
+
 
 var app = builder.Build();
 
