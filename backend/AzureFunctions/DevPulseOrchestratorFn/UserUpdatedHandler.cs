@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace DevPulseOrchestratorFn
 {
     // An azure function
-    public class UserUpdatedHandler
+    public class UserUpdatedHandlerAzureFunction
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
@@ -16,10 +16,10 @@ namespace DevPulseOrchestratorFn
 
 
 
-        public UserUpdatedHandler(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory, IConfiguration config)
+        public UserUpdatedHandlerAzureFunction(IHttpClientFactory httpClientFactory, ILoggerFactory loggerFactory, IConfiguration config)
         {
             _httpClient = httpClientFactory.CreateClient();
-            _logger = loggerFactory.CreateLogger<UserUpdatedHandler>();
+            _logger = loggerFactory.CreateLogger<UserUpdatedHandlerAzureFunction>();
             _config = config;
 
         }
@@ -30,13 +30,13 @@ namespace DevPulseOrchestratorFn
         /// Deserializes incoming message, extracts UserId, and calls Orchestrator API to Invalidate dashboard cache.
         /// Logs message metadata for diagnostics and handles errors gracefully.
         /// </summary>
-        [Function(nameof(UserUpdatedHandler))]
+        [Function(nameof(UserUpdatedHandlerAzureFunction))]
         public async Task Run(
                     [ServiceBusTrigger("user-updates", "orchestrator-sub", Connection = "ServiceBusConnection")]
                     ServiceBusReceivedMessage message,
                     ServiceBusMessageActions messageActions)
         {
-            _logger.LogInformation("UserUpdatedHandler Az Function - Received message: {Message}", message);
+            _logger.LogInformation("UserUpdatedHandlerAzureFunction - Received message: {Message}", message);
 
             try
             {
