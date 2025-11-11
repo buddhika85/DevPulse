@@ -1,5 +1,4 @@
-﻿using AspNetCore.CacheOutput;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;

@@ -2,10 +2,12 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SharedLib.DTOs.AzureServiceBusEvents;
 using System.Text.Json;
 
 namespace DevPulseOrchestratorFn
 {
+    // An azure function
     public class UserUpdatedHandler
     {
         private readonly HttpClient _httpClient;
@@ -34,7 +36,7 @@ namespace DevPulseOrchestratorFn
                     ServiceBusReceivedMessage message,
                     ServiceBusMessageActions messageActions)
         {
-            _logger.LogInformation("Received message: {Message}", message);
+            _logger.LogInformation("UserUpdatedHandler Az Function - Received message: {Message}", message);
 
             try
             {
@@ -43,7 +45,8 @@ namespace DevPulseOrchestratorFn
                 _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
                 // Deserialize
-                var payload = JsonSerializer.Deserialize<UserUpdatedPayload>(message.Body);
+                var payload = JsonSerializer.Deserialize<UserUpdatedAzServiceBusPayload>(message.Body);
+
                 if (payload?.UserId is not null)
                 {
                     // read settings from appSettings.json
@@ -69,11 +72,4 @@ namespace DevPulseOrchestratorFn
         }
 
     }
-
-
-    public class UserUpdatedPayload
-    {
-        public required string UserId { get; set; }
-    }
-
 }

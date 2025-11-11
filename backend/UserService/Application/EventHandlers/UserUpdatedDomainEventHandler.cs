@@ -1,5 +1,7 @@
 ﻿using MediatR;
+using SharedLib.DTOs.AzureServiceBusEvents;
 using UserService.Domain.Events;
+using UserService.Infrastructure.Messaging;
 using UserService.Infrastructure.Persistence.ComosEvents;
 
 namespace UserService.Application.EventHandlers
@@ -8,10 +10,15 @@ namespace UserService.Application.EventHandlers
     {
         private readonly ILogger<UserUpdatedDomainEvent> _logger;
         private readonly UserCosmosEventService _userCosmosEventService;
-        public UserUpdatedDomainEventHandler(ILogger<UserUpdatedDomainEvent> logger, UserCosmosEventService userCosmosEventService)
+        private readonly IServiceBusPublisher _serviceBusPublisher;
+
+        private const string UserUpdateTopicName = "user-updates";              // On Az Service Bus
+
+        public UserUpdatedDomainEventHandler(ILogger<UserUpdatedDomainEvent> logger, UserCosmosEventService userCosmosEventService, IServiceBusPublisher serviceBusPublisher)
         {
             _logger = logger;
             _userCosmosEventService = userCosmosEventService;
+            _serviceBusPublisher = serviceBusPublisher;
         }
 
         public async Task Handle(UserUpdatedDomainEvent notification, CancellationToken cancellationToken)
@@ -22,6 +29,14 @@ namespace UserService.Application.EventHandlers
                 notification.UpdatedUserAccount.Email, notification.UpdatedUserAccount.DisplayName, DateTime.UtcNow);
 
                 await _userCosmosEventService.LogUserUpdatedAsync(notification);
+
+                await _serviceBusPublisher.PublishAsync(
+                    UserUpdateTopicName, 
+                    new UserUpdatedAzServiceBusPayload 
+                    { 
+                        UserId = notification.UpdatedUserAccount.Id.ToString() 
+                    }, 
+                    cancellationToken);
             }
             catch (Exception)
             {

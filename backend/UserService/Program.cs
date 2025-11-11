@@ -63,7 +63,7 @@ builder.Services.BindEntraExternalIdSettings(builder.Configuration);            
 
 builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);         // inject Azure Microsoft Entra External Id for JWT auth, author
 builder.Services.InjectCosmosDbServices();                                          // inject services which logs to Azure Cosmos DB 
-
+builder.Services.InjectAzureServiceBusServices();                                   // inject services which publishes messages to Azure servuice Bus topics
 
 var app = builder.Build();
 
