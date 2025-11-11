@@ -26,16 +26,13 @@ namespace UserService.Application.EventHandlers
             try
             {
                 _logger.LogInformation("UserRoleChangedDomainEvent handled: Previous Role='{PreviousRole}', New Role={NewRole} at Timestamp={Time}",
-                notification.PreviousRole, notification.NewRole, DateTime.UtcNow);
+                notification.PreviousRole.Value, notification.NewRole.Value, DateTime.UtcNow);
 
                 await _userCosmosEventService.LogUserRoleChangedAsync(notification);
 
                 await _serviceBusPublisher.PublishAsync(
                    UserUpdateTopicName,
-                   new UserUpdatedAzServiceBusPayload
-                   {
-                       UserId = notification.UserAccount.Id.ToString(),
-                   },
+                   new UserRoleChangedAzServiceBusPayload(notification.UserAccount.Id.ToString(), notification.PreviousRole.Value, notification.NewRole.Value, notification.UserAccount.Email),
                    cancellationToken);
             }
             catch (Exception)

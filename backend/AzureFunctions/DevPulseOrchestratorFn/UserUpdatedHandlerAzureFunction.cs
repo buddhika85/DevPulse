@@ -44,7 +44,8 @@ namespace DevPulseOrchestratorFn
                 _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
                 // Deserialize
-                var payload = JsonSerializer.Deserialize<UserUpdatedAzServiceBusPayload>(message.Body);
+                var payload = JsonSerializer.Deserialize<UserDisplayNameChangedAzServiceBusPayload>(message.Body);
+                _logger.LogInformation("Message Body Deserialized: {DeserializedBody}", payload?.ToString());
 
                 if (payload?.UserId is not null)
                 {

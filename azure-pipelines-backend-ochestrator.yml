@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: DevPulse-Backend-Secrets
+
+steps:
+  # Install .NET SDK
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '8.0.x'
+    displayName: 'Install .NET SDK'
+
+  # Restore OrchestratorService dependencies
+  - script: dotnet restore backend/OrchestratorService/OrchestratorService.csproj
+    displayName: 'Restore OrchestratorService dependencies'
+
+  # Build OrchestratorService
+  - script: dotnet build backend/OrchestratorService/OrchestratorService.csproj --configuration Release
+    displayName: 'Build OrchestratorService'
+
+  # Run OrchestratorService tests
+  - script: dotnet test backend/OrchestratorService.Tests/OrchestratorService.Tests.csproj --configuration Release
+    displayName: 'Run OrchestratorService tests'
+
+  # Publish OrchestratorService
+  - script: dotnet publish backend/OrchestratorService/OrchestratorService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/orchestratorService
+    displayName: 'Publish OrchestratorService'
+    # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+
+  # Deploy OrchestratorService to Azure App Service
+  - task: AzureWebApp@1
+    inputs:
+      azureSubscription: 'DevPulse-Azure-Connection'  # Azure service connection name configured in Azure DevOps to Azure subscription
+      appType: 'webApp'                               # Specifies App Service type
+      appName: 'devpulse-task-api'                    # Targets the specific App Service
+      package: '$(Build.ArtifactStagingDirectory)/orchestratorService'  # Points to the published output
+    displayName: 'Deploy OrchestratorService'
+
+  # Warm up the App Service to avoid cold start latency - Retries up to 10 times with a 5-second delay, Checks for HTTP 200 to confirm readiness, - Avoids false positives from cold-start 503s or timeouts
+  - script: |
+      echo "Warming up OrchestratorService..."          
+      for i in {1..10}; do                                      
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health)
+        echo "Attempt $i: HTTP $response"
+        if [ "$response" -eq 200 ]; then
+          echo "Success - Service is warm."
+          break
+        fi
+        sleep 5
+      done
+    displayName: 'Warm up OrchestratorService after deploy'

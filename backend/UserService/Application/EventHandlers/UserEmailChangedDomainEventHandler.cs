@@ -32,10 +32,7 @@ namespace UserService.Application.EventHandlers
 
                 await _serviceBusPublisher.PublishAsync(
                     UserUpdateTopicName,
-                    new UserUpdatedAzServiceBusPayload
-                    {
-                        UserId = notification.UserAccount.Id.ToString(),
-                    },
+                    new UserEmailChangedAzServiceBusPayload(notification.UserAccount.Id.ToString(), notification.PreviousEmail, notification.NewEmail, notification.UserAccount.Email),
                     cancellationToken);
             }
             catch (Exception)

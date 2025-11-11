@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Azure.Cosmos;
 using SharedLib.DTOs.AzureServiceBusEvents;
 using UserService.Domain.Events;
 using UserService.Infrastructure.Messaging;
@@ -32,10 +33,7 @@ namespace UserService.Application.EventHandlers
 
                 await _serviceBusPublisher.PublishAsync(
                     UserUpdateTopicName,
-                    new UserUpdatedAzServiceBusPayload
-                    {
-                        UserId = notification.UpdatedAccount.Id.ToString(),
-                    },
+                    new UserDisplayNameChangedAzServiceBusPayload(notification.UpdatedAccount.Id.ToString(), notification.OldDisplayName, notification.NewDisplayName, notification.UpdatedAccount.Email),
                     cancellationToken);
             }
             catch (Exception)
