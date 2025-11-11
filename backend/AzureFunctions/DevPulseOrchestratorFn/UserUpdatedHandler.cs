@@ -21,7 +21,6 @@ namespace DevPulseOrchestratorFn
             _httpClient = httpClientFactory.CreateClient();
             _logger = loggerFactory.CreateLogger<UserUpdatedHandlerAzureFunction>();
             _config = config;
-
         }
 
 
