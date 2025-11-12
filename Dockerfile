@@ -1,4 +1,4 @@
-# This is used to create a Docker Image on OrchestratorService API
+﻿# This is used to create a Docker Image on OrchestratorService API
 
 # Use the LINUX based ASP.NET 8 runtime image as the base for running the app
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
 # Open port 80 so the app can receive HTTP traffic
-EXPOSE 80
+EXPOSE 8080
 
 # Use the .NET SDK image to build the app (includes compilers and tools)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
@@ -35,4 +35,13 @@ COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "OrchestratorService.dll"]
 
 
-# BUILD - docker build -t orchestrator-api .
+# Pushing Docker image to AZURE CONTAINER REGISTRY Steps
+# 0 From the root -  C:\BUDDHIKA\DevPulse-P4\DevPulse
+
+# 1 BUILD - docker build -t orchestrator-api .
+# 2 LOCAL TEST - docker run -p 5000:8080 orchestrator-api					# maps host port 5000 → exposed container port 8080 - Test - http://localhost:5000/swagger
+
+# 3 LOGIN TO ACR via Docker - docker login devpulseacr-cta8h8feeua4cchz.azurecr.io			
+
+# 4 TAG / Label - docker tag orchestrator-api devpulseacr-cta8h8feeua4cchz.azurecr.io/orchestrator-api:v1.0.0
+# 5 PUSH to ACR - docker push devpulseacr-cta8h8feeua4cchz.azurecr.io/orchestrator-api:v1.0.0
