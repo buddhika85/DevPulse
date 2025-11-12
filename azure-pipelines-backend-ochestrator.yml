@@ -1,58 +1,61 @@
+# Trigger the pipeline when code is pushed to the 'main' branch
 trigger:
   branches:
     include:
       - main
 
-pool:
-  vmImage: 'ubuntu-latest'
-
+# Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  - group: DevPulse-Backend-Secrets
+  acrName: devpulseacr                      # Azure Container Registry name
+  imageName: orchestrator-api              # Docker image name
+  resourceGroup: DevPulseRG                # Azure resource group
+  containerAppName: orchestrator-api       # Azure Container App name
+  location: australiaeast                  # Azure region
+  tag: v1.0.0                              # Docker image tag
 
-steps:
-  # Install .NET SDK
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '8.0.x'
-    displayName: 'Install .NET SDK'
+# Use a Microsoft-hosted Ubuntu agent to run the pipeline
+pool:
+  vmImage: ubuntu-latest
 
-  # Restore OrchestratorService dependencies
-  - script: dotnet restore backend/OrchestratorService/OrchestratorService.csproj
-    displayName: 'Restore OrchestratorService dependencies'
+# Step 1: Build, push, and deploy the container image to ACA
+- task: AzureCLI@2
+  displayName: 'Build, Push, and Deploy to ACA'
+  inputs:
+    azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'  # Azure service connection name configured in Azure DevOps
+    scriptType: bash
+    scriptLocation: inlineScript
+    failOnStderr: true                                   # Fail the task if any CLI command throws an error
+    inlineScript: |
+      # Login to Azure Container Registry using Azure CLI
+      echo "Logging into ACR..."
+      az acr login --name $(acrName)
 
-  # Build OrchestratorService
-  - script: dotnet build backend/OrchestratorService/OrchestratorService.csproj --configuration Release
-    displayName: 'Build OrchestratorService'
+      # Build the Docker image from your source code
+      echo "Building Docker image..."
+      docker build -t $(acrName).azurecr.io/$(imageName):$(tag) .
 
-  # Run OrchestratorService tests
-  - script: dotnet test backend/OrchestratorService.Tests/OrchestratorService.Tests.csproj --configuration Release
-    displayName: 'Run OrchestratorService tests'
+      # Push the image to your Azure Container Registry
+      echo "Pushing image to ACR..."
+      docker push $(acrName).azurecr.io/$(imageName):$(tag)
 
-  # Publish OrchestratorService
-  - script: dotnet publish backend/OrchestratorService/OrchestratorService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/orchestratorService
-    displayName: 'Publish OrchestratorService'
-    # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+      # Deploy the new image to your Azure Container App
+      echo "Deploying to Azure Container Apps..."
+      az containerapp update \
+        --name $(containerAppName) \
+        --resource-group $(resourceGroup) \
+        --image $(acrName).azurecr.io/$(imageName):$(tag)
 
-  # Deploy OrchestratorService to Azure App Service
-  - task: AzureWebApp@1
-    inputs:
-      azureSubscription: 'DevPulse-Azure-Connection'  # Azure service connection name configured in Azure DevOps to Azure subscription
-      appType: 'webApp'                               # Specifies App Service type
-      appName: 'devpulse-task-api'                    # Targets the specific App Service
-      package: '$(Build.ArtifactStagingDirectory)/orchestratorService'  # Points to the published output
-    displayName: 'Deploy OrchestratorService'
-
-  # Warm up the App Service to avoid cold start latency - Retries up to 10 times with a 5-second delay, Checks for HTTP 200 to confirm readiness, - Avoids false positives from cold-start 503s or timeouts
-  - script: |
-      echo "Warming up OrchestratorService..."          
-      for i in {1..10}; do                                      
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health)
-        echo "Attempt $i: HTTP $response"
-        if [ "$response" -eq 200 ]; then
-          echo "Success - Service is warm."
-          break
-        fi
-        sleep 5
-      done
-    displayName: 'Warm up OrchestratorService after deploy'
+# Step 2: Warm up the ACA endpoint to avoid cold start latency
+- script: |
+    echo "Warming up OrchestratorService..."
+    for i in {1..10}; do
+      response=$(curl -s -o /dev/null -w "%{http_code}" https://orchestrator-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
+      echo "Attempt $i: HTTP $response"
+      if [ "$response" -eq 200 ]; then
+        echo "Success - Service is warm."
+        break
+      fi
+      sleep 5
+    done
+  displayName: 'Warm up OrchestratorService after deploy'
+  condition: succeeded()  # Only run this step if the previous deployment succeeded
