@@ -51,6 +51,25 @@ namespace TaskService.Controllers
         }
 
 
+        [HttpGet("by-user/{id:guid}")]
+        [SwaggerOperation(Summary = "Get task by user Id", Description = "Returns all tasks by user Id.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetByUserId([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Fetching all tasks by user Id {UserId} at {Time}", id, DateTime.UtcNow);
+            try
+            {
+                // we need to fix this filter by user Id
+                var tasks = await _mediator.Send(new GetAllTasksQuery(), cancellationToken);
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all tasks by user Id {UserId} at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving tasks by user Id {id}.");                           // RFC 7807 Error Format - from BaseApiController
+            }
+        }
 
 
         [HttpGet("{id:guid}")]
@@ -83,6 +102,9 @@ namespace TaskService.Controllers
                 return InternalError("An error occurred while retrieving the task.");
             }
         }
+
+
+
 
 
         [HttpGet("filter")]

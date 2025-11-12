@@ -14,6 +14,13 @@
 
 	<PackageReference Include="AspNetCore.CacheOutput" Version="3.1.0" />
 
+	<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+	<PackageReference Include="Serilog.Enrichers.CorrelationId" Version="3.0.1" />
+	<PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+	<PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0" />
+	<PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+	<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
