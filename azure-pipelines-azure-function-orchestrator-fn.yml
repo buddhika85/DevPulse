@@ -73,7 +73,7 @@ stages:
                 echo '    static async Task Main() {' >> Program.cs
                 echo '        var conn = Environment.GetEnvironmentVariable("SB_CONN");' >> Program.cs
                 echo '        var topic = "user-updates";' >> Program.cs
-                echo '        var body = "{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"User updated\",\"TimeStamp\":\"2025-11-13T04:00:00Z\"}";' >> Program.cs
+                echo '        var body = $"{{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"Published via CI/CD for testing : User updated\",\"TimeStamp\":\"{DateTime.UtcNow:O}\"}}";' >> Program.cs
                 echo '        var client = new ServiceBusClient(conn);' >> Program.cs
                 echo '        var sender = client.CreateSender(topic);' >> Program.cs
                 echo '        var message = new ServiceBusMessage(body);' >> Program.cs
