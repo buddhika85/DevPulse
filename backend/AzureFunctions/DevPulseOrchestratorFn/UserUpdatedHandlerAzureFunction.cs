@@ -43,9 +43,7 @@ namespace DevPulseOrchestratorFn
                 _logger.LogInformation("Message Body: {body}", message.Body);
                 _logger.LogInformation("Message Content-Type: {contentType}", message.ContentType);
 
-                // Deserialize
-                var payload = JsonSerializer.Deserialize<UserDisplayNameChangedAzServiceBusPayload>(message.Body);
-                _logger.LogInformation("Message Body Deserialized: {DeserializedBody}", payload?.ToString());
+                var payload = DeserializeMessage(message);
 
                 if (payload?.UserId is not null)
                 {
@@ -71,5 +69,90 @@ namespace DevPulseOrchestratorFn
             }
         }
 
+        /// <summary>
+        /// A helper to Deserialize ServiceBusReceivedMessage
+        /// </summary>
+        /// <param name="message">ServiceBusReceivedMessage</param>
+        /// <returns>BaseUserUpdatedPayload?</returns>
+        /// <exception cref="ArgumentNullException">if updateField is unavailable</exception>
+        private BaseUserUpdatedPayload? DeserializeMessage(ServiceBusReceivedMessage message)
+        {
+            // extract update field
+            var doc = JsonDocument.Parse(message.Body);
+            var updateField = doc.RootElement.GetProperty("UpdateField").ToString();
+
+
+            if (string.IsNullOrWhiteSpace(updateField))
+            {
+                _logger.LogError("UserUpdatedHandlerAzureFunction - updateField not provided.");
+                throw new ArgumentNullException("UserUpdatedHandlerAzureFunction - updateField not provided.");
+            }
+
+            // Deserialize
+            BaseUserUpdatedPayload? payload = updateField switch
+            {
+
+                "DisplayName" => JsonSerializer.Deserialize<UserDisplayNameChangedAzServiceBusPayload>(message.Body),
+                "Email" => JsonSerializer.Deserialize<UserEmailChangedAzServiceBusPayload>(message.Body),
+                "Role" => JsonSerializer.Deserialize<UserRoleChangedAzServiceBusPayload>(message.Body),
+                "All" => JsonSerializer.Deserialize<UserUpdatedAzServiceBusPayload>(message.Body),
+                _ => JsonSerializer.Deserialize<UserUpdatedAzServiceBusPayload>(message.Body)
+            };
+            _logger.LogInformation("Message Body Deserialized: {DeserializedBody}", payload?.ToString());
+            return payload;
+        }
     }
 }
+
+
+/*
+ 
+UserUpdatedAzServiceBusPayload
+
+ {
+  "UserId": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+  "UpdateField": "All",
+  "Message": "User updated",
+  "TimeStamp": "2025-11-13T04:00:00Z"
+}
+
+
+
+UserDisplayNameChangedAzServiceBusPayload
+
+{
+  "UserId": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+  "UpdateField": "DisplayName",
+  "OldDisplayName": "John Doe",
+  "NewDisplayName": "Jonathan D.",
+  "Email": "jonathan@example.com",
+  "Message": "User Display name updated",
+  "TimeStamp": "2025-11-13T04:00:00Z"
+}
+
+UserEmailChangedAzServiceBusPayload
+
+{
+  "UserId": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+  "UpdateField": "Email",
+  "PreviousEmail": "old@example.com",
+  "NewEmail": "new@example.com",
+  "Email": "new@example.com",
+  "Message": "User Email updated",
+  "TimeStamp": "2025-11-13T04:00:00Z"
+}
+
+
+UserRoleChangedAzServiceBusPayload
+
+{
+  "UserId": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+  "UpdateField": "Role",
+  "PreviousRole": "User",
+  "NewRole": "Admin",
+  "Email": "admin@example.com",
+  "Message": "User Role updated",
+  "TimeStamp": "2025-11-13T04:00:00Z"
+}
+ 
+ */
