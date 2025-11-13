@@ -8,12 +8,15 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-# Define variables used throughout the pipeline
+  
 variables:
-  - group: DevPulse-Backend-Secrets  # Injects ServiceBusConnectionString securely
-  buildConfiguration: 'Release'
-  functionProjectPath: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
-  publishOutput: '$(Build.ArtifactStagingDirectory)/publish'
+  - group: DevPulse-Backend-Secrets     # Injects ServiceBusConnectionString securely
+  - name: buildConfiguration
+    value: 'Release'
+  - name: functionProjectPath
+    value: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
+  - name: publishOutput
+    value: '$(Build.ArtifactStagingDirectory)/publish'
 
 # Define the pipeline stage
 stages:
