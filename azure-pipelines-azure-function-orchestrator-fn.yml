@@ -11,9 +11,6 @@ pool:
 # Define variables used throughout the pipeline
 variables:
   - group: DevPulse-Backend-Secrets  # Injects ServiceBusConnectionString securely
-  buildConfiguration: 'Release'
-  functionProjectPath: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
-  publishOutput: '$(Build.ArtifactStagingDirectory)/publish'
 
 # Define the pipeline stage
 stages:
@@ -38,8 +35,8 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: false
-        projects: '$(functionProjectPath)'
-        arguments: '--configuration $(buildConfiguration) --output $(publishOutput)'
+        projects: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
+        arguments: '--configuration 'Release' --output $(publishOutput)'
 
     # Deploy the published function to Azure
     - task: AzureFunctionApp@2
@@ -48,7 +45,7 @@ stages:
         azureSubscription: 'DevPulse-Azure-Connection'
         appType: 'functionApp'
         appName: 'devpulsefunctionapp'
-        package: '$(publishOutput)'
+        package: '$(Build.ArtifactStagingDirectory)/publish'
 
     # Post-deployment: Send a test message to Service Bus topic
     - task: AzureCLI@2
