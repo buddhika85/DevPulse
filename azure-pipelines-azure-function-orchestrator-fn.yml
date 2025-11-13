@@ -51,10 +51,13 @@ stages:
         package: '$(publishOutput)'
 
     # Placeholder: Send test message to Service Bus topic
-    - script: |
-        echo "🧪 Placeholder for Service Bus test message"
-        echo "This step will be replaced with a real message sender using CLI or PowerShell"
+    - task: Bash@3
       displayName: 'Send test Service Bus message (placeholder)'
+      inputs:
+        targetType: 'inline'
+        script: |
+          echo "🧪 Placeholder for Service Bus test message"
+          echo "This step will be replaced with a real message sender using CLI or PowerShell"
 
     # Post-deployment: Tail logs and fail if no recent execution is found
     - task: AzureCLI@2
