@@ -48,3 +48,19 @@ stages:
         appType: 'functionApp'                          # Use 'functionAppLinux' if you're on Linux
         appName: 'devpulsefunctionapp'                  # Your Azure Function App name
         package: '$(publishOutput)'                     # Path to the published output
+
+    # Post-deployment: Tail logs to verify the function was triggered
+    - task: AzureCLI@2
+      displayName: 'Tail Azure Function logs'
+      inputs:
+        azureSubscription: 'DevPulse-Azure-Connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Waiting 10 seconds for function to process any messages..."
+          sleep 10
+          az functionapp log tail \
+            --name devpulsefunctionapp \
+            --resource-group DevPulseRG \
+            --output table \
+            --limit 20
