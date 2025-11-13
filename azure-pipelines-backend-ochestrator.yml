@@ -6,8 +6,8 @@ trigger:
 
 # Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  acrName: devpulseacr                      # Azure Container Registry name
-  imageName: orchestrator-api              # Docker image name
+  acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io                         # ACR Login server 
+  imageName: orchestrator-api                                   # Docker image name
   resourceGroup: DevPulseRG                # Azure resource group
   containerAppName: orchestrator-api       # Azure Container App name
   location: australiaeast                  # Azure region
@@ -31,7 +31,7 @@ steps:
         # Build and push image using Azure Container Registry build service
         echo "Building and pushing image via ACR..."
         az acr build \
-          --registry $(acrName) \
+          --registry $(acrLoginServer) \
           --image $(imageName):$(tag) \
           .
 
@@ -40,7 +40,7 @@ steps:
         az containerapp update \
           --name $(containerAppName) \
           --resource-group $(resourceGroup) \
-          --image $(acrName).azurecr.io/$(imageName):$(tag)
+          --image $(acrLoginServer)/$(imageName):$(tag)
 
   # Step 2: Warm up the ACA endpoint to avoid cold start latency
   - script: |
