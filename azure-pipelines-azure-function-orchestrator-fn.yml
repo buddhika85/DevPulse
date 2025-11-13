@@ -11,6 +11,9 @@ pool:
 # Define variables used throughout the pipeline
 variables:
   - group: DevPulse-Backend-Secrets  # Injects ServiceBusConnectionString securely
+  buildConfiguration: 'Release'
+  functionProjectPath: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
+  publishOutput: '$(Build.ArtifactStagingDirectory)/publish'
 
 # Define the pipeline stage
 stages:
@@ -35,8 +38,8 @@ stages:
       inputs:
         command: 'publish'
         publishWebProjects: false
-        projects: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
-        arguments: '--configuration 'Release' --output $(publishOutput)'
+        projects: '$(functionProjectPath)'
+        arguments: '--configuration $(buildConfiguration) --output $(publishOutput)'
 
     # Deploy the published function to Azure
     - task: AzureFunctionApp@2
@@ -45,21 +48,13 @@ stages:
         azureSubscription: 'DevPulse-Azure-Connection'
         appType: 'functionApp'
         appName: 'devpulsefunctionapp'
-        package: '$(Build.ArtifactStagingDirectory)/publish'
+        package: '$(publishOutput)'
 
-    # Post-deployment: Send a test message to Service Bus topic
-    - task: AzureCLI@2
-      displayName: 'Send test Service Bus message'
-      inputs:
-        azureSubscription: 'DevPulse-Azure-Connection'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          echo "Sending test message to Service Bus topic..."
-          az servicebus topic send \
-            --connection-string "$ServiceBusConnectionString" \
-            --topic-name user-updates \
-            --body '{"UserId":"test-user","Action":"updated"}'
+    # Placeholder: Send test message to Service Bus topic
+    - script: |
+        echo "🧪 Placeholder for Service Bus test message"
+        echo "This step will be replaced with a real message sender using CLI or PowerShell"
+      displayName: 'Send test Service Bus message (placeholder)'
 
     # Post-deployment: Tail logs and fail if no recent execution is found
     - task: AzureCLI@2
