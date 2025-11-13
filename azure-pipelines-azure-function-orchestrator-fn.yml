@@ -6,108 +6,99 @@ trigger:
 
 # Use a Microsoft-hosted agent with Linux OS for better CLI compatibility
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
 variables:
-  - group: DevPulse-Backend-Secrets     # Injects ServiceBusConnectionString securely
+  - group: DevPulse-Backend-Secrets # Injects ServiceBusConnectionString securely
   - name: buildConfiguration
-    value: 'Release'
+    value: "Release"
   - name: functionProjectPath
-    value: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
+    value: "backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj"
   - name: publishOutput
-    value: '$(Build.ArtifactStagingDirectory)/publish'
+    value: "$(Build.ArtifactStagingDirectory)/publish"
 
 # Define the pipeline stage
 stages:
-- stage: BuildAndDeployFunction
-  displayName: 'Build and Deploy Azure Function'
-  jobs:
-  - job: BuildAndDeploy
-    displayName: 'Build and Deploy Job'
-    steps:
+  - stage: BuildAndDeployFunction
+    displayName: "Build and Deploy Azure Function"
+    jobs:
+      - job: BuildAndDeploy
+        displayName: "Build and Deploy Job"
+        steps:
+          # Install .NET 8 SDK (required for isolated worker model)
+          - task: UseDotNet@2
+            displayName: "Use .NET 8 SDK"
+            inputs:
+              packageType: "sdk"
+              version: "8.x"
 
-    # Install .NET 8 SDK (required for isolated worker model)
-    - task: UseDotNet@2
-      displayName: 'Use .NET 8 SDK'
-      inputs:
-        packageType: 'sdk'
-        version: '8.x'
+          # Build and publish the Azure Function project
+          - task: DotNetCoreCLI@2
+            displayName: "Publish Azure Function"
+            inputs:
+              command: "publish"
+              publishWebProjects: false
+              projects: "$(functionProjectPath)"
+              arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
 
-    # Build and publish the Azure Function project
-    - task: DotNetCoreCLI@2
-      displayName: 'Publish Azure Function'
-      inputs:
-        command: 'publish'
-        publishWebProjects: false
-        projects: '$(functionProjectPath)'
-        arguments: '--configuration $(buildConfiguration) --output $(publishOutput)'
+          # Deploy the published function to Azure
+          - task: AzureFunctionApp@2
+            displayName: "Deploy to Azure Function App"
+            inputs:
+              azureSubscription: "DevPulse-Azure-Connection"
+              appType: "functionApp"
+              appName: "devpulsefunctionapp"
+              package: "$(publishOutput)"
 
-    # Deploy the published function to Azure
-    - task: AzureFunctionApp@2
-      displayName: 'Deploy to Azure Function App'
-      inputs:
-        azureSubscription: 'DevPulse-Azure-Connection'
-        appType: 'functionApp'
-        appName: 'devpulsefunctionapp'
-        package: '$(publishOutput)'
+          # Send test message to Service Bus topic using PowerShell and .NET SDK
+          - task: PowerShell@2
+            displayName: "Send test message to Service Bus topic"
+            inputs:
+              targetType: "inline"
+              script: |
+                $ErrorActionPreference = 'Stop'
+                $connectionString = "$(ServiceBusConnectionString)"
+                $tempPath = "$(Build.ArtifactStagingDirectory)/sbSender"
+                mkdir $tempPath | Out-Null
+                cd $tempPath
+                dotnet new console --framework net8.0 --output . | Out-Null
+                dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 | Out-Null
 
-    # Send test message to Service Bus topic using PowerShell and .NET SDK
-    - task: PowerShell@2
-      displayName: 'Send test message to Service Bus topic'
-      inputs:
-        targetType: 'inline'
-        script: |
-          $ErrorActionPreference = 'Stop'
-          $connectionString = "$(ServiceBusConnectionString)"
-          $topicName = "user-updates"
-          $messageBody = '{"UserId":"test-user","Action":"updated"}'
+                # Write Program.cs using echo (YAML-safe)
+                echo 'using System;' > Program.cs
+                echo 'using System.Threading.Tasks;' >> Program.cs
+                echo 'using Azure.Messaging.ServiceBus;' >> Program.cs
+                echo '' >> Program.cs
+                echo 'class Program {' >> Program.cs
+                echo '    static async Task Main() {' >> Program.cs
+                echo '        var conn = Environment.GetEnvironmentVariable("SB_CONN");' >> Program.cs
+                echo '        var topic = "user-updates";' >> Program.cs
+                echo '        var body = "{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"User updated\",\"TimeStamp\":\"2025-11-13T04:00:00Z\"}";' >> Program.cs
+                echo '        var client = new ServiceBusClient(conn);' >> Program.cs
+                echo '        var sender = client.CreateSender(topic);' >> Program.cs
+                echo '        var message = new ServiceBusMessage(body);' >> Program.cs
+                echo '        await sender.SendMessageAsync(message);' >> Program.cs
+                echo '        Console.WriteLine("✅ Test message sent.");' >> Program.cs
+                echo '    }' >> Program.cs
+                echo '}' >> Program.cs
 
-          # Create temp folder and minimal .NET console app
-          $tempPath = "$(Build.ArtifactStagingDirectory)/sbSender"
-          mkdir $tempPath | Out-Null
-          cd $tempPath
-          dotnet new console --framework net8.0 --output . | Out-Null
-          dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 | Out-Null
+                $env:SB_CONN = $connectionString
+                dotnet run
 
-          # Write Program.cs manually
-          $programCode = @'
-using System;
-using System.Threading.Tasks;
-using Azure.Messaging.ServiceBus;
-
-class Program {
-    static async Task Main() {
-        var conn = Environment.GetEnvironmentVariable("SB_CONN");
-        var topic = "user-updates";
-        var body = "{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"CI CD Triggered - User update message\",\"TimeStamp\":\"2025-11-13T04:00:00Z\"}";
-        var client = new ServiceBusClient(conn);
-        var sender = client.CreateSender(topic);
-        var message = new ServiceBusMessage(body);
-        await sender.SendMessageAsync(message);
-        Console.WriteLine("✅ Test message sent. - CI CD Triggered test mesaage to Azure Service Bus Topic : user-updates");
-    }
-}
-'@
-          Set-Content -Path Program.cs -Value $programCode
-
-          # Set env var and run
-          $env:SB_CONN = $connectionString
-          dotnet run
-
-    # Post-deployment: Tail logs and fail if no recent execution is found
-    - task: AzureCLI@2
-      displayName: 'Tail Azure Function logs and verify'
-      inputs:
-        azureSubscription: 'DevPulse-Azure-Connection'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          echo "Waiting 10 seconds for function to process the message..."
-          sleep 10
-          LOGS=$(az functionapp log tail --name devpulsefunctionapp --resource-group DevPulseRG --limit 20 --output json 2>&1 | tee /tmp/function_logs.txt)
-          if grep -q "Executing 'Functions." /tmp/function_logs.txt; then
-            echo "✅ Function executed successfully."
-          else
-            echo "❌ No execution logs found. Function may not have triggered."
-            exit 1
-          fi
+          # Post-deployment: Tail logs and fail if no recent execution is found
+          - task: AzureCLI@2
+            displayName: "Tail Azure Function logs and verify"
+            inputs:
+              azureSubscription: "DevPulse-Azure-Connection"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                echo "Waiting 10 seconds for function to process the message..."
+                sleep 10
+                LOGS=$(az functionapp log tail --name devpulsefunctionapp --resource-group DevPulseRG --limit 20 --output json 2>&1 | tee /tmp/function_logs.txt)
+                if grep -q "Executing 'Functions." /tmp/function_logs.txt; then
+                  echo "✅ Function executed successfully."
+                else
+                  echo "❌ No execution logs found. Function may not have triggered."
+                  exit 1
+                fi
