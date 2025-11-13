@@ -51,48 +51,44 @@ stages:
         appName: 'devpulsefunctionapp'
         package: '$(publishOutput)'
 
-    # Send test message to Service Bus topic using PowerShell
+    # Send test message to Service Bus topic using PowerShell and .NET SDK
     - task: PowerShell@2
       displayName: 'Send test message to Service Bus topic'
       inputs:
         targetType: 'inline'
         script: |
           $ErrorActionPreference = 'Stop'
-
-          # Define variables
           $connectionString = "$(ServiceBusConnectionString)"
           $topicName = "user-updates"
           $messageBody = '{"UserId":"test-user","Action":"updated"}'
 
-          # Create temporary project folder
+          # Create temp folder and minimal .NET console app
           $tempPath = "$(Build.ArtifactStagingDirectory)/sbSender"
           mkdir $tempPath | Out-Null
           cd $tempPath
+          dotnet new console --framework net8.0 --output . | Out-Null
+          dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 | Out-Null
 
-          # Create minimal .NET console app
-          dotnet new console --output . --framework net8.0
-          dotnet add package Azure.Messaging.ServiceBus --version 7.16.1
-
-          # Replace Program.cs with sender logic
-          @"
+          # Write Program.cs manually
+          $programCode = @'
 using System;
 using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 
 class Program {
     static async Task Main() {
-        var connectionString = Environment.GetEnvironmentVariable("SB_CONN");
-        var topicName = "user-updates";
-        var messageBody = "{\"UserId\":\"test-user\",\"Action\":\"updated\"}";
-
-        var client = new ServiceBusClient(connectionString);
-        var sender = client.CreateSender(topicName);
-        var message = new ServiceBusMessage(messageBody);
+        var conn = Environment.GetEnvironmentVariable("SB_CONN");
+        var topic = "user-updates";
+        var body = "{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"CI CD Triggered - User update message\",\"TimeStamp\":\"2025-11-13T04:00:00Z\"}";
+        var client = new ServiceBusClient(conn);
+        var sender = client.CreateSender(topic);
+        var message = new ServiceBusMessage(body);
         await sender.SendMessageAsync(message);
-        Console.WriteLine("✅ Test message sent to topic '" + topicName + "'");
+        Console.WriteLine("✅ Test message sent. - CI CD Triggered test mesaage to Azure Service Bus Topic : user-updates");
     }
 }
-"@ | Set-Content -Path Program.cs
+'@
+          Set-Content -Path Program.cs -Value $programCode
 
           # Set env var and run
           $env:SB_CONN = $connectionString
