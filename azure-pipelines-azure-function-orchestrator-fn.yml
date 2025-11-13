@@ -1,0 +1,50 @@
+# Trigger this pipeline when code is pushed to the main branch
+trigger:
+  branches:
+    include:
+      - main
+
+# Use a Microsoft-hosted agent with Windows OS
+pool:
+  vmImage: 'windows-latest'
+
+# Define variables used throughout the pipeline
+variables:
+  buildConfiguration: 'Release'
+  functionProjectPath: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
+  publishOutput: '$(Build.ArtifactStagingDirectory)/publish'
+
+# Define the pipeline stage
+stages:
+- stage: BuildAndDeployFunction
+  displayName: 'Build and Deploy Azure Function'
+  jobs:
+  - job: BuildAndDeploy
+    displayName: 'Build and Deploy Job'
+    steps:
+
+    # Install .NET 8 SDK (required for isolated worker model)
+    - task: UseDotNet@2
+      displayName: 'Use .NET 8 SDK'
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    # Build and publish the Azure Function project
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish Azure Function'
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: '$(functionProjectPath)'
+        arguments: '--configuration $(buildConfiguration) --output $(publishOutput)'
+
+    # Deploy the published function to Azure
+    - task: AzureFunctionApp@2
+      displayName: 'Deploy to Azure Function App'
+      inputs:
+        azureSubscription: 'DevPulse-Azure-Connection'  # Azure service connection name configured in Azure DevOps to Azure subscription
+        appType: 'functionApp'                          # Use 'functionAppLinux' if you're on Linux
+        appName: 'devpulsefunctionapp'                  # Your Azure Function App name
+        package: '$(publishOutput)'                     # Path to the published output
