@@ -10,6 +10,7 @@ pool:
 
 # Define variables used throughout the pipeline
 variables:
+  - group: DevPulse-Backend-Secrets
   buildConfiguration: 'Release'
   functionProjectPath: 'backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj'
   publishOutput: '$(Build.ArtifactStagingDirectory)/publish'
@@ -48,3 +49,34 @@ stages:
         appType: 'functionApp'                          # Use 'functionAppLinux' if you're on Linux
         appName: 'devpulsefunctionapp'                  # Your Azure Function App name
         package: '$(publishOutput)'                     # Path to the published output
+
+    # post-deployment verification step 1: Send a test message to the Service Bus topic to trigger the function
+    - task: AzureCLI@2
+      displayName: 'Send test message to Service Bus'
+      inputs:
+        azureSubscription: 'DevPulse-Azure-Connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az servicebus topic send \
+            --resource-group DevPulseRG \
+            --namespace-name devpulsebusns \
+            --topic-name user-updates \
+            --message-body '{"UserId": "a1b2c3d4-e5f6-7890-abcd-1234567890ef","UpdateField": "All","Message": "User updated","TimeStamp": "2025-11-13T04:00:00Z"}'
+            --connection-string "$(ServiceBusConnectionString)"
+
+    # post-deployment verification step 2: Tail logs to verify the function was triggered
+    - task: AzureCLI@2
+      displayName: 'Tail Azure Function logs'
+      inputs:
+        azureSubscription: 'DevPulse-Azure-Connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          echo "Waiting 10 seconds for function to process the message..."
+          sleep 10
+          az functionapp log tail \
+            --name devpulsefunctionapp \
+            --resource-group DevPulseRG \
+            --output table \
+            --limit 20
