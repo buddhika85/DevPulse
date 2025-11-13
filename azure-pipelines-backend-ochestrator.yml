@@ -17,45 +17,42 @@ variables:
 pool:
   vmImage: ubuntu-latest
 
-# Step 1: Build, push, and deploy the container image to ACA
-- task: AzureCLI@2
-  displayName: 'Build, Push, and Deploy to ACA'
-  inputs:
-    azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'  # Azure service connection name configured in Azure DevOps
-    scriptType: bash
-    scriptLocation: inlineScript
-    failOnStderr: true                                   # Fail the task if any CLI command throws an error
-    inlineScript: |
-      # Login to Azure Container Registry using Azure CLI
-      echo "Logging into ACR..."
-      az acr login --name $(acrName)
+# Define the pipeline steps
+steps:
+  # Step 1: Build and push the image using ACR build service (avoids DNS resolution issues)
+  - task: AzureCLI@2
+    displayName: 'Build via ACR and Deploy to ACA'
+    inputs:
+      azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'  # Azure service connection name configured in Azure DevOps
+      scriptType: bash
+      scriptLocation: inlineScript
+      failOnStderr: true                                   # Fail the task if any CLI command throws an error
+      inlineScript: |
+        # Build and push image using Azure Container Registry build service
+        echo "Building and pushing image via ACR..."
+        az acr build \
+          --registry $(acrName) \
+          --image $(imageName):$(tag) \
+          .
 
-      # Build the Docker image from your source code
-      echo "Building Docker image..."
-      docker build -t $(acrName).azurecr.io/$(imageName):$(tag) .
+        # Deploy the new image to your Azure Container App
+        echo "Deploying to Azure Container Apps..."
+        az containerapp update \
+          --name $(containerAppName) \
+          --resource-group $(resourceGroup) \
+          --image $(acrName).azurecr.io/$(imageName):$(tag)
 
-      # Push the image to your Azure Container Registry
-      echo "Pushing image to ACR..."
-      docker push $(acrName).azurecr.io/$(imageName):$(tag)
-
-      # Deploy the new image to your Azure Container App
-      echo "Deploying to Azure Container Apps..."
-      az containerapp update \
-        --name $(containerAppName) \
-        --resource-group $(resourceGroup) \
-        --image $(acrName).azurecr.io/$(imageName):$(tag)
-
-# Step 2: Warm up the ACA endpoint to avoid cold start latency
-- script: |
-    echo "Warming up OrchestratorService..."
-    for i in {1..10}; do
-      response=$(curl -s -o /dev/null -w "%{http_code}" https://orchestrator-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
-      echo "Attempt $i: HTTP $response"
-      if [ "$response" -eq 200 ]; then
-        echo "Success - Service is warm."
-        break
-      fi
-      sleep 5
-    done
-  displayName: 'Warm up OrchestratorService after deploy'
-  condition: succeeded()  # Only run this step if the previous deployment succeeded
+  # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  - script: |
+      echo "Warming up OrchestratorService..."
+      for i in {1..10}; do
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://orchestrator-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
+        echo "Attempt $i: HTTP $response"
+        if [ "$response" -eq 200 ]; then
+          echo "Success - Service is warm."
+          break
+        fi
+        sleep 5
+      done
+    displayName: 'Warm up OrchestratorService after deploy'
+    condition: succeeded()  # Only run this step if the previous deployment succeeded
