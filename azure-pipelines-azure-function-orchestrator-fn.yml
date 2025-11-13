@@ -8,7 +8,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-  
 variables:
   - group: DevPulse-Backend-Secrets     # Injects ServiceBusConnectionString securely
   - name: buildConfiguration
@@ -33,7 +32,6 @@ stages:
       inputs:
         packageType: 'sdk'
         version: '8.x'
-        installationPath: $(Agent.ToolsDirectory)/dotnet
 
     # Build and publish the Azure Function project
     - task: DotNetCoreCLI@2
@@ -53,14 +51,52 @@ stages:
         appName: 'devpulsefunctionapp'
         package: '$(publishOutput)'
 
-    # Placeholder: Send test message to Service Bus topic
-    - task: Bash@3
-      displayName: 'Send test Service Bus message (placeholder)'
+    # Send test message to Service Bus topic using PowerShell
+    - task: PowerShell@2
+      displayName: 'Send test message to Service Bus topic'
       inputs:
         targetType: 'inline'
         script: |
-          echo "🧪 Placeholder for Service Bus test message"
-          echo "This step will be replaced with a real message sender using CLI or PowerShell"
+          $ErrorActionPreference = 'Stop'
+
+          # Define variables
+          $connectionString = "$(ServiceBusConnectionString)"
+          $topicName = "user-updates"
+          $messageBody = '{"UserId":"test-user","Action":"updated"}'
+
+          # Create temporary project folder
+          $tempPath = "$(Build.ArtifactStagingDirectory)/sbSender"
+          mkdir $tempPath | Out-Null
+          cd $tempPath
+
+          # Create minimal .NET console app
+          dotnet new console --output . --framework net8.0
+          dotnet add package Azure.Messaging.ServiceBus --version 7.16.1
+
+          # Replace Program.cs with sender logic
+          @"
+using System;
+using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus;
+
+class Program {
+    static async Task Main() {
+        var connectionString = Environment.GetEnvironmentVariable("SB_CONN");
+        var topicName = "user-updates";
+        var messageBody = "{\"UserId\":\"test-user\",\"Action\":\"updated\"}";
+
+        var client = new ServiceBusClient(connectionString);
+        var sender = client.CreateSender(topicName);
+        var message = new ServiceBusMessage(messageBody);
+        await sender.SendMessageAsync(message);
+        Console.WriteLine("✅ Test message sent to topic '" + topicName + "'");
+    }
+}
+"@ | Set-Content -Path Program.cs
+
+          # Set env var and run
+          $env:SB_CONN = $connectionString
+          dotnet run
 
     # Post-deployment: Tail logs and fail if no recent execution is found
     - task: AzureCLI@2
@@ -72,12 +108,7 @@ stages:
         inlineScript: |
           echo "Waiting 10 seconds for function to process the message..."
           sleep 10
-          LOGS=$(az functionapp log tail \
-            --name devpulsefunctionapp \
-            --resource-group DevPulseRG \
-            --limit 20 \
-            --output json 2>&1 | tee /tmp/function_logs.txt)
-
+          LOGS=$(az functionapp log tail --name devpulsefunctionapp --resource-group DevPulseRG --limit 20 --output json 2>&1 | tee /tmp/function_logs.txt)
           if grep -q "Executing 'Functions." /tmp/function_logs.txt; then
             echo "✅ Function executed successfully."
           else
