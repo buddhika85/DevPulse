@@ -10,7 +10,7 @@ pool:
 
 # Define variables
 variables:
-  - group: DevPulse-Backend-Secrets # Inject ServiceBusConnectionString securely
+  - group: DevPulse-Backend-Secrets # Inject ServiceBusConnectionString and HealthCheckAzureFunctionUrl
   - name: buildConfiguration
     value: "Release"
   - name: functionProjectPath
@@ -45,7 +45,7 @@ stages:
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
               zipAfterPublish: false
 
-          # Step 3: Validate publish output contains required files
+          # Step 3: Check that required files exist before deployment
           - script: |
               echo "Checking contents of: $(functionOutput)"
               ls -la "$(functionOutput)"
@@ -73,7 +73,7 @@ stages:
               package: "$(functionOutput)"
               deploymentMethod: "zipDeploy"
 
-          # Step 4A: Warm up Function App to avoid cold start delays
+          # Step 4A: Warm up Function App using health check endpoint
           - task: Bash@3
             displayName: "Warm up Function App with health ping"
             inputs:
@@ -84,7 +84,7 @@ stages:
                 curl -s "$(HealthCheckAzureFunctionUrl)" || echo "⚠️ Health ping failed (non-blocking)"
                 echo "✅ Health ping sent. Proceeding to message dispatch..."
 
-          # Step 5: Send test message to Service Bus using Bash
+          # Step 5: Send test message to Service Bus topic
           - task: Bash@3
             displayName: "Send test message to Service Bus"
             inputs:
@@ -118,25 +118,34 @@ stages:
                 export SB_CONN="$connectionString"
                 dotnet run
 
-          # Step 6: Verify function execution in Azure logs
+          # Step 6: Verify function execution by downloading and scanning latest log file
           - task: AzureCLI@2
-            displayName: "Verify function execution in logs"
+            displayName: "Verify function execution via log download"
             inputs:
               azureSubscription: "DevPulse-Azure-Connection"
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                echo "Waiting 300 seconds for function to process the message..."
-                sleep 300
-                LOGS=$(az functionapp log tail \
+                echo "⏳ Waiting 180 seconds for function to process the message..."
+                sleep 180
+
+                echo "📥 Downloading logs from Function App..."
+                az webapp log download \
                   --name devpulsefunctionapp \
                   --resource-group DevPulseRG \
-                  --limit 20 \
-                  --output json 2>&1 | tee /tmp/function_logs.txt)
+                  --output zip \
+                  --output-file function_logs.zip
 
-                if grep -q "Executing 'Functions." /tmp/function_logs.txt; then
-                  echo "✅ Function executed successfully."
+                unzip -o function_logs.zip -d logs
+
+                echo "📁 Identifying latest log file..."
+                latestLog=$(find logs/LogFiles/Application/ -type f -name "*.txt" -printf "%T@ %p\n" | sort -n | tail -1 | cut -d' ' -f2)
+
+                echo "🔍 Searching for execution markers in: $latestLog"
+                if grep -q "UserUpdatedHandlerAzureFunction - Received message" "$latestLog" && \
+                   grep -q "Cache invalidation triggered for UserId:" "$latestLog"; then
+                  echo "✅ Function executed and cache invalidation confirmed."
                 else
-                  echo "❌ No execution logs found. Function may not have triggered."
+                  echo "❌ Expected log markers not found. Function may not have triggered or failed silently."
                   exit 1
                 fi
