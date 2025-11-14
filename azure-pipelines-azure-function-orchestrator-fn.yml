@@ -100,7 +100,7 @@ stages:
                 echo '        var sender = client.CreateSender(topic);' >> Program.cs
                 echo '        var message = new ServiceBusMessage(body);' >> Program.cs
                 echo '        await sender.SendMessageAsync(message);' >> Program.cs
-                echo '        Console.WriteLine("✅ Test message sent.");' >> Program.cs
+                echo '        Console.WriteLine("✅ Test message sent to Azure Service Bus Topic - User Updates.");' >> Program.cs
                 echo '    }' >> Program.cs
                 echo '}' >> Program.cs
 
