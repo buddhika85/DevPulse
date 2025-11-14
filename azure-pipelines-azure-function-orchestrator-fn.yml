@@ -80,7 +80,8 @@ stages:
               targetType: "inline"
               script: |
                 echo "🔄 Sending health ping to warm up Function App..."
-                curl -s https://devpulsefunctionapp.azurewebsites.net/api/HealthCheckAzureFunction || echo "⚠️ Health ping failed (non-blocking)"
+                echo "Health URL: $(HealthCheckAzureFunctionUrl)"
+                curl -s "$(HealthCheckAzureFunctionUrl)" || echo "⚠️ Health ping failed (non-blocking)"
                 echo "✅ Health ping sent. Proceeding to message dispatch..."
 
           # Step 5: Send test message to Service Bus using Bash

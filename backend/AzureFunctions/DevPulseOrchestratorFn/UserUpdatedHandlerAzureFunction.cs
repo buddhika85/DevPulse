@@ -24,6 +24,7 @@ namespace DevPulseOrchestratorFn
             _logger = loggerFactory.CreateLogger<UserUpdatedHandlerAzureFunction>();
             _config = config;
         }
+
         /// <summary>
         /// This acts as a seprate azure function with in same Function app
         /// Scales in the same way as other azure fucnctions such as - UserUpdatedHandlerAzureFunction
@@ -32,11 +33,23 @@ namespace DevPulseOrchestratorFn
         /// <param name="req">HttpRequestData</param>
         /// <returns>HttpResponseData</returns>
         [Function("HealthCheckAzureFunction")]
-        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        public async Task<HttpResponseData> Health([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.WriteString($"Healthy - {DateTime.UtcNow}");
-            return response;
+            _logger.LogInformation("HealthCheckAzureFunction invoked.");
+            try
+            {
+                var response = req.CreateResponse(HttpStatusCode.OK);
+                await response.WriteStringAsync($"Healthy - {DateTime.UtcNow}");
+                _logger.LogInformation("HealthCheckAzureFunction success at {Time}", DateTime.UtcNow);
+                return response;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "HealthCheckAzureFunction failed at {Time}", DateTime.UtcNow);
+                var errorResponse = req.CreateResponse(HttpStatusCode.InternalServerError);
+                await errorResponse.WriteStringAsync($"Health check failed: {ex.Message}");                
+                return errorResponse;
+            }
         }
 
 
