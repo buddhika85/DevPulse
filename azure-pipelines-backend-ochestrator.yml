@@ -1,8 +1,8 @@
 # Trigger the pipeline when code is pushed to the 'main' branch
-trigger:
-  branches:
-    include:
-      - main
+# trigger:
+  # branches:
+    # include:
+      # - main
 
 # Define reusable variables for ACR, ACA, and deployment settings
 variables:

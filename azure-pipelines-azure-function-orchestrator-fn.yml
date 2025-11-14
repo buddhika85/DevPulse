@@ -1,10 +1,10 @@
-# Trigger when code is pushed to main
+# Run this pipeline when code is pushed to main
 trigger:
   branches:
     include:
       - main
 
-# Use Ubuntu agent for CLI compatibility
+# Use Ubuntu agent for compatibility
 pool:
   vmImage: "ubuntu-latest"
 
@@ -17,8 +17,10 @@ variables:
     value: "backend/AzureFunctions/DevPulseOrchestratorFn/DevPulseOrchestratorFn.csproj"
   - name: publishOutput
     value: "$(Build.ArtifactStagingDirectory)/publish"
+  - name: functionOutput
+    value: "$(publishOutput)/DevPulseOrchestratorFn"
 
-# Build and deploy stage
+# Build and deploy steps
 stages:
   - stage: BuildAndDeployFunction
     displayName: "Build and Deploy Azure Function"
@@ -28,12 +30,12 @@ stages:
         steps:
           # Install .NET 8 SDK
           - task: UseDotNet@2
-            displayName: "Use .NET 8 SDK"
+            displayName: "Install .NET 8 SDK"
             inputs:
               packageType: "sdk"
               version: "8.x"
 
-          # Publish Azure Function (no zip)
+          # Build and publish the function project
           - task: DotNetCoreCLI@2
             displayName: "Publish Azure Function"
             inputs:
@@ -43,17 +45,17 @@ stages:
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
               zipAfterPublish: false
 
-          # Check for host.json and functions.metadata
+          # Check for required files in the publish folder
           - script: |
-              echo "Checking contents of: $(publishOutput)"
-              ls -la "$(publishOutput)"
+              echo "Checking contents of: $(functionOutput)"
+              ls -la "$(functionOutput)"
 
-              if [ ! -f "$(publishOutput)/host.json" ]; then
+              if [ ! -f "$(functionOutput)/host.json" ]; then
                 echo "❌ host.json not found. Deployment will fail."
                 exit 1
               fi
 
-              if [ ! -f "$(publishOutput)/functions.metadata" ]; then
+              if [ ! -f "$(functionOutput)/functions.metadata" ]; then
                 echo "❌ functions.metadata not found. Function will not be recognized."
                 exit 1
               fi
@@ -68,12 +70,12 @@ stages:
               azureSubscription: "DevPulse-Azure-Connection"
               appType: "functionApp"
               appName: "devpulsefunctionapp"
-              package: "$(publishOutput)"
+              package: "$(functionOutput)"
               deploymentMethod: "zipDeploy"
 
-          # Send test message to Service Bus
+          # Send a test message to Service Bus
           - task: PowerShell@2
-            displayName: "Send test message to Service Bus topic"
+            displayName: "Send test message to Service Bus"
             inputs:
               targetType: "inline"
               script: |
@@ -105,9 +107,9 @@ stages:
                 $env:SB_CONN = $connectionString
                 dotnet run
 
-          # Tail logs to confirm function execution
+          # Check Azure logs to confirm function ran
           - task: AzureCLI@2
-            displayName: "Tail Azure Function logs and verify"
+            displayName: "Verify function execution in logs"
             inputs:
               azureSubscription: "DevPulse-Azure-Connection"
               scriptType: "bash"
