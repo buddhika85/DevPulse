@@ -1,13 +1,16 @@
+# Run this pipeline when code is pushed to main
 trigger:
   branches:
     include:
       - main
 
+# Use Ubuntu agent for compatibility
 pool:
   vmImage: "ubuntu-latest"
 
+# Define variables
 variables:
-  - group: DevPulse-Backend-Secrets
+  - group: DevPulse-Backend-Secrets # Inject ServiceBusConnectionString securely
   - name: buildConfiguration
     value: "Release"
   - name: functionProjectPath
@@ -17,6 +20,7 @@ variables:
   - name: functionOutput
     value: "$(publishOutput)/DevPulseOrchestratorFn"
 
+# Build and deploy stage
 stages:
   - stage: BuildAndDeployFunction
     displayName: "Build and Deploy Azure Function"
@@ -24,12 +28,14 @@ stages:
       - job: BuildAndDeploy
         displayName: "Build and Deploy Job"
         steps:
+          # Step 1: Install .NET 8 SDK
           - task: UseDotNet@2
             displayName: "Install .NET 8 SDK"
             inputs:
               packageType: "sdk"
               version: "8.x"
 
+          # Step 2: Build and publish the function project
           - task: DotNetCoreCLI@2
             displayName: "Publish Azure Function"
             inputs:
@@ -39,6 +45,7 @@ stages:
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
               zipAfterPublish: false
 
+          # Step 3: Validate publish output contains required files
           - script: |
               echo "Checking contents of: $(functionOutput)"
               ls -la "$(functionOutput)"
@@ -56,6 +63,7 @@ stages:
               echo "✅ Required files found. Proceeding with deployment."
             displayName: "Validate publish output"
 
+          # Step 4: Deploy to Azure Function App
           - task: AzureFunctionApp@2
             displayName: "Deploy to Azure Function App"
             inputs:
@@ -65,39 +73,41 @@ stages:
               package: "$(functionOutput)"
               deploymentMethod: "zipDeploy"
 
-          - task: PowerShell@2
+          # Step 5: Send test message to Service Bus using Bash
+          - task: Bash@3
             displayName: "Send test message to Service Bus"
             inputs:
               targetType: "inline"
               script: |
-                $ErrorActionPreference = 'Stop'
-                $connectionString = "$(ServiceBusConnectionString)"
-                $tempPath = "$(Build.ArtifactStagingDirectory)/sbSender"
-                mkdir $tempPath | Out-Null
-                cd $tempPath
-                dotnet new console --framework net8.0 --output . | Out-Null
-                dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 | Out-Null
+                set -e
+                connectionString="$(ServiceBusConnectionString)"
+                tempPath="$(Build.ArtifactStagingDirectory)/sbSender"
+                mkdir -p "$tempPath"
+                cd "$tempPath"
+                dotnet new console --framework net8.0 --output . > /dev/null
+                dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 > /dev/null
 
-                Add-Content Program.cs 'using System;'
-                Add-Content Program.cs 'using System.Threading.Tasks;'
-                Add-Content Program.cs 'using Azure.Messaging.ServiceBus;'
-                Add-Content Program.cs ''
-                Add-Content Program.cs 'class Program {'
-                Add-Content Program.cs '    static async Task Main() {'
-                Add-Content Program.cs '        var conn = Environment.GetEnvironmentVariable("SB_CONN");'
-                Add-Content Program.cs '        var topic = "user-updates";'
-                Add-Content Program.cs '        var body = $"{{\\"UserId\\":\\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\\",\\"UpdateField\\":\\"All\\",\\"Message\\":\\"Published via CI/CD for testing : User updated\\",\\"TimeStamp\\":\\"{DateTime.UtcNow:O}\\"}}";'
-                Add-Content Program.cs '        var client = new ServiceBusClient(conn);'
-                Add-Content Program.cs '        var sender = client.CreateSender(topic);'
-                Add-Content Program.cs '        var message = new ServiceBusMessage(body);'
-                Add-Content Program.cs '        await sender.SendMessageAsync(message);'
-                Add-Content Program.cs '        Console.WriteLine("✅ Test message sent.");'
-                Add-Content Program.cs '    }'
-                Add-Content Program.cs '}'
+                echo 'using System;' > Program.cs
+                echo 'using System.Threading.Tasks;' >> Program.cs
+                echo 'using Azure.Messaging.ServiceBus;' >> Program.cs
+                echo '' >> Program.cs
+                echo 'class Program {' >> Program.cs
+                echo '    static async Task Main() {' >> Program.cs
+                echo '        var conn = Environment.GetEnvironmentVariable("SB_CONN");' >> Program.cs
+                echo '        var topic = "user-updates";' >> Program.cs
+                echo '        var body = "{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"Published via CI/CD for testing : User updated\",\"TimeStamp\":\"" + DateTime.UtcNow.ToString("o") + "\"}";' >> Program.cs
+                echo '        var client = new ServiceBusClient(conn);' >> Program.cs
+                echo '        var sender = client.CreateSender(topic);' >> Program.cs
+                echo '        var message = new ServiceBusMessage(body);' >> Program.cs
+                echo '        await sender.SendMessageAsync(message);' >> Program.cs
+                echo '        Console.WriteLine("✅ Test message sent.");' >> Program.cs
+                echo '    }' >> Program.cs
+                echo '}' >> Program.cs
 
-                $env:SB_CONN = $connectionString
+                export SB_CONN="$connectionString"
                 dotnet run
 
+          # Step 6: Verify function execution in Azure logs
           - task: AzureCLI@2
             displayName: "Verify function execution in logs"
             inputs:
