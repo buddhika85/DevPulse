@@ -73,6 +73,16 @@ stages:
               package: "$(functionOutput)"
               deploymentMethod: "zipDeploy"
 
+          # Step 4A: Warm up Function App to avoid cold start delays
+          - task: Bash@3
+            displayName: "Warm up Function App with health ping"
+            inputs:
+              targetType: "inline"
+              script: |
+                echo "🔄 Sending health ping to warm up Function App..."
+                curl -s https://devpulsefunctionapp.azurewebsites.net/api/HealthCheckAzureFunction || echo "⚠️ Health ping failed (non-blocking)"
+                echo "✅ Health ping sent. Proceeding to message dispatch..."
+
           # Step 5: Send test message to Service Bus using Bash
           - task: Bash@3
             displayName: "Send test message to Service Bus"
@@ -115,8 +125,8 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                echo "Waiting 60 seconds for function to process the message..."
-                sleep 60
+                echo "Waiting 300 seconds for function to process the message..."
+                sleep 300
                 LOGS=$(az functionapp log tail \
                   --name devpulsefunctionapp \
                   --resource-group DevPulseRG \

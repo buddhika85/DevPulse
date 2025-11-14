@@ -1,8 +1,10 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SharedLib.DTOs.AzureServiceBusEvents;
+using System.Net;
 using System.Text.Json;
 
 namespace DevPulseOrchestratorFn
@@ -21,6 +23,20 @@ namespace DevPulseOrchestratorFn
             _httpClient = httpClientFactory.CreateClient();
             _logger = loggerFactory.CreateLogger<UserUpdatedHandlerAzureFunction>();
             _config = config;
+        }
+        /// <summary>
+        /// This acts as a seprate azure function with in same Function app
+        /// Scales in the same way as other azure fucnctions such as - UserUpdatedHandlerAzureFunction
+        /// Used to check healthyness of azure function app
+        /// </summary>
+        /// <param name="req">HttpRequestData</param>
+        /// <returns>HttpResponseData</returns>
+        [Function("HealthCheckAzureFunction")]
+        public HttpResponseData Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+        {
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.WriteString($"Healthy - {DateTime.UtcNow}");
+            return response;
         }
 
 
