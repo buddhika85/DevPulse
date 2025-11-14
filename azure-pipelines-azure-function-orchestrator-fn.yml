@@ -17,7 +17,6 @@ variables:
   - name: publishOutput
     value: "$(Build.ArtifactStagingDirectory)/publish"
 
-# Define the pipeline stage
 stages:
   - stage: BuildAndDeployFunction
     displayName: "Build and Deploy Azure Function"
@@ -25,14 +24,14 @@ stages:
       - job: BuildAndDeploy
         displayName: "Build and Deploy Job"
         steps:
-          # Install .NET 8 SDK (required for isolated worker model)
+          # ✅ Step 1: Install .NET 8 SDK
           - task: UseDotNet@2
             displayName: "Use .NET 8 SDK"
             inputs:
               packageType: "sdk"
               version: "8.x"
 
-          # Build and publish the Azure Function project
+          # ✅ Step 2: Build and publish the Azure Function project
           - task: DotNetCoreCLI@2
             displayName: "Publish Azure Function"
             inputs:
@@ -41,14 +40,18 @@ stages:
               projects: "$(functionProjectPath)"
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
 
-          # ✅ Step 3: Validate publish output contains host.json
+          # ✅ Step 3: Validate publish output contains host.json and functions.metadata
           - script: |
               if [ ! -f "$(publishOutput)/host.json" ]; then
                 echo "❌ host.json not found in publish output. Deployment will fail."
                 exit 1
               fi
-              echo "✅ host.json found. Proceeding with deployment."
-            displayName: "Validate publish output contains host.json"
+              if [ ! -f "$(publishOutput)/functions.metadata" ]; then
+                echo "❌ functions.metadata not found. Function will not be recognized."
+                exit 1
+              fi
+              echo "✅ Required metadata files found. Proceeding with deployment."
+            displayName: "Validate publish output contains host.json and functions.metadata"
 
           # ✅ Step 4: Deploy using zipDeploy method
           - task: AzureFunctionApp@2
@@ -60,7 +63,7 @@ stages:
               package: "$(publishOutput)"
               deploymentMethod: "zipDeploy"
 
-          # Send test message to Service Bus topic using PowerShell and .NET SDK
+          # ✅ Step 5: Send test message to Service Bus topic
           - task: PowerShell@2
             displayName: "Send test message to Service Bus topic"
             inputs:
@@ -83,7 +86,7 @@ stages:
                 echo '    static async Task Main() {' >> Program.cs
                 echo '        var conn = Environment.GetEnvironmentVariable("SB_CONN");' >> Program.cs
                 echo '        var topic = "user-updates";' >> Program.cs
-                echo '        var body = $"{{\"UserId\":\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\",\"UpdateField\":\"All\",\"Message\":\"Published via CI/CD for testing : User updated\",\"TimeStamp\":\"{DateTime.UtcNow:O}\"}}";' >> Program.cs
+                echo '        var body = $"{{\\"UserId\\":\\"a1b2c3d4-e5f6-7890-abcd-1234567890ef\\",\\"UpdateField\\":\\"All\\",\\"Message\\":\\"Published via CI/CD for testing : User updated\\",\\"TimeStamp\\":\\"{DateTime.UtcNow:O}\\"}}";' >> Program.cs
                 echo '        var client = new ServiceBusClient(conn);' >> Program.cs
                 echo '        var sender = client.CreateSender(topic);' >> Program.cs
                 echo '        var message = new ServiceBusMessage(body);' >> Program.cs
@@ -95,7 +98,7 @@ stages:
                 $env:SB_CONN = $connectionString
                 dotnet run
 
-          # Post-deployment: Tail logs and fail if no recent execution is found
+          # ✅ Step 6: Tail logs and verify function execution
           - task: AzureCLI@2
             displayName: "Tail Azure Function logs and verify"
             inputs:
