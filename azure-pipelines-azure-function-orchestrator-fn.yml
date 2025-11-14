@@ -1,13 +1,16 @@
+# Trigger when code is pushed to main
 trigger:
   branches:
     include:
       - main
 
+# Use Ubuntu agent for CLI compatibility
 pool:
   vmImage: "ubuntu-latest"
 
+# Define variables
 variables:
-  - group: DevPulse-Backend-Secrets
+  - group: DevPulse-Backend-Secrets # Inject ServiceBusConnectionString
   - name: buildConfiguration
     value: "Release"
   - name: functionProjectPath
@@ -15,6 +18,7 @@ variables:
   - name: publishOutput
     value: "$(Build.ArtifactStagingDirectory)/publish"
 
+# Build and deploy stage
 stages:
   - stage: BuildAndDeployFunction
     displayName: "Build and Deploy Azure Function"
@@ -22,12 +26,14 @@ stages:
       - job: BuildAndDeploy
         displayName: "Build and Deploy Job"
         steps:
+          # Install .NET 8 SDK
           - task: UseDotNet@2
             displayName: "Use .NET 8 SDK"
             inputs:
               packageType: "sdk"
               version: "8.x"
 
+          # Publish Azure Function (no zip)
           - task: DotNetCoreCLI@2
             displayName: "Publish Azure Function"
             inputs:
@@ -35,14 +41,15 @@ stages:
               publishWebProjects: false
               projects: "$(functionProjectPath)"
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
+              zipAfterPublish: false
 
+          # Check for host.json and functions.metadata
           - script: |
-              echo "🔍 Inspecting publish output folder: $(publishOutput)"
+              echo "Checking contents of: $(publishOutput)"
               ls -la "$(publishOutput)"
-              echo ""
 
               if [ ! -f "$(publishOutput)/host.json" ]; then
-                echo "❌ host.json not found in publish output. Deployment will fail."
+                echo "❌ host.json not found. Deployment will fail."
                 exit 1
               fi
 
@@ -51,9 +58,10 @@ stages:
                 exit 1
               fi
 
-              echo "✅ Required metadata files found. Proceeding with deployment."
-            displayName: "Validate publish output contains host.json and functions.metadata"
+              echo "✅ Required files found. Proceeding with deployment."
+            displayName: "Validate publish output"
 
+          # Deploy to Azure Function App
           - task: AzureFunctionApp@2
             displayName: "Deploy to Azure Function App"
             inputs:
@@ -63,6 +71,7 @@ stages:
               package: "$(publishOutput)"
               deploymentMethod: "zipDeploy"
 
+          # Send test message to Service Bus
           - task: PowerShell@2
             displayName: "Send test message to Service Bus topic"
             inputs:
@@ -96,6 +105,7 @@ stages:
                 $env:SB_CONN = $connectionString
                 dotnet run
 
+          # Tail logs to confirm function execution
           - task: AzureCLI@2
             displayName: "Tail Azure Function logs and verify"
             inputs:
@@ -103,7 +113,7 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                echo "⏳ Waiting 10 seconds for function to process the message..."
+                echo "Waiting 10 seconds for function to process the message..."
                 sleep 10
                 LOGS=$(az functionapp log tail \
                   --name devpulsefunctionapp \
