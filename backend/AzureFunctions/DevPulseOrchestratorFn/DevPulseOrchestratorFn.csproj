@@ -40,7 +40,4 @@
 		<Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
 	</ItemGroup>
 
-	<!-- ✅ Manual import of Worker SDK targets -->
-	<!--<Import Project="..\..\packages\Microsoft.Azure.Functions.Worker.Sdk\1.17.0\Sdk\Sdk.props" Condition="Exists('..\..\packages\Microsoft.Azure.Functions.Worker.Sdk\1.17.0\Sdk\Sdk.props')" />
-	<Import Project="..\..\packages\Microsoft.Azure.Functions.Worker.Sdk\1.17.0\Sdk\Sdk.targets" Condition="Exists('..\..\packages\Microsoft.Azure.Functions.Worker.Sdk\1.17.0\Sdk\Sdk.targets')" />-->
 </Project>

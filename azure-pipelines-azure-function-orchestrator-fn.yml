@@ -1,15 +1,13 @@
-# Trigger this pipeline when code is pushed to the main branch
 trigger:
   branches:
     include:
       - main
 
-# Use a Microsoft-hosted agent with Linux OS for better CLI compatibility
 pool:
   vmImage: "ubuntu-latest"
 
 variables:
-  - group: DevPulse-Backend-Secrets # Injects ServiceBusConnectionString securely
+  - group: DevPulse-Backend-Secrets
   - name: buildConfiguration
     value: "Release"
   - name: functionProjectPath
@@ -24,14 +22,12 @@ stages:
       - job: BuildAndDeploy
         displayName: "Build and Deploy Job"
         steps:
-          # ✅ Step 1: Install .NET 8 SDK
           - task: UseDotNet@2
             displayName: "Use .NET 8 SDK"
             inputs:
               packageType: "sdk"
               version: "8.x"
 
-          # ✅ Step 2: Build and publish the Azure Function project
           - task: DotNetCoreCLI@2
             displayName: "Publish Azure Function"
             inputs:
@@ -40,20 +36,24 @@ stages:
               projects: "$(functionProjectPath)"
               arguments: "--configuration $(buildConfiguration) --output $(publishOutput)"
 
-          # ✅ Step 3: Validate publish output contains host.json and functions.metadata
           - script: |
+              echo "🔍 Inspecting publish output folder: $(publishOutput)"
+              ls -la "$(publishOutput)"
+              echo ""
+
               if [ ! -f "$(publishOutput)/host.json" ]; then
                 echo "❌ host.json not found in publish output. Deployment will fail."
                 exit 1
               fi
+
               if [ ! -f "$(publishOutput)/functions.metadata" ]; then
                 echo "❌ functions.metadata not found. Function will not be recognized."
                 exit 1
               fi
+
               echo "✅ Required metadata files found. Proceeding with deployment."
             displayName: "Validate publish output contains host.json and functions.metadata"
 
-          # ✅ Step 4: Deploy using zipDeploy method
           - task: AzureFunctionApp@2
             displayName: "Deploy to Azure Function App"
             inputs:
@@ -63,7 +63,6 @@ stages:
               package: "$(publishOutput)"
               deploymentMethod: "zipDeploy"
 
-          # ✅ Step 5: Send test message to Service Bus topic
           - task: PowerShell@2
             displayName: "Send test message to Service Bus topic"
             inputs:
@@ -77,7 +76,6 @@ stages:
                 dotnet new console --framework net8.0 --output . | Out-Null
                 dotnet add package Azure.Messaging.ServiceBus --version 7.16.1 | Out-Null
 
-                # Write Program.cs using echo (YAML-safe)
                 echo 'using System;' > Program.cs
                 echo 'using System.Threading.Tasks;' >> Program.cs
                 echo 'using Azure.Messaging.ServiceBus;' >> Program.cs
@@ -98,7 +96,6 @@ stages:
                 $env:SB_CONN = $connectionString
                 dotnet run
 
-          # ✅ Step 6: Tail logs and verify function execution
           - task: AzureCLI@2
             displayName: "Tail Azure Function logs and verify"
             inputs:
@@ -106,7 +103,7 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                echo "Waiting 10 seconds for function to process the message..."
+                echo "⏳ Waiting 10 seconds for function to process the message..."
                 sleep 10
                 LOGS=$(az functionapp log tail \
                   --name devpulsefunctionapp \
