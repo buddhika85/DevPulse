@@ -18,6 +18,7 @@ var host = new HostBuilder()
         services.AddHttpClient();
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+
     })
     .Build();
 
