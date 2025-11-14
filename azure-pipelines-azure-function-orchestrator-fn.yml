@@ -132,8 +132,7 @@ stages:
                 echo "📥 Downloading logs from Function App..."
                 az webapp log download \
                   --name devpulsefunctionapp \
-                  --resource-group DevPulseRG \
-                  --output zip \
+                  --resource-group DevPulseRG \                 
                   --output-file function_logs.zip
 
                 unzip -o function_logs.zip -d logs
