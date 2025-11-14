@@ -4,10 +4,11 @@ trigger:
     include:
       - main
 
-# Use a Microsoft-hosted agent with Linux OS for better CLI compatibility
+# Use a Microsoft-hosted agent with Windows OS
 pool:
-  vmImage: "ubuntu-latest"
+  vmImage: "windows-latest"
 
+# Define variables used throughout the pipeline
 variables:
   - group: DevPulse-Backend-Secrets # Injects ServiceBusConnectionString securely
   - name: buildConfiguration
@@ -31,6 +32,7 @@ stages:
             inputs:
               packageType: "sdk"
               version: "8.x"
+              installationPath: $(Agent.ToolsDirectory)/dotnet
 
           # Build and publish the Azure Function project
           - task: DotNetCoreCLI@2
@@ -85,20 +87,18 @@ stages:
                 $env:SB_CONN = $connectionString
                 dotnet run
 
-          # # Post-deployment: Tail logs and fail if no recent execution is found
-          # - task: AzureCLI@2
-            # displayName: "Tail Azure Function logs and verify"
-            # inputs:
-              # azureSubscription: "DevPulse-Azure-Connection"
-              # scriptType: "bash"
-              # scriptLocation: "inlineScript"
-              # inlineScript: |
-                # echo "Waiting 10 seconds for function to process the message..."
-                # sleep 10
-                # LOGS=$(az functionapp log tail --name devpulsefunctionapp --resource-group DevPulseRG --limit 20 --output json 2>&1 | tee /tmp/function_logs.txt)
-                # if grep -q "Executing 'Functions." /tmp/function_logs.txt; then
-                  # echo "✅ Function executed successfully."
-                # else
-                  # echo "❌ No execution logs found. Function may not have triggered."
-                  # exit 1
-                # fi
+          # Post-deployment: Tail logs to verify the function was triggered
+          - task: AzureCLI@2
+            displayName: "Tail Azure Function logs"
+            inputs:
+              azureSubscription: "DevPulse-Azure-Connection"
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                echo "Waiting 10 seconds for function to process any messages..."
+                sleep 10
+                az functionapp log tail \
+                  --name devpulsefunctionapp \
+                  --resource-group DevPulseRG \
+                  --output table \
+                  --limit 20
