@@ -115,8 +115,8 @@ stages:
               scriptType: "bash"
               scriptLocation: "inlineScript"
               inlineScript: |
-                echo "Waiting 10 seconds for function to process the message..."
-                sleep 10
+                echo "Waiting 60 seconds for function to process the message..."
+                sleep 60
                 LOGS=$(az functionapp log tail \
                   --name devpulsefunctionapp \
                   --resource-group DevPulseRG \
