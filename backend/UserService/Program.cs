@@ -16,18 +16,18 @@ using UserService.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Registers services in the DI Container
+#region ResisterServices            
+
 // This disables ASP.NET Core’s automatic remapping of claims like oid, sub, email, etc., to legacy .NET types.
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
 
 
-
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
 
-
-// Register services
 builder.Services.AddControllers(options =>                                  // Enables controller routing
 {
     options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicitly - Ensures consistent content negotiation and Swagger documentation
@@ -67,6 +67,9 @@ builder.Services.InjectDbContext(builder.Configuration);                    // i
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
 builder.Services.InjectServices(builder.Configuration);                     // inject Services
 
+#endregion ResisterServices
+
+
 
 
 
@@ -74,12 +77,13 @@ var app = builder.Build();
 
 
 
-
+#region MiddlewarePipeline
 
 
 // Configure middleware
 app.UseExceptionHandler("/error");                                          // If an Unhandled Exception Occurs - Anywhere in the pipeline: controller, service, handler, etc. ASP.NET Core UseExceptionHandler catches it,
                                                                             // - and redirects to /error endpint (inside ErrorController)
+
 app.UseStatusCodePages();                                                   // if 404s and other status codes handled - has no body, it generates a simple text or HTML message - Status Code: 404, Content not found
 
 
@@ -90,7 +94,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(x =>                                                   // Serves Swagger UI
     {
         x.ConfigObject.AdditionalItems["showExtensions"] = true;
-        x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse Task API v1");
+        x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse User API v1");
     });
 }
 
@@ -106,6 +110,12 @@ app.UseAuthorization();
 app.MapControllers();                                                       // Maps controller endpoints
 
 
+#endregion MiddlewarePipeline
+
+
+
+
+#region DbMigrationsAndSeeding
 
 // seeding the database
 using (var scope = app.Services.CreateScope())
@@ -116,21 +126,24 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+#endregion DbMigrationsAndSeeding
 
 
+#region StartingApplication
 
 
 // starting application
 try
 {
-    app.Run();
+    app.Run();                                          // Hosting application on Kestral, Starting to listen to incoming HTTP requests
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "TaskService terminated unexpectedly");
+    Log.Fatal(ex, "UserService terminated unexpectedly");
 }
 finally
 {
     Log.CloseAndFlush();
 }
 
+#endregion StartingApplication

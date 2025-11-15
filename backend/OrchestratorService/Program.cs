@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OrchestratorService.Extensions;
+using Serilog;
 
 
 
@@ -64,7 +65,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwaggerUI(x =>                                                   // Serves Swagger UI
     {
         x.ConfigObject.AdditionalItems["showExtensions"] = true;
-        x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse Task API v1");
+        x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse Orchestrator API v1");
     });
 }
 
@@ -80,4 +81,24 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+
+
+
+#region StartingApplication
+
+
+// starting application
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "OrchestratorService terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+#endregion StartingApplication

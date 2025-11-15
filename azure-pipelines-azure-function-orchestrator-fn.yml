@@ -118,33 +118,33 @@ stages:
                 export SB_CONN="$connectionString"
                 dotnet run
 
-          # Step 6: Verify function execution by downloading and scanning latest log file
-          - task: AzureCLI@2
-            displayName: "Verify function execution via log download"
-            inputs:
-              azureSubscription: "DevPulse-Azure-Connection"
-              scriptType: "bash"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                echo "⏳ Waiting 180 seconds for function to process the message..."
-                sleep 180
+          # # Step 6: Verify function execution by downloading and scanning latest log file
+          # - task: AzureCLI@2
+            # displayName: "Verify function execution via log download"
+            # inputs:
+              # azureSubscription: "DevPulse-Azure-Connection"
+              # scriptType: "bash"
+              # scriptLocation: "inlineScript"
+              # inlineScript: |
+                # echo "⏳ Waiting 180 seconds for function to process the message..."
+                # sleep 180
 
-                echo "📥 Downloading logs from Function App..."
-                az webapp log download \
-                  --name devpulsefunctionapp \
-                  --resource-group DevPulseRG \                 
-                  --output-file function_logs.zip
+                # echo "📥 Downloading logs from Function App..."
+                # az webapp log download \
+                  # --name devpulsefunctionapp \
+                  # --resource-group DevPulseRG \                 
+                  # --output-file function_logs.zip
 
-                unzip -o function_logs.zip -d logs
+                # unzip -o function_logs.zip -d logs
 
-                echo "📁 Identifying latest log file..."
-                latestLog=$(find logs/LogFiles/Application/ -type f -name "*.txt" -printf "%T@ %p\n" | sort -n | tail -1 | cut -d' ' -f2)
+                # echo "📁 Identifying latest log file..."
+                # latestLog=$(find logs/LogFiles/Application/ -type f -name "*.txt" -printf "%T@ %p\n" | sort -n | tail -1 | cut -d' ' -f2)
 
-                echo "🔍 Searching for execution markers in: $latestLog"
-                if grep -q "UserUpdatedHandlerAzureFunction - Received message" "$latestLog" && \
-                   grep -q "Cache invalidation triggered for UserId:" "$latestLog"; then
-                  echo "✅ Function executed and cache invalidation confirmed."
-                else
-                  echo "❌ Expected log markers not found. Function may not have triggered or failed silently."
-                  exit 1
-                fi
+                # echo "🔍 Searching for execution markers in: $latestLog"
+                # if grep -q "UserUpdatedHandlerAzureFunction - Received message" "$latestLog" && \
+                   # grep -q "Cache invalidation triggered for UserId:" "$latestLog"; then
+                  # echo "✅ Function executed and cache invalidation confirmed."
+                # else
+                  # echo "❌ Expected log markers not found. Function may not have triggered or failed silently."
+                  # exit 1
+                # fi

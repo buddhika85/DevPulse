@@ -56,7 +56,7 @@ namespace OrchestratorService.Controllers
         }
 
 
-        //[InvalidateCacheOutput("dashboard-{userId}")]             // Invalidate Output cach
+       
         [HttpPost("invalidate/{userId}")]
         [ApiExplorerSettings(IgnoreApi = true)]                     // hide from Swagger       
         public async Task<IActionResult> InvalidateDashboard(string userId, CancellationToken cancellationToken)
