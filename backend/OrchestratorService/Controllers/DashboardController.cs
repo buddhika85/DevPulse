@@ -13,11 +13,13 @@ namespace OrchestratorService.Controllers
     {
         private readonly DashboardService _dashboardService;
         private readonly IOutputCacheStore _outputCacheStore;
+        private readonly ILogger<DashboardController> _logger;
 
-        public DashboardController(DashboardService dashboardService, IOutputCacheStore outputCacheStore)
+        public DashboardController(DashboardService dashboardService, IOutputCacheStore outputCacheStore, ILogger<DashboardController> logger)
         {
             _dashboardService = dashboardService;
             _outputCacheStore = outputCacheStore;
+            _logger = logger;
         }
 
         /// <summary>
@@ -36,6 +38,7 @@ namespace OrchestratorService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetDashboard(string userId, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Ateempting to fetch dashboard information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
             try
             {
                 var result = await _dashboardService.GetDashboardAsync(userId, cancellationToken);
@@ -43,14 +46,17 @@ namespace OrchestratorService.Controllers
             }
             catch (ArgumentException ex)
             {
+                _logger.LogError(ex, "Validation failed while fetching dashboard by user by ID: {Id} at {Time}", userId, DateTime.UtcNow);
                 return ValidationProblem(detail: ex.Message);
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning("User not found for ID: {Id}", userId);
                 return NotFoundProblem(detail: ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error fetching dashboard by user ID: {Id} at {Time}", userId, DateTime.UtcNow);
                 return InternalError(detail: ex.Message);
             }
         }
@@ -61,6 +67,7 @@ namespace OrchestratorService.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]                     // hide from Swagger       
         public async Task<IActionResult> InvalidateDashboard(string userId, CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Ateempting to remove dashboard cache information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
             try
             {
                 await _outputCacheStore.EvictByTagAsync("dashboard-{userId}", cancellationToken);
@@ -69,14 +76,17 @@ namespace OrchestratorService.Controllers
             }
             catch (ArgumentException ex)
             {
+                _logger.LogError(ex, "Validation failed while removing dashboard cache by user by ID: {Id} at {Time}", userId, DateTime.UtcNow);
                 return ValidationProblem(detail: ex.Message);
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning("User not found for ID: {Id} for dashboard cache removal", userId);
                 return NotFoundProblem(detail: ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error removing dashboard cache by user ID: {Id} at {Time}", userId, DateTime.UtcNow);
                 return InternalError(detail: ex.Message);
             }
         }
