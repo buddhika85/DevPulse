@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Microsoft.Extensions.Configuration;
+using Serilog;
 using TaskService.Configuration;
 
 namespace TaskService.Extensions
@@ -24,9 +25,28 @@ namespace TaskService.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "TaskService") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // TaskService/Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                 // existing file sink --> TaskService / Logs/Log-.txt
 
+            SetupSeqLogVisualizer(services, configuration, loggerConfiguration);
 
+            SetupAzureApplicationInsights(services, configuration, loggerConfiguration);
+
+            return loggerConfiguration;
+        }
+
+        private static void SetupAzureApplicationInsights(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
+        {
+            services.Configure<AzureApplicationInsightsSettings>(configuration.GetSection("AzureApplicationInsightsSettings"));
+            var settings = configuration.GetSection("AzureApplicationInsightsSettings").Get<AzureApplicationInsightsSettings>();
+            if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString))
+                loggerConfiguration.WriteTo.ApplicationInsights(
+                                    connectionString: settings.ConnectionString,
+                                    telemetryConverter: TelemetryConverter.Traces                 // Foward Serilog logs
+                                );
+        }
+
+        private static void SetupSeqLogVisualizer(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
+        {
             // Maps the "SeqLogVisualizerSettings" section from appsettings.json to the strongly typed SeqLogVisualizerSettings class.          
             services.Configure<SeqLogVisualizerSettings>(configuration.GetSection("SeqLogVisualizerSettings"));
 
@@ -37,7 +57,6 @@ namespace TaskService.Extensions
             // If null: not log messages not written to Seq Web View
             if (seqLogVisualizerSettings is not null && !string.IsNullOrWhiteSpace(seqLogVisualizerSettings.Url))
                 loggerConfiguration.WriteTo.Seq(seqLogVisualizerSettings.Url);                                               // default Seq Port 5341
-            return loggerConfiguration;
         }
     }
 }
