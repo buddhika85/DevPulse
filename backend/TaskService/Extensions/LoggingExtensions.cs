@@ -1,6 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Serilog;
-using TaskService.Configuration;
+﻿using Serilog;
+using SharedLib.Configuration;
 
 namespace TaskService.Extensions
 {
@@ -40,8 +39,8 @@ namespace TaskService.Extensions
             var settings = configuration.GetSection("AzureApplicationInsightsSettings").Get<AzureApplicationInsightsSettings>();
             if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString))
                 loggerConfiguration.WriteTo.ApplicationInsights(
-                                    connectionString: settings.ConnectionString,
-                                    telemetryConverter: TelemetryConverter.Traces                 // Foward Serilog logs
+                                    connectionString: settings.ConnectionString,                    // Azure Application Insights Connection String
+                                    telemetryConverter: TelemetryConverter.Traces                   // Foward Serilog logs
                                 );
         }
 

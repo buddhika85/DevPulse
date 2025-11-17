@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <Folder Include="Application\Mapping\" />
+    <Folder Include="Configuration\" />
   </ItemGroup>
 
   <ItemGroup>

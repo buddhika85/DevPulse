@@ -1,5 +1,5 @@
-﻿using OrchestratorService.Configurations;
-using Serilog;
+﻿using Serilog;
+using SharedLib.Configuration;
 
 namespace OrchestratorService.Extensions
 {

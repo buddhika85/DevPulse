@@ -1,5 +1,5 @@
 ﻿using Serilog;
-using UserService.Configuration;
+using SharedLib.Configuration;
 
 namespace UserService.Extensions
 {

@@ -1,4 +1,4 @@
-﻿namespace TaskService.Configuration
+﻿namespace SharedLib.Configuration
 {
     public class AzureApplicationInsightsSettings
     {
