@@ -1,5 +1,6 @@
 ﻿using Serilog;
 using SharedLib.Configuration;
+using SharedLib.Logging;
 
 namespace OrchestratorService.Extensions
 {
@@ -50,20 +51,31 @@ namespace OrchestratorService.Extensions
                                 );
         }
 
-        // Writes structured logs to Azure Blob Storage for long-term retention and cost-aware diagnostics
-        private static void SetupAzureBlobStorageForLogs(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
+        /// <summary>
+        /// Configures Serilog to write structured logs to Azure Blob Storage,
+        /// creating a new .txt file each UTC day for long-term retention and cost-aware diagnostics.
+        /// </summary>
+        private static void SetupAzureBlobStorageForLogs(
+            IServiceCollection services,
+            IConfiguration configuration,
+            LoggerConfiguration loggerConfiguration)
         {
+            // Bind AzureBlobStorageSettings from appsettings.json and local.settings.json
             services.Configure<AzureBlobStorageSettings>(configuration.GetSection("AzureBlobStorageSettings"));
-            var settings = configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
-            if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString) && !string.IsNullOrWhiteSpace(settings.LogsContainerName))
+            var blobSettings = configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
+
+            // Validate that required settings are present
+            if (blobSettings is not null &&
+                !string.IsNullOrWhiteSpace(blobSettings.ConnectionString) &&
+                !string.IsNullOrWhiteSpace(blobSettings.LogsContainerName))
             {
-                var dateSuffix = DateTime.UtcNow.ToString("yyyy-MM-dd");
-                var blobFileName = $"log_OrchestratorAPI-{dateSuffix}.txt";                 // creates a new blob file per day, similar to rolling file behavior.
-                loggerConfiguration.WriteTo.AzureBlobStorage(
-                        connectionString: settings.ConnectionString,
-                        storageContainerName: settings.LogsContainerName,
-                        storageFileName: blobFileName,                              // log_OrchestratorAPI-2025-11-18.txt
-                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}");
+                // Register the custom daily rolling sink from SharedLib.Logging
+                loggerConfiguration.WriteTo.AzureDailyBlob(
+                    connectionString: blobSettings.ConnectionString,
+                    containerName: blobSettings.LogsContainerName,
+                    prefix: "log_OrchestratorAPI-",
+                    suffix: ".txt"
+                );
             }
         }
 
