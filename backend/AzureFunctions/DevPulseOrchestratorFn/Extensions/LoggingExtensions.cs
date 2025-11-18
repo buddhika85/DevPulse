@@ -20,6 +20,7 @@ namespace DevPulseOrchestratorFn.Extensions
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)
         {
             var loggerConfiguration = new LoggerConfiguration()
+                                                   .MinimumLevel.Information()
                                                    .Enrich.FromLogContext()
                                                    .Enrich.WithMachineName()
                                                    .Enrich.WithThreadId()
@@ -27,7 +28,7 @@ namespace DevPulseOrchestratorFn.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "AzureFunction-DevPulseOrchestratorFn") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log_AzFuncApp-.txt",
+                                                   .WriteTo.File(Path.Combine("Logs", "log_AzFuncApp-.txt"),
                                                         retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
                                                         rollingInterval: RollingInterval.Day);                  // DevPulseOrchestratorFn/Logs/log_AzFuncApp-.txt
 
@@ -35,6 +36,8 @@ namespace DevPulseOrchestratorFn.Extensions
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);
 
             SetupAzureApplicationInsights(services, configuration, loggerConfiguration);
+
+            SetupAzureBlobStorageForLogs(services, configuration, loggerConfiguration);
 
             return loggerConfiguration;
         }
@@ -49,6 +52,23 @@ namespace DevPulseOrchestratorFn.Extensions
                                     connectionString: settings.ConnectionString,                    // Azure Application Insights Connection String
                                     telemetryConverter: TelemetryConverter.Traces                   // Foward Serilog logs
                                 );
+        }
+
+        // Writes structured logs to Azure Blob Storage for long-term retention and cost-aware diagnostics
+        private static void SetupAzureBlobStorageForLogs(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
+        {
+            services.Configure<AzureBlobStorageSettings>(configuration.GetSection("AzureBlobStorageSettings"));     // Reads from Loal.Settings.json & app.settings.json
+            var settings = configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
+            if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString) && !string.IsNullOrWhiteSpace(settings.LogsContainerName))
+            {
+                var dateSuffix = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                var blobFileName = $"log_AzFuncApp-{dateSuffix}.txt";                 // creates a new blob file per day, similar to rolling file behavior.
+                loggerConfiguration.WriteTo.AzureBlobStorage(
+                        connectionString: settings.ConnectionString,
+                        storageContainerName: settings.LogsContainerName,
+                        storageFileName: blobFileName,                              // log_AzFuncApp-2025-11-18.txt
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}");
+            }
         }
 
         // Reads from appSettings.json
