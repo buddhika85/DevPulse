@@ -24,7 +24,9 @@ namespace OrchestratorService.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "OrchestratorService") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // TaskService/Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log_OrchestratorAPI-.txt",
+                                                            retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
+                                                            rollingInterval: RollingInterval.Day);                  // OrchestratorService/Logs/log_OrchestratorAPI-.txt
 
 
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);

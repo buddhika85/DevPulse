@@ -24,7 +24,9 @@ namespace UserService.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "UserService") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // UserService/Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log_UserAPI-.txt",
+                                                        retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
+                                                        rollingInterval: RollingInterval.Day);                  // UserService/Logs/log_UserAPI-.txt
 
 
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);

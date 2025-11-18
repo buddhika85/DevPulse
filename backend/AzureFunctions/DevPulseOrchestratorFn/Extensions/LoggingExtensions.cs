@@ -27,7 +27,9 @@ namespace DevPulseOrchestratorFn.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "AzureFunction-DevPulseOrchestratorFn") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // DevPulseOrchestratorFn/Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log_AzFuncApp-.txt",
+                                                        retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
+                                                        rollingInterval: RollingInterval.Day);                  // DevPulseOrchestratorFn/Logs/log_AzFuncApp-.txt
 
 
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);

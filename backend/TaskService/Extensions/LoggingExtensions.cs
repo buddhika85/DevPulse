@@ -24,7 +24,9 @@ namespace TaskService.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "TaskService") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                 // existing file sink --> TaskService / Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log_TaskAPI-.txt",
+                                                            retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
+                                                            rollingInterval: RollingInterval.Day);                  // existing file sink --> TaskService / Logs/log_TaskAPI-.txt
 
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);
 
