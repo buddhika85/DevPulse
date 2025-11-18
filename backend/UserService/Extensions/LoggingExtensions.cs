@@ -17,6 +17,7 @@ namespace UserService.Extensions
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)
         {
             var loggerConfiguration = new LoggerConfiguration()
+                                                   .MinimumLevel.Information()
                                                    .Enrich.FromLogContext()
                                                    .Enrich.WithMachineName()
                                                    .Enrich.WithThreadId()
@@ -24,7 +25,7 @@ namespace UserService.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "UserService") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log_UserAPI-.txt",
+                                                   .WriteTo.File(Path.Combine("Logs", "log_UserAPI-.txt"),
                                                         retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
                                                         rollingInterval: RollingInterval.Day);                  // UserService/Logs/log_UserAPI-.txt
 
@@ -32,6 +33,8 @@ namespace UserService.Extensions
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);
 
             SetupAzureApplicationInsights(services, configuration, loggerConfiguration);
+
+            SetupAzureBlobStorageForLogs(services, configuration, loggerConfiguration);
 
             return loggerConfiguration;
         }
@@ -46,6 +49,23 @@ namespace UserService.Extensions
                                     connectionString: settings.ConnectionString,                    // Azure Application Insights Connection String
                                     telemetryConverter: TelemetryConverter.Traces                   // Foward Serilog logs
                                 );
+        }
+
+        // Writes structured logs to Azure Blob Storage for long-term retention and cost-aware diagnostics
+        private static void SetupAzureBlobStorageForLogs(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
+        {
+            services.Configure<AzureBlobStorageSettings>(configuration.GetSection("AzureBlobStorageSettings"));
+            var settings = configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
+            if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString) && !string.IsNullOrWhiteSpace(settings.LogsContainerName))
+            {
+                var dateSuffix = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                var blobFileName = $"log_UserAPI-{dateSuffix}.txt";                 // creates a new blob file per day, similar to rolling file behavior.
+                loggerConfiguration.WriteTo.AzureBlobStorage(
+                        connectionString: settings.ConnectionString,
+                        storageContainerName: settings.LogsContainerName,
+                        storageFileName: blobFileName,                              // log_UserAPI-2025-11-18.txt
+                        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}");
+            }
         }
 
         private static void SetupSeqLogVisualizer(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
