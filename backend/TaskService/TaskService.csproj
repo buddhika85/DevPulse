@@ -40,6 +40,7 @@
   <ItemGroup>
     <Folder Include="Application\Mapping\" />
     <Folder Include="Configuration\" />
+    <Folder Include="Logs\" />
   </ItemGroup>
 
   <ItemGroup>

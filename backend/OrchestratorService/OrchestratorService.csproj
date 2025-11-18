@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <Folder Include="Infrastructure\Policies\" />
+    <Folder Include="Logs\" />
   </ItemGroup>
 
   <ItemGroup>
