@@ -99,7 +99,7 @@ namespace DevPulseOrchestratorFn
         }
 
         /// <summary>
-        /// A helper to Deserialize ServiceBusReceivedMessage
+        /// A helper method to Deserialize ServiceBusReceivedMessage
         /// </summary>
         /// <param name="message">ServiceBusReceivedMessage</param>
         /// <returns>BaseUserUpdatedPayload?</returns>
