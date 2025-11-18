@@ -1,7 +1,10 @@
 ﻿using Serilog;
 using SharedLib.Configuration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-namespace OrchestratorService.Extensions
+namespace DevPulseOrchestratorFn.Extensions
 {
     public static class LoggingExtensions
     {
@@ -22,9 +25,9 @@ namespace OrchestratorService.Extensions
                                                    .Enrich.WithThreadId()
                                                    .Enrich.WithProcessId()
                                                    .Enrich.WithEnvironmentUserName()
-                                                   .Enrich.WithProperty("Service", "OrchestratorService") // Custom tag
+                                                   .Enrich.WithProperty("Service", "AzureFunction-DevPulseOrchestratorFn") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // TaskService/Logs/Log-.txt
+                                                   .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // DevPulseOrchestratorFn/Logs/Log-.txt
 
 
             SetupSeqLogVisualizer(services, configuration, loggerConfiguration);
@@ -34,6 +37,7 @@ namespace OrchestratorService.Extensions
             return loggerConfiguration;
         }
 
+        // Reads from Loal.Settings.json
         private static void SetupAzureApplicationInsights(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
         {
             services.Configure<AzureApplicationInsightsSettings>(configuration.GetSection("AzureApplicationInsightsSettings"));
@@ -45,6 +49,7 @@ namespace OrchestratorService.Extensions
                                 );
         }
 
+        // Reads from appSettings.json
         private static void SetupSeqLogVisualizer(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
         {
             // Maps the "SeqLogVisualizerSettings" section from appsettings.json to the strongly typed SeqLogVisualizerSettings class.          
@@ -56,7 +61,7 @@ namespace OrchestratorService.Extensions
             // Defensive check: ensures the section exists and is properly bound.
             // If null: not log messages not written to Seq Web View
             if (seqLogVisualizerSettings is not null && !string.IsNullOrWhiteSpace(seqLogVisualizerSettings.Url))
-                loggerConfiguration.WriteTo.Seq(seqLogVisualizerSettings.Url);                                               // Seq Port 5343
+                loggerConfiguration.WriteTo.Seq(seqLogVisualizerSettings.Url);                                               // Seq Port 5344
         }
     }
 }
