@@ -67,7 +67,7 @@ namespace OrchestratorService.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]                     // hide from Swagger       
         public async Task<IActionResult> InvalidateDashboard(string userId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Ateempting to remove dashboard cache information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
+            _logger.LogInformation("Attempting to remove dashboard cache information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
             try
             {
                 await _outputCacheStore.EvictByTagAsync("dashboard-{userId}", cancellationToken);
