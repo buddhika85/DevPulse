@@ -3,15 +3,23 @@
   "logging": {
     "applicationInsights": {
       "samplingSettings": {
-        "isEnabled": true,
-        "excludedTypes": "Request"
+        "isEnabled": true
+        //"excludedTypes": "Request" // Optional: exclude HTTP telemetry if noisy
       },
       "enableLiveMetricsFilters": true
     },
     "logLevel": {
-      "Function": "Information",
+      "Function.MicroServiceWarmUpAzureFunction": "Information", // ✅ Explicitly log your timer function
       "Microsoft.Azure.Functions.Worker": "Information",
-      "Microsoft.Azure.Functions.Worker.ServiceBus": "Debug"
+      "Microsoft.Azure.Functions.Worker.ServiceBus": "Debug",
+      "default": "Information" // ✅ Ensures fallback logging is visible
+    }
+  },
+  "extensions": {
+    "timers": {
+      "scheduleMonitor": {
+        "enabled": true // ✅ Enables timer schedule monitoring
+      }
     }
   }
 }
