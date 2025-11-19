@@ -42,7 +42,7 @@ public class MicroServiceWarmUpAzureFunction
 
             if (!_warmUpSettings.WarmUpRunning)
             {
-                _logger.LogWarning("WarmUpSettings.RunWarmup is set to: {RunWarmup} - so no warming up!", _warmUpSettings.WarmUpRunning);
+                _logger.LogWarning("WarmUpSettings.WarmUpRunning is set to: {WarmUpRunning} - so no warming up!", _warmUpSettings.WarmUpRunning);
                 return;
             }
             
