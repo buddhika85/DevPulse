@@ -15,11 +15,20 @@ namespace DevPulseOrchestratorFn.Extensions
 
             Log.Logger = loggerConfiguration.CreateLogger();
 
+            Log.Information("✅ Serilog file logging initialized");
+
             hostBuilder.UseSerilog();
         }
 
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)
         {
+            var logsDir = Path.Combine(AppContext.BaseDirectory, "Logs");
+            if (!Directory.Exists(logsDir))
+                Directory.CreateDirectory(logsDir);
+
+            // DevPulseOrchestratorFn\bin\Debug\net8.0\Logs\log_AzFuncApp-<date>.txt
+            var logPath = Path.Combine(AppContext.BaseDirectory, "Logs", "log_AzFuncApp-.txt");
+
             var loggerConfiguration = new LoggerConfiguration()
                                                    .MinimumLevel.Information()
                                                    .Enrich.FromLogContext()
@@ -29,7 +38,7 @@ namespace DevPulseOrchestratorFn.Extensions
                                                    .Enrich.WithEnvironmentUserName()
                                                    .Enrich.WithProperty("Service", "AzureFunction-DevPulseOrchestratorFn") // Custom tag
                                                    .WriteTo.Console()
-                                                   .WriteTo.File(Path.Combine("Logs", "log_AzFuncApp-.txt"),
+                                                   .WriteTo.File(logPath,                                       // Path.Combine("Logs", "log_AzFuncApp-.txt") does not work localy
                                                         retainedFileCountLimit: 2,                              //  Keeps only the latest 2 files
                                                         rollingInterval: RollingInterval.Day);                  // DevPulseOrchestratorFn/Logs/log_AzFuncApp-.txt
 

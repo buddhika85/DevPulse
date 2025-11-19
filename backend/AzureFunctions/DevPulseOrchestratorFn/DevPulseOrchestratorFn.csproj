@@ -50,4 +50,8 @@
 		<Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="bin\Debug\net8.0\Logs\" />
+	</ItemGroup>
+
 </Project>

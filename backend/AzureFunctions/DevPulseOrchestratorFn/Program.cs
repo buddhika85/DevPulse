@@ -1,8 +1,10 @@
-﻿using Microsoft.Azure.Functions.Worker;
+﻿using DevPulseOrchestratorFn.Extensions; 
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using DevPulseOrchestratorFn.Extensions; 
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 // Create the host builder for the Azure Function App
 var hostBuilder = new HostBuilder()
@@ -32,6 +34,14 @@ hostBuilder.ConfigureServices((context, services) =>
     services.AddHttpClient(); // ✅ For outbound HTTP calls
     services.AddApplicationInsightsTelemetryWorkerService(); // ✅ Enables App Insights telemetry
     services.ConfigureFunctionsApplicationInsights();         // ✅ Binds telemetry to Functions runtime
+
+    // ✅ This line wires Serilog into the Function execution pipeline
+    services.AddLogging(loggingBuilder =>
+    {
+        loggingBuilder.ClearProviders(); // Remove default providers
+        loggingBuilder.AddSerilog();     // Plug in Serilog
+    });
+
 });
 
 // ✅ Build and run the host
