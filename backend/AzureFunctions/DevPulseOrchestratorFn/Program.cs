@@ -1,4 +1,5 @@
-﻿using DevPulseOrchestratorFn.Extensions; 
+﻿using DevPulseOrchestratorFn;
+using DevPulseOrchestratorFn.Extensions; 
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,10 @@ hostBuilder.ConfigureServices((context, services) =>
     services.AddHttpClient(); // ✅ For outbound HTTP calls
     services.AddApplicationInsightsTelemetryWorkerService(); // ✅ Enables App Insights telemetry
     services.ConfigureFunctionsApplicationInsights();         // ✅ Binds telemetry to Functions runtime
+
+    // ✅ Bind WarmUpSettings from config
+    services.Configure<WarmUpSettings>(context.Configuration.GetSection("WarmUpSettings"));
+
 
     // ✅ This line wires Serilog into the Function execution pipeline
     services.AddLogging(loggingBuilder =>
