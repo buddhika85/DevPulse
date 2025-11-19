@@ -40,9 +40,9 @@ public class MicroServiceWarmUpAzureFunction
                 return;
             }
 
-            if (!_warmUpSettings.RunWarmup)
+            if (!_warmUpSettings.WarmUpRunning)
             {
-                _logger.LogWarning("WarmUpSettings.RunWarmup is set to: {RunWarmup} - so no warming up!", _warmUpSettings.RunWarmup);
+                _logger.LogWarning("WarmUpSettings.RunWarmup is set to: {RunWarmup} - so no warming up!", _warmUpSettings.WarmUpRunning);
                 return;
             }
             
@@ -126,6 +126,6 @@ public class MicroServiceWarmUpAzureFunction
 public class WarmUpSettings
 {
     public string CronSchedule { get; set; } = "0 */5 * * * *";                 // Every 5 mins
-    public bool RunWarmup { get; set; } = true;
+    public bool WarmUpRunning { get; set; } = true;
     public List<string> Endpoints { get; set; } = [];
 }
