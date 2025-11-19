@@ -13,6 +13,8 @@ namespace UserService.Extensions
             Log.Logger = loggerConfiguration.CreateLogger();
 
             hostBuilder.UseSerilog();
+
+            Log.Information("UserService API - Serilog file logging initialized");
         }
 
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)

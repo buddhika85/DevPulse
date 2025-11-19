@@ -14,6 +14,8 @@ namespace TaskService.Extensions
             Log.Logger = loggerConfiguration.CreateLogger();
 
             hostBuilder.UseSerilog();
+
+            Log.Information("TaskService API - Serilog file logging initialized");
         }
 
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)

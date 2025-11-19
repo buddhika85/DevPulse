@@ -13,6 +13,8 @@ namespace OrchestratorService.Extensions
             Log.Logger = loggerConfiguration.CreateLogger();
 
             hostBuilder.UseSerilog();
+
+            Log.Information("OrchestratorService API - Serilog file logging initialized");
         }
 
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)

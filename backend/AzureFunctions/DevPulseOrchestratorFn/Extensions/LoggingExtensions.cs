@@ -15,9 +15,9 @@ namespace DevPulseOrchestratorFn.Extensions
 
             Log.Logger = loggerConfiguration.CreateLogger();
 
-            Log.Information("✅ Serilog file logging initialized");
-
             hostBuilder.UseSerilog();
+
+            Log.Information("Azure Function App - DevPulseOrchestratorFn - Serilog file logging initialized");
         }
 
         private static LoggerConfiguration SetupLogConfigurations(IServiceCollection services, IConfiguration configuration)

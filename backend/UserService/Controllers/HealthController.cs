@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace UserService.Controllers
 {
@@ -16,10 +17,20 @@ namespace UserService.Controllers
 
 
         [HttpGet]
+        [HttpHead]      // ONLY a header with status code 200 - OK, or 500 - Internal Server Error will be returned / no body
+        [SwaggerOperation(
+            Summary = "Ping API for Health",
+            Description = "Returns a message which contains info on APIs health with time stamp"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(OkObjectResult))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unhealthy API", typeof(ObjectResult))]
         public IActionResult Get()
         {
             try
             {
+                _logger.LogInformation("Health check ({Method}) passed for {Service} at {Timestamp}",
+                            Request.Method, ApiName, DateTime.UtcNow);
+
                 var response = new
                 {
                     status = $"Healthy - {ApiName}",
