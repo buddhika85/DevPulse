@@ -11,8 +11,8 @@ namespace DevPulseOrchestratorFn;
 /// Settings can be configured by below environments variables.
 /// WarmUpSettings__CronSchedule: "0 */5 * * * *",                              --> warms up request sent in every 5 mins
 /// WarmUpSettings__WarmUpRunning: true                                     --> set this to false to stop sending warmup requests
-/// WarmUpSettings__Endpoints:0: ""https://devpulse-api-1.net/api/health"   --> warm up endpoints of each micro service
-/// WarmUpSettings__Endpoints:n: ""https://devpulse-api-b.net/api/health"
+/// WarmUpSettings__Endpoints:0: "https://devpulse-api-1.net/api/health"   --> warm up endpoints of each micro service
+/// WarmUpSettings__Endpoints:n: "https://devpulse-api-b.net/api/health"
 /// </summary>
 public class MicroServiceWarmUpAzureFunction
 {
@@ -28,7 +28,7 @@ public class MicroServiceWarmUpAzureFunction
     }
 
     [Function("MicroServiceWarmUpAzureFunction")]
-    public async Task RunAsync([TimerTrigger("%WarmUpSettings__Schedule%")] TimerInfo myTimer)
+    public async Task RunAsync([TimerTrigger("%WarmUpSettings__CronSchedule%")] TimerInfo myTimer)
     {
         try
         {
@@ -68,9 +68,10 @@ public class MicroServiceWarmUpAzureFunction
     {
         try
         {
+            // Thread-Safe Collection to avoid race conditions
             var successStatusCodes = new ConcurrentBag<HttpStatusCode>();
 
-            // Parallel Execution
+            // Parallel Execution - ensures all warm-up requests run concurrently, not one-by-one.
             await Task.WhenAll(_warmUpSettings.Endpoints.Select(async endpoint => {
                 try
                 {
