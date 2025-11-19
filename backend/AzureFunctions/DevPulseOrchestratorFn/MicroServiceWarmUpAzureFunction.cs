@@ -1,4 +1,5 @@
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Concurrent;
@@ -102,6 +103,24 @@ public class MicroServiceWarmUpAzureFunction
             throw;
         }
     }
+
+
+
+    /// <summary>
+    /// This is for testing purposes 
+    /// </summary>
+    /// <param name="req"></param>
+    /// <returns></returns>
+    [Function("ManualWarmUpTriggerAzureFunction")]
+    public async Task<HttpResponseData> PerformWarmupTriggerManually([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
+    {
+        _logger.LogInformation("ManualWarmUpTriggerAzureFunction was executed at: {executionTime}", DateTime.UtcNow);
+        await PerformWarmup();
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        await response.WriteStringAsync("Warm-up triggered manually.");
+        return response;
+    }
+
 }
 
 public class WarmUpSettings
