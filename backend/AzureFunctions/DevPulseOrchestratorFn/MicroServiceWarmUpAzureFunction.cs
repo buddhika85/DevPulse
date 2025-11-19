@@ -29,8 +29,8 @@ public class MicroServiceWarmUpAzureFunction
     }
 
     [Function("MicroServiceWarmUpAzureFunction")]
-    public async Task RunAsync([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer)
-    //public async Task RunAsync([TimerTrigger("%WarmUpSettings__CronSchedule%")] TimerInfo myTimer)
+    //public async Task RunAsync([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer)
+    public async Task RunAsync([TimerTrigger("%WarmUpSettings__CronSchedule%")] TimerInfo myTimer)
     {
         try
         {
