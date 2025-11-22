@@ -343,5 +343,40 @@ namespace UserService.Infrastructure.Persistence.ComosEvents
                 throw;
             }
         }
+
+        // User manager updated
+        public async Task LogUserManagerChangedAsync(UserManagerChangedDomainEvent notification)
+        {
+            try
+            {
+                var evt = new
+                {
+                    id = Guid.NewGuid().ToString(),
+                    eventType = "UserManagerChanged",
+                    userId = notification.UserAccount.Id,
+                    userEmail = notification.UserAccount.Email,
+                    previousManagerId = notification.PreviousManagerId,
+                    newManagerId  = notification.NewManagerId,
+                    cosmosLoggedAt = DateTime.UtcNow
+                };
+
+                await _container.CreateItemAsync(evt, new PartitionKey(notification.UserAccount.Id.ToString()));
+
+                _logger.LogInformation("UserManagerChanged event logged to Cosmos DB for UserId={UserId}, UserEmail={UserEmail} PreviousManagerId={PreviousManagerId}, NewRole={NewManagerId}",
+                    notification.UserAccount.Id, notification.UserAccount.Email, notification.PreviousManagerId, notification.NewManagerId);
+            }
+            catch (CosmosException ex)
+            {
+                _logger.LogError(ex, "Failed to log UserManagerChanged event for UserId={UserId}. StatusCode={StatusCode}",
+                    notification.UserAccount.Id, ex.StatusCode);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while logging UserManagerChanged event for UserId={UserId}",
+                    notification.UserAccount.Id);
+                throw;
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using SharedLib.DTOs.Task;
 using TaskService.Application.Commands;
 using TaskService.Domain.Entities;
+using TaskService.Domain.ValueObjects;
 
 namespace TaskService.Application.Common.Mappers
 {
@@ -8,7 +9,7 @@ namespace TaskService.Application.Common.Mappers
     {
         public static void MapToEntity(TaskItem entity, UpdateTaskCommand command)
         {
-            entity.Update(command.Title, command.Description, Domain.ValueObjects.TaskStatus.From(command.Status));
+            entity.Update(command.Title, command.Description, Domain.ValueObjects.TaskStatus.From(command.Status), TaskPriority.From(command.Priority), command.dueDate);
         }
 
         public static TaskItemDto ToDto(TaskItem entity) 

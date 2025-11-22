@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UserService.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using UserService.Infrastructure.Persistence;
 namespace UserService.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    partial class UserDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251120235818_AddedUserManagerMigration")]
+    partial class AddedUserManagerMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,7 +59,7 @@ namespace UserService.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("UserAccounts", (string)null);
+                    b.ToTable("UserAccounts");
                 });
 
             modelBuilder.Entity("UserService.Domain.Entities.UserAccount", b =>
@@ -65,7 +68,7 @@ namespace UserService.Migrations
                         .WithMany("DirectReports")
                         .HasForeignKey("ManagerId");
 
-                    b.OwnsOne("UserService.Domain.Entities.UserAccount.Role#UserService.Domain.ValueObjects.UserRole", "Role", b1 =>
+                    b.OwnsOne("UserService.Domain.ValueObjects.UserRole", "Role", b1 =>
                         {
                             b1.Property<Guid>("UserAccountId")
                                 .HasColumnType("uniqueidentifier");
@@ -81,7 +84,7 @@ namespace UserService.Migrations
                             b1.HasIndex("Value")
                                 .HasDatabaseName("IX_UserAccount_Role");
 
-                            b1.ToTable("UserAccounts", (string)null);
+                            b1.ToTable("UserAccounts");
 
                             b1.WithOwner()
                                 .HasForeignKey("UserAccountId");

@@ -170,8 +170,8 @@ namespace UserService.Controllers
         {
             try
             {
-                _logger.LogInformation("Updating user {Id} with Email={Email}, DisplayName={DisplayName}, Role={Role}",
-                                id, updateUserDto.Email, updateUserDto.DisplayName, updateUserDto.Role);
+                _logger.LogInformation("Updating user {Id} with Email={Email}, DisplayName={DisplayName}, Role={Role}, ManagerId={ManagerId}",
+                                id, updateUserDto.Email, updateUserDto.DisplayName, updateUserDto.Role, updateUserDto.ManagerId);
                 UserRole? role = null;
                 if (updateUserDto.Role is not null)
                 {
@@ -179,7 +179,7 @@ namespace UserService.Controllers
                     _logger.LogInformation("Updating user with id={Id}: role string:{RoleString} mapped to role: {Role} at {Time}", id, updateUserDto.Role, role, DateTime.UtcNow);
                 }
 
-                var command = new UpdateUserCommand(id, updateUserDto.Email, updateUserDto.DisplayName, role);
+                var command = new UpdateUserCommand(id, updateUserDto.Email, updateUserDto.DisplayName, role, updateUserDto.ManagerId);
                 var result = await _mediator.Send(command, cancellationToken);
                 if (result)
                 {
@@ -188,7 +188,7 @@ namespace UserService.Controllers
                 }
                 
 
-                 _logger.LogError("User not found for update: {Id}", id);
+                 _logger.LogError("User/Manager not found for update: {Id}", id);
                 return NotFoundProblem($"User not found for update: {id}");
             }
             catch(RequestValidationException rex)

@@ -4,6 +4,7 @@ using TaskService.Application.Common.Mappers;
 using TaskService.Application.Common.Models;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
+using TaskService.Domain.ValueObjects;
 using TaskService.Repositories;
 
 namespace TaskService.Services
@@ -60,12 +61,14 @@ namespace TaskService.Services
         public async Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken)
         {
             try
-            {                
+            {
                 _logger.LogInformation("Creating new task: {Title}", command.Title);
 
 
                 // create domain object and raise created event      
-                var task = TaskItem.Create(command.Title, command.Description);                                             
+                TaskPriority? taskPriority = MapTaskPriority(command.Priority);
+                Domain.ValueObjects.TaskStatus? taskStatus = MapTaskStatus(command.Status);
+                var task = TaskItem.Create(command.userId, command.Title, command.Description, command.DueDate, taskPriority, taskStatus);
 
                 // calling reposistory method
                 var result = await _taskRepository.AddAsync(task, cancellationToken);
@@ -85,6 +88,8 @@ namespace TaskService.Services
                 return null;
             }
         }
+
+        
 
         public async Task<bool> UpdateTaskAsync(UpdateTaskCommand command, CancellationToken cancellationToken)
         {
@@ -155,5 +160,44 @@ namespace TaskService.Services
                 };
             }
         }
+
+
+        #region Helpers
+
+        private Domain.ValueObjects.TaskStatus? MapTaskStatus(string status)
+        {
+            Domain.ValueObjects.TaskStatus? taskStatus = null;
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(status))
+                {
+                    taskStatus = Domain.ValueObjects.TaskStatus.From(status);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while converting task status value: {StatusString}", status);
+            }
+            return taskStatus;
+        }
+
+        private TaskPriority? MapTaskPriority(string priority)
+        {
+            TaskPriority? taskPriority = null;
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(priority))
+                {
+                    taskPriority = TaskPriority.From(priority);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while converting task priority value: {PriorityString}", priority);
+            }
+            return taskPriority;
+        }
+
+        #endregion Helpers
     }
 }

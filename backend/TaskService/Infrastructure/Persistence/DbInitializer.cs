@@ -1,4 +1,5 @@
 ﻿using TaskService.Domain.Entities;
+using TaskService.Domain.ValueObjects;
 
 namespace TaskService.Infrastructure.Persistence
 {
@@ -8,14 +9,14 @@ namespace TaskService.Infrastructure.Persistence
         {
             if (context.Tasks.Any()) return; // Already seeded
 
-
-            var completedTask = TaskItem.Create("Publish LinkedIn post", "Share CQRS insights");
-            completedTask.MarkCompleted();
+            var testUserId = new Guid("89467f3a-7369-4098-a798-29d85b29e2ad");
+            var now = DateTime.UtcNow;
+                       
             var tasks = new[]
             {
-                TaskItem.Create("Design dashboard", "Sketch layout for DevPulse"),
-                TaskItem.Create("Write API tests", "Cover TaskService endpoints"),
-                completedTask
+                TaskItem.Create(testUserId, "Design dashboard", "Sketch layout for DevPulse", now.AddMonths(1), TaskPriority.Low, Domain.ValueObjects.TaskStatus.Completed),
+                TaskItem.Create(testUserId, "Write API tests", "Cover TaskService endpoints", now.AddMonths(1), TaskPriority.Low, Domain.ValueObjects.TaskStatus.NotStarted),
+                TaskItem.Create(testUserId, "Publish LinkedIn post", "Share CQRS insights", now.AddMonths(1), TaskPriority.Low, Domain.ValueObjects.TaskStatus.Pending)
             };
 
             context.Tasks.AddRange(tasks);

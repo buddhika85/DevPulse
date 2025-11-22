@@ -1,5 +1,6 @@
 ﻿using SharedLib.Domain.Entities;
 using TaskService.Domain.Events;
+using TaskService.Domain.ValueObjects;
 
 namespace TaskService.Domain.Entities
 {
@@ -12,9 +13,22 @@ namespace TaskService.Domain.Entities
         // This needs to be configured in DBContext to store as string using EF Fluent API as a string
         public Domain.ValueObjects.TaskStatus TaskStatus { get; private set; } = Domain.ValueObjects.TaskStatus.Pending;
 
-        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
+
+        public TaskPriority TaskPriority { get; private set; } = TaskPriority.Medium;
+        public DateTime? DueDate { get; private set; }
+
+        
+        public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
         public bool IsDeleted { get; private set; }
+
+
+        // FK
+        public Guid UserId { get; private set; }        
+
+       
+        // we dont keep any navigational properties in entities as the reference DB tables live in other micro service specific DBs - EF do not have access to them
+
 
         private TaskItem() { }   // Enforces controlled instantiation via Create()
                       
@@ -41,13 +55,16 @@ namespace TaskService.Domain.Entities
 
         #region domain_events
 
-        public static TaskItem Create(string title, string? description)
+        public static TaskItem Create(Guid userId, string title, string? description, DateTime? dueDate, TaskPriority? taskPriority = null, Domain.ValueObjects.TaskStatus? taskStatus = null)
         {
             var task = new TaskItem
             {
                 Title = title,
                 Description = description ?? string.Empty,
                 TaskStatus = Domain.ValueObjects.TaskStatus.Pending,
+                TaskPriority = taskPriority ?? TaskPriority.Low,
+                DueDate = dueDate,
+                UserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
             task.DomainEvents.Add(new TaskCreatedDomainEvent(task));
@@ -55,12 +72,13 @@ namespace TaskService.Domain.Entities
         }
 
 
-        public void Update(string title, string description, Domain.ValueObjects.TaskStatus status)
+        public void Update(string title, string description, Domain.ValueObjects.TaskStatus status, TaskPriority taskPriority, DateTime? dueDate)
         {
             Title = title;
             Description = description ?? string.Empty;
             TaskStatus = status;
-
+            TaskPriority = taskPriority;
+            DueDate = dueDate;
             DomainEvents.Add(new TaskUpdatedDomainEvent(this));
         }
 

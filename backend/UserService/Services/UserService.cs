@@ -4,6 +4,7 @@ using UserService.Application.Commands;
 using UserService.Application.Common.Models;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
+using UserService.Domain.ValueObjects;
 using UserService.Infrastructure.Identity;
 using UserService.Repositories;
 
@@ -192,6 +193,14 @@ namespace UserService.Services
                     return false;
                 }
 
+                if (command.ManagerId is not null && 
+                    !await _userRepository.IsUserExistsAsync(command.ManagerId.Value, UserRole.Manager, cancellationToken))
+                {
+                    _logger.LogError("Exception occurred while updating User with Id: {Id}, Email: {Email} at {Time}. Manager with {ManagerId} does not exists!", 
+                        command.Id, command.Email, DateTime.UtcNow,command.ManagerId);
+                    return false;
+                }
+
                 ApplyChanges(entity, command);  // store domain events
                 var result = await _userRepository.UpdateAsync(command.Id, entity, cancellationToken);
                 if (result)
@@ -237,6 +246,14 @@ namespace UserService.Services
                     existing.Id, existing.DisplayName, updateCommand.DisplayName, timestamp);
 
                 existing.UpdateDisplayName(updateCommand.DisplayName);
+            }
+                        
+            if (updateCommand.ManagerId is not null && (existing.ManagerId is null || existing.ManagerId != updateCommand.ManagerId))
+            {
+                _logger.LogInformation("Updating ManagerId for user Id: {Id} from '{OldManagerID}' to '{NewManagerID}' at {Time}",
+                    existing.Id, existing.ManagerId, updateCommand.ManagerId, timestamp);
+
+                existing.UpdateManager(updateCommand.ManagerId.Value);
             }
         }
 

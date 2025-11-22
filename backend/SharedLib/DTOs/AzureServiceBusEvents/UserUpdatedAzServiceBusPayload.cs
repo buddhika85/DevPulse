@@ -24,4 +24,11 @@
         public string Message { get; init; } = "User Role updated";
         public DateTime TimeStamp { get; init; } = DateTime.UtcNow;
     }
+
+
+    public record UserManagerChangedAzServiceBusPayload(string UserId, string? PreviousManagerId, string NewManagerId, string Email) : BaseUserUpdatedPayload(UserId, "ManagerId")
+    {
+        public string Message { get; init; } = "User Manager updated";
+        public DateTime TimeStamp { get; init; } = DateTime.UtcNow;
+    }
 }

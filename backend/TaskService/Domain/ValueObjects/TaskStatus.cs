@@ -15,6 +15,8 @@ namespace TaskService.Domain.ValueObjects
         // This enforces immutability and restricts status values to known options.
         private TaskStatus(string value) => Value = value;
 
+        public static TaskStatus NotStarted => new("NotStarted");
+
         // Static instance representing a pending task.
         public static TaskStatus Pending => new("Pending");
 
@@ -24,10 +26,11 @@ namespace TaskService.Domain.ValueObjects
         // Factory Method to return a TaskStatus from a string value
         public static TaskStatus From(string value)
         {
-            return value switch
+            return value.ToLower() switch
             {
-                "Pending" => Pending,
-                "Completed" => Completed,
+                "notstarted" => NotStarted,
+                "pending" => Pending,
+                "completed" => Completed,
                 _ => throw new ArgumentException($"Invalid TaskStatus: {value}")
             };
         }
