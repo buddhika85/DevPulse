@@ -21,6 +21,10 @@ namespace TaskService.Application.Common.Mappers
                 Description = entity.Description,
                 CreatedAt = entity.CreatedAt,
                 Status = entity.TaskStatus.Value,
+
+                UserId = entity.UserId,
+                Priority = entity.TaskPriority.Value,
+                DueDate = entity.DueDate
             };
         }
 

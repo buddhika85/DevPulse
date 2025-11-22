@@ -59,9 +59,8 @@ namespace TaskService.Controllers
         {
             _logger.LogInformation("Fetching all tasks by user Id {UserId} at {Time}", id, DateTime.UtcNow);
             try
-            {
-                // we need to fix this filter by user Id
-                var tasks = await _mediator.Send(new GetAllTasksQuery(), cancellationToken);
+            {                
+                var tasks = await _mediator.Send(new GetTasksByUserIdQuery(id), cancellationToken);
                 return Ok(tasks);
             }
             catch (Exception ex)
@@ -258,10 +257,7 @@ namespace TaskService.Controllers
             try
             {
                 // map
-                var command = new DeleteTaskCommand
-                {
-                    Id = id
-                };
+                var command = new DeleteTaskCommand(id);
 
                 // MediatR
                 var result = await _mediator.Send(command, cancellationToken);

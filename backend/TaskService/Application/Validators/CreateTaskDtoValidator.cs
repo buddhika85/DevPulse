@@ -15,6 +15,16 @@ namespace TaskService.Application.Validators
 
             RuleFor(x => x.Description)
                 .MaximumLength(500);
+
+            RuleFor(x => x.Priority.ToLower())
+                .NotEmpty()
+                .Must(status => status == "high" || status == "medium" || status == "low")
+                .WithMessage("Status must be either 'High', 'Medium' or 'Low'.");
+
+            RuleFor(x => x.Status.ToLower())
+                .NotEmpty()
+                .Must(status => status == "pending" || status == "completed" || status == "notstarted")
+                .WithMessage("Status must be either 'Pending', 'Completed' or 'NotStarted'.");
         }
     }
 }

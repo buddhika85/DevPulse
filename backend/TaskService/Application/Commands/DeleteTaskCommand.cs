@@ -3,8 +3,5 @@
 namespace TaskService.Application.Commands
 {
     // Fluent Validator is DeleteTaskCommandValidator
-    public record DeleteTaskCommand : IRequest<bool>
-    {
-        public Guid Id { get; set; }
-    }
+    public record DeleteTaskCommand(Guid Id) : IRequest<bool>;
 }

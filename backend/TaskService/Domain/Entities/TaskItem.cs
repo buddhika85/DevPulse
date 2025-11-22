@@ -61,7 +61,7 @@ namespace TaskService.Domain.Entities
             {
                 Title = title,
                 Description = description ?? string.Empty,
-                TaskStatus = Domain.ValueObjects.TaskStatus.Pending,
+                TaskStatus = taskStatus ?? Domain.ValueObjects.TaskStatus.NotStarted,
                 TaskPriority = taskPriority ?? TaskPriority.Low,
                 DueDate = dueDate,
                 UserId = userId,

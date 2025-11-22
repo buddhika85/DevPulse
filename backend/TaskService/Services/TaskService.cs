@@ -58,6 +58,23 @@ namespace TaskService.Services
             }
         }
 
+        public async Task<IReadOnlyList<TaskItemDto>> GetTasksByUserIdAsync(GetTasksByUserIdQuery query, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching task by User ID: {UserId}", query.userId);
+                var entities = await _taskRepository.GetTasksByUserIdAsync(query.userId, cancellationToken);
+                var dtos = TaskMapper.ToDtosList(entities);
+                _logger.LogInformation("Retrieved {Count} tasks for User ID={UserId}.", dtos.Count(), query.userId);
+                return dtos.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tasks for userID: {UserId}", query.userId);
+                return [];
+            }
+        }
+
         public async Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken)
         {
             try
@@ -197,7 +214,7 @@ namespace TaskService.Services
             }
             return taskPriority;
         }
-
+              
         #endregion Helpers
     }
 }

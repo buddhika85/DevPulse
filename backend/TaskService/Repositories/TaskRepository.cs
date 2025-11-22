@@ -102,6 +102,27 @@ namespace TaskService.Repositories
             }
         }
 
+        public async Task<IReadOnlyList<TaskItem>> GetTasksByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+            try
+            {
+                var entities = await _dbContext.Tasks
+                    .AsNoTracking()
+                    .Where(x => !x.IsDeleted && x.UserId == userId)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Successfully retrieved {Count} TaskItems for UserId={UserId} at {Time}", entities.Count, userId, DateTime.UtcNow);
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+                throw;
+            }
+        }
+
         public async Task<TaskItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Attempting to retrieve Task with Id: {Id} at {Time}", id, DateTime.UtcNow);

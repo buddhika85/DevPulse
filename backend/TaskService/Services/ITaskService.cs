@@ -18,5 +18,6 @@ namespace TaskService.Services
         Task<TaskItemDto?> GetTaskByIdAsync(GetTaskByIdQuery query, CancellationToken cancellationToken);
 
         Task<PaginatedResult<TaskItemDto>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken);
+        Task<IReadOnlyList<TaskItemDto>> GetTasksByUserIdAsync(GetTasksByUserIdQuery query, CancellationToken cancellationToken);
     }
 }
