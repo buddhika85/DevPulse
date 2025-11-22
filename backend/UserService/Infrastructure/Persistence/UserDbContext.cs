@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UserService.Domain.Entities;
-//using UserService.Domain.Entities;
+using UserService.Domain.ValueObjects;
 
 namespace UserService.Infrastructure.Persistence
 {
@@ -27,20 +27,27 @@ namespace UserService.Infrastructure.Persistence
                 builder.HasIndex(x=> x.IsDeleted)
                         .HasDatabaseName("IX_UserAccount_IsDeleted");
 
+                // FK - 1:M
+                builder.HasOne(x => x.Manager)                          // user has one manager
+                        .WithMany(m => m.DirectReports)                 // manager has many direct reports
+                        .HasForeignKey(x => x.ManagerId);
 
                 // mapping user role value object to be stored as a column which stores string value of user role
-                builder.OwnsOne(entity => entity.Role, roleBuilder =>
-                {
-                    roleBuilder.Property(role => role.Value)
-                    .IsRequired()
+                builder
+                    .Property(u => u.Role)
+                    .HasConversion(
+                        v => v.Value,
+                        v => UserRole.From(v))
                     .HasColumnName("Role")
                     .HasMaxLength(50);
 
-                    // Composite index on Role and IsDeleted
-                    roleBuilder.HasIndex(role => role.Value)
-                            .HasDatabaseName("IX_UserAccount_Role");
+                // index on Role
+                builder.HasIndex("Role")
+                        .HasDatabaseName("IX_UserAccount_Role");
 
-                });
+                // index on IsDeleted
+                builder.HasIndex(x => x.IsDeleted)
+                        .HasDatabaseName("IX_UserAccount_IsDeleted");
             });
         }
     }

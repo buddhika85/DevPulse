@@ -117,6 +117,7 @@ namespace UserService.Repositories
             {
                 var entities = await _dbContext.UserAccounts
                     .AsNoTracking()
+                    .Include(x => x.Manager)
                     .Where(x => !x.IsDeleted && 
                                 x.Role == role)
                     .OrderByDescending(x => x.CreatedAt)
@@ -138,7 +139,7 @@ namespace UserService.Repositories
             _logger.LogInformation("Attempting to retrieve a user with Id:{Id} at {Time}", id, DateTime.UtcNow);
             try
             {
-                var entity = await _dbContext.UserAccounts.FindAsync([id], cancellationToken);
+                var entity = await _dbContext.UserAccounts.Include(x => x.Manager).SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
                 if (entity is null)                
                     _logger.LogWarning("No user with Id: {Id} at {Time}", id, DateTime.UtcNow);
                 else
@@ -311,7 +312,7 @@ namespace UserService.Repositories
                     "Attempting to retrieve paginated Users with filters: Email={Email}, DisplayName={DisplayName}, Role={Role}, Page={PageNumber}, Size={PageSize}, SortBy={SortBy}, Desc={SortDescending} at {Time}",
                     query.Email, query.DisplayName, query.Role, query.PageNumber, query.PageSize, query.SortBy, query.SortDescending, DateTime.UtcNow);
 
-                var queryable = _dbContext.UserAccounts.AsNoTracking().AsQueryable()
+                var queryable = _dbContext.UserAccounts.AsNoTracking().Include(x => x.Manager).AsQueryable()
                     .Where(x => !x.IsDeleted);
 
                 if (!string.IsNullOrWhiteSpace(query.Email))
@@ -367,6 +368,24 @@ namespace UserService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while retrieving paginated Users at {Time}", DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        // if user exists with id and with in the given role
+        public async Task<bool> IsUserExistsAsync(Guid userId, UserRole role, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Checking if user exists with Id={Id} on role={Role} at {Time}", userId, role, DateTime.UtcNow);
+            try
+            {
+                return await _dbContext.UserAccounts
+                    .AsNoTracking()
+                    .AnyAsync(x => x.Id == userId && x.Role == role, 
+                        cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while checking if user exists with Id={Id} on role={Role} at {Time}", userId, role, DateTime.UtcNow);
                 throw;
             }
         }

@@ -3,10 +3,5 @@
 namespace TaskService.Application.Commands
 {
     // Fluent Validator for this CreateTaskCommandValidator
-    public record CreateTaskCommand : IRequest<Guid?>
-    {
-        public string Title { get; set; } = string.Empty;
-        public string? Description { get; set; }
-
-    }
+    public record CreateTaskCommand(Guid userId, string Title, string Description, DateTime? DueDate, string Status = "NotStarted", string Priority = "Low") : IRequest<Guid?>;
 }

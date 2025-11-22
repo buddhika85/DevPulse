@@ -177,11 +177,7 @@ namespace TaskService.Controllers
                 // 1 MediatR runs its validation piepeline and executes all attached Flunt Validators for DTO / command / query
                 // If fails throws - RequestValidationException - with ValidationFailures
                 // 2 Map DTO to to appropriate Command in CQRS
-                var command = new CreateTaskCommand
-                {
-                    Title = dto.Title,
-                    Description = dto.Description
-                };
+                var command = new CreateTaskCommand(dto.userId, dto.Title, dto.Description, dto.DueDate, dto.Status, dto.Priority);
 
                 // 3 passing CreateTaskCommand (IRequest) to MediatR to handle the request
                 var id = await _mediator.Send(command, cancellationToken);
@@ -226,7 +222,7 @@ namespace TaskService.Controllers
             try
             {
                 // map
-                var command = new UpdateTaskCommand(id, dto.Title, dto.Description, dto.Status);                
+                var command = new UpdateTaskCommand(id, dto.Title, dto.Description, dto.dueDate, dto.Status, dto.Priority);                
 
                 // MediatR
                 var result = await _mediator.Send(command, cancellationToken);

@@ -259,7 +259,7 @@ namespace TaskService.Repositories
 
             // raise updated event if its a true update with a change           
             if (existing.Title != incoming.Title || existing.Description != incoming.Description)
-                existing.Update(incoming.Title, incoming.Description, incoming.TaskStatus);
+                existing.Update(incoming.Title, incoming.Description, incoming.TaskStatus, incoming.TaskPriority, incoming.DueDate);
         }
     }
 }
