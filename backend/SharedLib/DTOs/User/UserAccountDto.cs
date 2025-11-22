@@ -7,5 +7,8 @@
         public string DisplayName { get; set; } = string.Empty;
         public string UserRole { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
+
+        public Guid? ManagerId { get; set; }
+        public string? ManagerName { get; set; }
     }
 }

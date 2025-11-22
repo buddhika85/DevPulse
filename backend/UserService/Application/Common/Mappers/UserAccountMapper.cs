@@ -15,7 +15,9 @@ namespace TaskService.Application.Common.Mappers
                 Email = entity.Email,
                 DisplayName = entity.DisplayName,
                 CreatedAt = entity.CreatedAt.ToShortDateString(),
-                UserRole = entity.Role.Value
+                UserRole = entity.Role.Value,
+                ManagerId = entity.ManagerId,
+                ManagerName = entity.Manager?.DisplayName
             };
         }
 
