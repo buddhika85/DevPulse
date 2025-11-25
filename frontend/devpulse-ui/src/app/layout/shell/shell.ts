@@ -63,6 +63,7 @@ export class Shell implements OnInit {
     this.authService.logout(); // ✅ Clear MSAL session (Entra token + account info)
     this.user.set(null);
     this.userDto.set(null);
+    this.userStoreService.setUserDto(null);
     localStorage.removeItem('devpulse_token');
   }
 

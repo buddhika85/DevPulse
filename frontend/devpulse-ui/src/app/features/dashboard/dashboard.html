@@ -1,1 +1,23 @@
-<p>dashboard works!</p>
+<!-- user dto -->
+@let userDto = userStoreService.userDto();
+
+<!-- check for role -->
+@switch (userDto?.userRole) {
+
+<!-- User -->
+@case ('User') {
+<app-developer-dashboard />
+}
+
+<!-- Manager -->
+@case ('Manager') {
+<app-manager-dashboard />
+}
+
+<!-- Admin -->
+@case ('Admin') {
+<app-admin-dashboard />
+}
+
+<!--end switch-->
+}

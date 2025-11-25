@@ -9,10 +9,17 @@
     <!-- role based links display-->
     @let dto = userDto();
     <nav class="nav-links">
+      <a
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        >Dashboard</a
+      >
       @switch (dto?.userRole) {
 
       <!-- User -->
       @case ('User') {
+
       <a routerLink="/tasks" routerLinkActive="active">Tasks</a>
       <a routerLink="/mood" routerLinkActive="active">Mood</a>
       <a routerLink="/journal" routerLinkActive="active">Journal</a>
@@ -22,6 +29,7 @@
 
       <!-- Manager -->
       @case ('Manager') {
+
       <a routerLink="/team-dashboard" routerLinkActive="active">Team</a>
       <a routerLink="/feedback" routerLinkActive="active">Feedback</a>
       <a routerLink="/goals" routerLinkActive="active">Goals</a>
