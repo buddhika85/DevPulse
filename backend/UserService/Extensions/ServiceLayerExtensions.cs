@@ -14,7 +14,9 @@ namespace UserService.Extensions
         /// <param name="loggerFactory">Factory used to create a logger for diagnostics.</param>
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
-        {            
+        {
+            services.AddScoped<ITokenService, TokenService>();
+
             services.AddScoped<IUserService, Services.UserService>();
 
 

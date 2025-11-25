@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using UserService.Configuration;
 
 namespace UserService.Extensions
@@ -15,9 +16,23 @@ namespace UserService.Extensions
         /// <exception cref="InvalidOperationException">If config section is missing</exception>
         public static IServiceCollection InjectEntraExternalIdAccessService(this IServiceCollection services, IConfiguration configuration)
         {
+            // Authentication Scheme 1 - Validate Microsfot Az Entra issued token
+            ConfigureEntraJwtValidation(services, configuration);
+
+            // Authentication Scheme 2 - Validate DevPulse issued token containing user role
+            ConfigureDevePulseJwtValidation(services, configuration);
+
+            return services;
+        }
+
+        // Authentication Scheme 1 - Validate Microsfot Az Entra issued token
+        // used only for user service /me endpoint 
+        // On /me endpoint → decorate with [Authorize(AuthenticationSchemes = "EntraJwt")]
+        private static void ConfigureEntraJwtValidation(IServiceCollection services, IConfiguration configuration)
+        {
             // Retrieves the bound EntraExternalIdSettings object directly from configuration.
             var entraSettingsSection = configuration.GetSection("EntraExternalIdSettings");
-            
+
 
 
             // Defensive check: ensures the section exists and is properly bound.
@@ -27,11 +42,10 @@ namespace UserService.Extensions
 
             var audiences = entraSettingsSection.GetSection("Audiences").Get<string[]>();
 
-            
 
-            // Register Az Microsoft Entra External Id Access service           
+            // authentication scheme 1
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
+                .AddJwtBearer("EntraJwt", options =>
                 {
                     var tenantId = entraSettingsSection["TenantId"];
                     var instance = entraSettingsSection["Instance"];
@@ -56,7 +70,6 @@ namespace UserService.Extensions
                     };
                 });
 
-
             // adding authorisation policies
             // [Authorize(Policy = "ValidToken")]
             services.AddAuthorization(options =>
@@ -68,9 +81,45 @@ namespace UserService.Extensions
                     policy.RequireClaim("http://schemas.microsoft.com/identity/claims/objectidentifier");
                 });
             });
+        }
+
+        // Authentication Scheme 2 - Validate DevPulse issued token containing user role
+        // used by all other authorised endpoints except for user service /me endpoint
+        // On all other endpoints → decorate with [Authorize(AuthenticationSchemes = "DevPulseJwt")]
+        private static void ConfigureDevePulseJwtValidation(IServiceCollection services, IConfiguration configuration)
+        {
+            // Retrieves the bound DevPulseJwtSettings object directly from configuration.
+            var devPulseJwtSection = configuration.GetSection("DevPulseJwtSettings");
 
 
-            return services;
+
+            // Defensive check: ensures the section exists and is properly bound.
+            // If null: fails fast during startup.
+            if (!devPulseJwtSection.Exists())
+                throw new InvalidOperationException("DevPulseJwtSettings section is missing or invalid.");
+
+            var issuer = devPulseJwtSection["Issuer"];
+            var key = devPulseJwtSection["Key"];
+            var audiences = devPulseJwtSection.GetSection("Audiences").Get<string[]>();
+
+            if (string.IsNullOrWhiteSpace(issuer) || string.IsNullOrWhiteSpace(key) || audiences == null || !audiences.Any())
+                throw new InvalidOperationException("DevPulseJwtSettings section is incomplete.");
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer("DevPulseJwt", options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = issuer,
+                        ValidAudience = audiences.FirstOrDefault() ?? "DevPulseClient",
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true
+                    };
+
+                });
         }
 
         /// <summary>
@@ -89,5 +138,21 @@ namespace UserService.Extensions
             return services;
         }
 
+
+        /// <summary>
+        /// Binds DevPulseJwtSettings from configuration using the Options pattern.
+        /// This makes the settings injectable via IOptions<DevPulseJwtSettings>.
+        /// </summary>
+        /// <param name="services">The service collection</param>
+        /// <param name="configuration">The app configuration</param>
+        /// <returns>The updated service collection</returns>
+        public static IServiceCollection BindJwtSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            // ✅ Bind the "EntraExternalIdSettings" section to a strongly-typed class
+            services.Configure<DevPulseJwtSettings>(
+                configuration.GetSection("DevPulseJwtSettings"));
+
+            return services;
+        }
     }
 }

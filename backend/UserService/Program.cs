@@ -55,6 +55,7 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBeh
 
 
 builder.Services.BindEntraExternalIdSettings(builder.Configuration);                // Binds EntraExternalIdSettings from configuration using the Options pattern.
+builder.Services.BindJwtSettings(builder.Configuration);                            // Binds DevPulseJwtSettings from configuration using the Options pattern.
 
 
 builder.Services.InjectEntraExternalIdAccessService(builder.Configuration);         // inject Azure Microsoft Entra External Id for JWT auth, author
@@ -62,6 +63,7 @@ builder.Services.InjectCosmosDbServices();                                      
 builder.Services.InjectAzureServiceBusServices();                                   // inject services which publishes messages to Azure servuice Bus topics
 
 
+builder.Services.AddHttpClientPolicies(builder.Configuration);                                  // Http client factory
 
 builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories

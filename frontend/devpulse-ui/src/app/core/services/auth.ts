@@ -19,6 +19,7 @@ export class AuthService {
 
   // ✅ Trigger logout and redirect to home
   logout(): void {
+    // ✅ Clear MSAL session (Entra token + account info)
     this.msal.logoutRedirect({
       postLogoutRedirectUri: environment.msal.redirectUri,
     });

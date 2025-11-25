@@ -15,6 +15,15 @@
 </section>
 
 <section>
+  <h3>🎟️ DevPulse Token Claims</h3>
+  @if (devPulseClaims) {
+  <pre>{{ devPulseClaims | json }}</pre>
+  } @else {
+  <p>No DevPulse token found in storage</p>
+  }
+</section>
+
+<section>
   <h3>🧭 Current Route</h3>
   <pre>{{ router.url }}</pre>
 </section>

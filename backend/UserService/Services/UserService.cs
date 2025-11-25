@@ -374,7 +374,7 @@ namespace UserService.Services
                 _logger.LogInformation("Fetched user from Entra for object id: {ObjectId}. Creating new user with email '{Email}' and display name '{DisplayName}' at {Time} in SQL UserAccounts table.",
                                 objectId, entraUser.Email, entraUser.DisplayName, DateTime.UtcNow);
 
-                var userAccount = UserAccount.Create(entraUser.Email, entraUser.DisplayName, entraUser.UserRole, objectId);
+                var userAccount = UserAccount.Create(entraUser.Email, entraUser.DisplayName, entraUser.UserRole, objectId);         // UserRole is the default role
 
                 var result = await _userRepository.AddAsync(userAccount, cancellationToken);
 

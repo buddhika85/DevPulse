@@ -13,8 +13,9 @@ import { MsalService } from '@azure/msal-angular';
 import { environment } from '../../../environments/environment';
 
 /*
-This interceptor checks if an outgoing HTTP request is targeting a protected backend API, 
-and if so, it silently fetches an access token from MSAL and attaches it to the request as a Bearer token for authentication.
+This interceptor checks if an outgoing HTTP request is targeting a protected backend API.
+If so, it decides whether to attach an Entra token (for the initial /me call) or
+a DevPulse app token (for all subsequent calls).
 */
 
 @Injectable()
@@ -30,35 +31,67 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // ✅ Find matching resource based on request URL
     const matched = entries.find(
-      (entry) => entry.url && req.url.startsWith(entry.url) // starts with
+      (entry) => entry.url && req.url.startsWith(entry.url)
     );
 
-    // ✅ If no match, pass request through unchanged, no token attached to avoid too much token exposure
+    // ✅ If no match, pass request through unchanged
     if (!matched) {
       return next.handle(req);
     }
 
-    // ✅ Acquire token silently for matched scopes
+    debugger;
+
+    // ✅ Decide which token to attach
+    const meApiCall = req.url.endsWith('/me');
+    return meApiCall
+      ? this.attachEntraToken(req, next, matched.scopes)
+      : this.attachDevPulseToken(req, next);
+  }
+
+  // 🔹 Method 1: Attach Entra token for /me bootstrap call
+  private attachEntraToken(
+    req: HttpRequest<any>,
+    next: HttpHandler,
+    scopes: string[]
+  ): Observable<HttpEvent<any>> {
+    // ✅ Acquire Entra issued token silently for matched scopes
     const activeAccount = this.msal.instance.getActiveAccount();
     return from(
       this.msal.instance.acquireTokenSilent({
-        account: activeAccount !== null ? activeAccount : undefined,
-        scopes: matched.scopes,
+        account: activeAccount ?? undefined,
+        scopes,
       })
     ).pipe(
       switchMap((result) => {
-        // ✅ Attach token to Authorization header
+        // ✅ Attach Entra issued token to Authorization header
         const authReq = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${result.accessToken}`,
-          },
+          setHeaders: { Authorization: `Bearer ${result.accessToken}` },
         });
         return next.handle(authReq);
       }),
       catchError((error) => {
-        console.error('❌ Token acquisition failed:', error);
+        console.error('❌ Entra token acquisition failed:', error);
         return throwError(() => error);
       })
     );
+  }
+
+  // 🔹 Method 2: Attach DevPulse app token for all other API calls
+  private attachDevPulseToken(
+    req: HttpRequest<any>,
+    next: HttpHandler
+  ): Observable<HttpEvent<any>> {
+    const devPulseJwtToken = localStorage.getItem('devpulse_token');
+
+    if (!devPulseJwtToken) {
+      console.warn('⚠️ No DevPulse JWT found in local storage.');
+      return next.handle(req); // fallback: send request without token
+    }
+
+    // ✅ Attach DevPulse token containing user roles to Authorization header
+    const authReq = req.clone({
+      setHeaders: { Authorization: `Bearer ${devPulseJwtToken}` },
+    });
+    return next.handle(authReq);
   }
 }

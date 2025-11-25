@@ -2,7 +2,6 @@ import { BaseDto } from './base.dto';
 import { UserRole } from './user-role.enum';
 
 export interface UserAccountDto extends BaseDto {
-  id: string;
   displayName: string;
   email: string;
   userRole: UserRole; // restrict to known roles of backend

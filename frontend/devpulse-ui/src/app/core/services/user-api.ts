@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth';
 import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
-import { UserAccountDto } from '../models/user-account.dto';
+import { UserProfileResponseDto } from '../models/user-profile-response.dto';
 
 @Injectable({
   providedIn: 'root',
@@ -22,7 +22,7 @@ export class UserApiService {
   // if available, it will query and take the user from SQL DB
   // Then User Dto will be returned for that user record
 
-  getUserProfile(): Observable<UserAccountDto> {
+  getUserProfile(): Observable<UserProfileResponseDto> {
     // // from converts async promise returned by getAccessToken
     // return from(this.authService.getAccessToken(this.apiUrl)).pipe(
     //   // switchMap takes the emitted token and switches to a new Observable
@@ -47,6 +47,8 @@ export class UserApiService {
     //   })
     // );
 
-    return this.http.get<UserAccountDto>(`${this.profileControllerUrl}me`);
+    return this.http.get<UserProfileResponseDto>(
+      `${this.profileControllerUrl}me`
+    );
   }
 }

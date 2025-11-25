@@ -40,6 +40,7 @@ export class Shell implements OnInit {
     this.msal.instance.handleRedirectPromise().then((result) => {
       // Make sure MSAL finishes processing the redirect
       if (result) {
+        // This gets executed if a login was performed
         this.msal.instance.setActiveAccount(result.account);
       }
 
@@ -53,9 +54,10 @@ export class Shell implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout();
+    this.authService.logout(); // ✅ Clear MSAL session (Entra token + account info)
     this.user.set(null);
     this.userDto.set(null);
+    localStorage.removeItem('devpulse_token');
   }
 
   private getUserDetails() {
@@ -67,9 +69,17 @@ export class Shell implements OnInit {
 
       // getting backend user meta data
       this.userApi.getUserProfile().subscribe({
-        next: (profile) => {
-          this.userDto.set(profile);
-          this.userStoreService.setUserDto(profile);
+        next: (userProfileResponseDto) => {
+          console.log('User-Profile-Response-Dto', userProfileResponseDto);
+          this.userDto.set(userProfileResponseDto.user);
+          this.userStoreService.setUserDto(userProfileResponseDto.user);
+
+          // store Dev Pulse JwToken in local storage
+          localStorage.setItem(
+            'devpulse_token',
+            userProfileResponseDto.devPulseJwToken
+          );
+
           this.isLoading.set(false);
 
           console.log(this.userDto());

@@ -4,6 +4,7 @@ import { AuthService } from '../../../core/services/auth';
 import { UserStoreService } from '../../../core/services/user-store.service';
 import { CommonModule, JsonPipe } from '@angular/common';
 import { UserRole } from '../../../core/models/user-role.enum';
+import { decodeJwt } from '../../../core/utils/jwt-utils';
 
 @Component({
   selector: 'app-devtools',
@@ -11,13 +12,15 @@ import { UserRole } from '../../../core/models/user-role.enum';
   templateUrl: './devtools.html',
   styleUrl: './devtools.scss',
 })
-export class Devtools {
+export class Devtools implements OnInit {
   router = inject(Router);
   auth = inject(AuthService);
   userStore = inject(UserStoreService);
 
   msalUser = this.auth.getUser();
   userDto = this.userStore.userDto();
+
+  devPulseClaims: any;
 
   private userFeatureFlags = {
     TaskLoger: true,
@@ -95,4 +98,9 @@ export class Devtools {
       : this.userDto?.userRole === UserRole.Manager
       ? this.managerFeatureFlags
       : this.userFeatureFlags;
+
+  ngOnInit(): void {
+    const token = localStorage.getItem('devpulse_token');
+    this.devPulseClaims = token ? decodeJwt(token) : null;
+  }
 }

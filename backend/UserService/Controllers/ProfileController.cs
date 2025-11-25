@@ -12,6 +12,7 @@ using UserService.Application.Common.Models;
 using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Domain.ValueObjects;
+using UserService.Services;
 
 namespace UserService.Controllers
 {
@@ -22,11 +23,13 @@ namespace UserService.Controllers
     {
         private readonly ILogger<ProfileController> _logger;
         private readonly IMediator _mediator;
+        private readonly ITokenService _tokenService;
 
-        public ProfileController(ILogger<ProfileController> logger, IMediator mediator)
+        public ProfileController(ILogger<ProfileController> logger, IMediator mediator, ITokenService tokenService)
         {
             _logger = logger;
             _mediator = mediator;
+            _tokenService = tokenService;
         }
 
         // Get By Id
@@ -313,7 +316,7 @@ namespace UserService.Controllers
         // Secure Test End point to test Az Microsft Entral External ID
         [Authorize(Policy = "ValidToken")]
         [HttpGet("secure-ping")]
-        [SwaggerOperation(Summary = "JWT validation test", Description = "Returns success if JWT token is valid.")]
+        [SwaggerOperation(Summary = "Entra JWT validation test", Description = "Returns success if JWT token is valid.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Token is valid")]
         [SwaggerResponse(StatusCodes.Status401Unauthorized, "Missing or invalid token")]
         public IActionResult SecurePing()
@@ -322,7 +325,7 @@ namespace UserService.Controllers
         }
 
         //[Authorize(Policy = "ValidToken")]
-        [Authorize]
+        [Authorize(AuthenticationSchemes = "EntraJwt")]
         [HttpGet("me")]
         [SwaggerOperation(Summary = "Get current user", Description = "Returns the profile of the authenticated user by talking with Microsoft Entra External ID.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
@@ -360,8 +363,21 @@ namespace UserService.Controllers
                     return NotFound();
                 }
 
+                // 🔑 Generate app token enriched with role
+                var role = dto.UserRole;                                                        
+                var appToken = _tokenService.GenerateAppToken(User, role, cancellationToken);
+
+                _logger.LogInformation("Successfully retrieved user profile and issued app token for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
+
+                // 📦 Return both DTO and token
+                var response = new UserProfileResponseDto
+                {
+                    User = dto,
+                    DevPulseJwToken = appToken
+                };
+
                 _logger.LogInformation("Successfully retrieved user profile for OID: {Oid} at {Time}", objectId, DateTime.UtcNow);
-                return Ok(dto);
+                return Ok(response);
             }
             catch (RequestValidationException rex)
             {
