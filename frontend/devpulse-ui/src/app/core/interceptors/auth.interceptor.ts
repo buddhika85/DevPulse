@@ -39,8 +39,6 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
 
-    debugger;
-
     // ✅ Decide which token to attach
     const meApiCall = req.url.endsWith('/me');
     return meApiCall

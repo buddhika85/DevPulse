@@ -40,15 +40,8 @@
   </nav>
 
   <div class="user-section">
-    @if (isLoading()) {
-    <mat-progress-spinner
-      diameter="24"
-      mode="indeterminate"
-    ></mat-progress-spinner>
-    }
-
     <!-- no pogress spinner display -->
-    @else {
+    @if (!loadingService.isLoading()) {
     <!-- if MSAL user exists -->
     @if (user()) {
     <span class="user-info">👤 {{ userDto()?.displayName }}</span>
@@ -62,5 +55,13 @@
     } }
   </div>
 </header>
+
+@if (loadingService.isLoading()) {
+<div class="spinner-container">
+  <mat-progress-spinner diameter="48" mode="indeterminate" color="accent">
+  </mat-progress-spinner>
+</div>
+
+}
 
 <router-outlet></router-outlet>

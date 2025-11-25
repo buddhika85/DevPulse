@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MsalService } from '@azure/msal-angular';
 import { UserAccountDto } from '../../core/models/user-account.dto';
 import { UserStoreService } from '../../core/services/user-store.service';
+import { LoadingService } from '../../core/services/loading-service';
 
 @Component({
   selector: 'app-shell',
@@ -26,9 +27,10 @@ import { UserStoreService } from '../../core/services/user-store.service';
 export class Shell implements OnInit {
   user = signal<AccountInfo | null>(null); // Entra External Id user
   userDto = signal<UserAccountDto | null>(null);
-  isLoading = signal(false);
+  //isLoading = signal(false);
 
   constructor(
+    public loadingService: LoadingService,
     private userStoreService: UserStoreService,
     private authService: AuthService,
     private userApi: UserApiService,
@@ -37,6 +39,8 @@ export class Shell implements OnInit {
 
   // ✅ Called on app load or after redirect login
   ngOnInit(): void {
+    this.loadingService.show(); // start spinner
+
     this.msal.instance.handleRedirectPromise().then((result) => {
       // Make sure MSAL finishes processing the redirect
       if (result) {
@@ -47,6 +51,8 @@ export class Shell implements OnInit {
       // ✅ Now it's safe to check login state and load user
       this.getUserDetails();
     });
+
+    this.loadingService.hide(); // hide spinner
   }
 
   login(): void {
@@ -62,7 +68,7 @@ export class Shell implements OnInit {
 
   private getUserDetails() {
     if (this.authService.isLoggedIn()) {
-      this.isLoading.set(true);
+      this.loadingService.show();
 
       // set active user received from Entra ID
       this.user.set(this.authService.getUser());
@@ -80,7 +86,7 @@ export class Shell implements OnInit {
             userProfileResponseDto.devPulseJwToken
           );
 
-          this.isLoading.set(false);
+          this.loadingService.hide();
 
           console.log(this.userDto());
         },
@@ -89,7 +95,7 @@ export class Shell implements OnInit {
 
           this.userDto.set(null);
           this.userStoreService.setUserDto(null);
-          this.isLoading.set(false);
+          this.loadingService.hide();
         },
       });
     }
