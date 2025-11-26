@@ -1,8 +1,9 @@
-﻿
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using UserService.Configuration;
 
-namespace UserService.Extensions
+namespace SharedLib.Configuration.Cors
 {
     public static class CorsExtensions
     {
@@ -37,5 +38,4 @@ namespace UserService.Extensions
             return app;
         }
     }
-
 }

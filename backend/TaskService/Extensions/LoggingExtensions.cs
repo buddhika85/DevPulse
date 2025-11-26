@@ -1,5 +1,6 @@
 ﻿using Serilog;
-using SharedLib.Configuration;
+using SharedLib.Configuration.AzureConfig;
+using SharedLib.Configuration.logging;
 using SharedLib.Logging;
 
 
@@ -52,23 +53,7 @@ namespace TaskService.Extensions
                                     telemetryConverter: TelemetryConverter.Traces                   // Foward Serilog logs
                                 );
         }
-
-        // Writes structured logs to Azure Blob Storage for long-term retention and cost-aware diagnostics
-        //private static void SetupAzureBlobStorageForLogs(IServiceCollection services, IConfiguration configuration, LoggerConfiguration loggerConfiguration)
-        //{
-        //    services.Configure<AzureBlobStorageSettings>(configuration.GetSection("AzureBlobStorageSettings"));
-        //    var settings = configuration.GetSection("AzureBlobStorageSettings").Get<AzureBlobStorageSettings>();
-        //    if (settings is not null && !string.IsNullOrWhiteSpace(settings.ConnectionString) && !string.IsNullOrWhiteSpace(settings.LogsContainerName))
-        //    {
-        //        var dateSuffix = DateTime.UtcNow.ToString("yyyy-MM-dd");
-        //        var blobFileName = $"log_TaskAPI-{dateSuffix}.txt";                 // creates a new blob file per day, similar to rolling file behavior.
-        //        loggerConfiguration.WriteTo.AzureBlobStorage(
-        //                connectionString: settings.ConnectionString,
-        //                storageContainerName: settings.LogsContainerName,
-        //                storageFileName: blobFileName,                              // log_TaskAPI-2025-11-18.txt
-        //                outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] {Message}{NewLine}{Exception}");
-        //    }            
-        //}
+              
 
         /// <summary>
         /// Configures Serilog to write structured logs to Azure Blob Storage,

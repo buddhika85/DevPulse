@@ -1,1 +1,12 @@
-<p>manager-dashboard works!</p>
+@if (managerDashBoard) {
+<p>
+  <span style="color: rgb(115, 91, 180); font-weight: bold">{{
+    managerDashBoard.dashBoardType
+  }}</span>
+  for
+  <span style="color: rgb(180, 91, 91); font-weight: bold">{{
+    managerDashBoard.user.displayName
+  }}</span>
+</p>
+
+}

@@ -6,6 +6,7 @@ export interface ProtectedResource {
 export type ResourceKey =
   | 'userApi'
   | 'taskApi'
+  | 'orchestratorApi'
   | 'moodApi'
   | 'journalApi'
   | 'dashboardApi'

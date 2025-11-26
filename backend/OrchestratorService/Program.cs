@@ -1,11 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using OrchestratorService.Extensions;
 using Serilog;
-
-
+using SharedLib.Configuration.Cors;
+using SharedLib.Configuration.jwt;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+
+builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
 
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
@@ -39,12 +42,15 @@ builder.Services.AddMemoryCache();                                              
 
 
 
+builder.Services.BindJwtSettings(builder.Configuration);                            // Binds DevPulseJwtSettings from configuration using the Options pattern.
+builder.Services.InjectDevPulseJwtValidationService(builder.Configuration);         // inject DevPulse user API issued JWT (not entra issued JWT)
+
+
 // HttpClientFactory with Polly
 builder.Services.AddPollyPolicies(builder.Configuration);
 
 // inject orchestration service
 builder.Services.InjectServices();
-
 
 
 var app = builder.Build();
@@ -72,11 +78,11 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-app.UseCors();
+app.UseConfiguredCors();                                                    // using CORS configurations with CORS middleware
 
 app.UseOutputCache();                                   // Activates output caching middleware
 
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

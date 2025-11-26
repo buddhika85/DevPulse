@@ -1,4 +1,4 @@
-﻿namespace UserService.Configuration
+﻿namespace SharedLib.Configuration.jwt
 {
     public class DevPulseJwtSettings
     {

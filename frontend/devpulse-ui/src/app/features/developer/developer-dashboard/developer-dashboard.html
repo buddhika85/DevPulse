@@ -1,1 +1,12 @@
-<p>developer-dashboard works!</p>
+@if (userDashBoard) {
+<p>
+  <span style="color: rgb(115, 91, 180); font-weight: bold">{{
+    userDashBoard.dashBoardType
+  }}</span>
+  for
+  <span style="color: rgb(180, 91, 91); font-weight: bold">{{
+    userDashBoard.user.displayName
+  }}</span>
+</p>
+
+}

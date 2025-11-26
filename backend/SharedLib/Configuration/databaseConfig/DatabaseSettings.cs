@@ -1,4 +1,4 @@
-﻿namespace SharedLib.Configuration
+﻿namespace SharedLib.Configuration.databaseConfig
 {
     public class DatabaseSettings
     {

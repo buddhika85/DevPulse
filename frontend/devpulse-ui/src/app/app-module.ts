@@ -71,6 +71,10 @@ import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscripti
             environment.msal.protectedResources.taskApi.url,
             environment.msal.protectedResources.taskApi.scopes,
           ],
+          [
+            environment.msal.protectedResources.orchestratorApi.url,
+            environment.msal.protectedResources.orchestratorApi.scopes,
+          ],
 
           [
             environment.msal.protectedResources.userApi.url,

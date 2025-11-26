@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using SharedLib.Configuration.jwt;
 using System.Text;
 using UserService.Configuration;
 
@@ -20,7 +21,7 @@ namespace UserService.Extensions
             ConfigureEntraJwtValidation(services, configuration);
 
             // Authentication Scheme 2 - Validate DevPulse issued token containing user role
-            ConfigureDevePulseJwtValidation(services, configuration);
+            ConfigureDevPulseJwtValidation(services, configuration);
 
             return services;
         }
@@ -86,7 +87,7 @@ namespace UserService.Extensions
         // Authentication Scheme 2 - Validate DevPulse issued token containing user role
         // used by all other authorised endpoints except for user service /me endpoint
         // On all other endpoints → decorate with [Authorize(AuthenticationSchemes = "DevPulseJwt")]
-        private static void ConfigureDevePulseJwtValidation(IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureDevPulseJwtValidation(IServiceCollection services, IConfiguration configuration)
         {
             // Retrieves the bound DevPulseJwtSettings object directly from configuration.
             var devPulseJwtSection = configuration.GetSection("DevPulseJwtSettings");

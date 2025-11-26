@@ -8,7 +8,7 @@ using UserService.Application.Common.Behaviors;
 using UserService.Application.Validators;
 using UserService.Extensions;
 using UserService.Infrastructure.Persistence;
-
+using SharedLib.Configuration.Cors;
 
 
 

@@ -1,9 +1,10 @@
 ﻿using Serilog;
-using SharedLib.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SharedLib.Logging;
+using SharedLib.Configuration.logging;
+using SharedLib.Configuration.AzureConfig;
 
 namespace DevPulseOrchestratorFn.Extensions
 {

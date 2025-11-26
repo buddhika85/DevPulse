@@ -22,6 +22,10 @@ export const environment: { production: boolean; msal: MsalConfig } = {
         url: 'https://devpulse-apim-consumption.azure-api.net/task/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
+      orchestratorApi: {
+        url: 'https://devpulse-apim-consumption.azure-api.net/orchestrator/',
+        scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
+      },
 
       moodApi: {
         url: '',

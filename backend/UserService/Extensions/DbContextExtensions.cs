@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using SharedLib.Configuration;
+using SharedLib.Configuration.databaseConfig;
 using UserService.Infrastructure.Persistence;
 
 namespace UserService.Extensions

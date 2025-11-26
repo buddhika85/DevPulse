@@ -1,4 +1,4 @@
-﻿namespace SharedLib.Configuration
+﻿namespace SharedLib.Configuration.logging
 {
     public class SeqLogVisualizerSettings
     {

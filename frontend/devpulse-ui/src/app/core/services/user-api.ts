@@ -5,6 +5,8 @@ import { AuthService } from './auth';
 import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
 import { UserProfileResponseDto } from '../models/user-profile-response.dto';
 
+// dedicated for User Micro Service Calls
+
 @Injectable({
   providedIn: 'root',
 })

@@ -13,7 +13,7 @@ namespace OrchestratorService.Extensions
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectServices(this IServiceCollection services)
         {
-            services.AddScoped<DashboardService>();
+            services.AddScoped<IDashboardService, DashboardService>();
             return services;
         }
     }

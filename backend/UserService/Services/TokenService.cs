@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SharedLib.Configuration.jwt;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using UserService.Configuration;
-using UserService.Domain.ValueObjects;
 
 namespace UserService.Services
 {

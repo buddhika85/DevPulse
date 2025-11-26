@@ -1,5 +1,6 @@
 ﻿using Serilog;
-using SharedLib.Configuration;
+using SharedLib.Configuration.AzureConfig;
+using SharedLib.Configuration.logging;
 using SharedLib.Logging;
 
 namespace UserService.Extensions

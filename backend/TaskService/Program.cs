@@ -7,13 +7,14 @@ using TaskService.Application.Common.Behaviors;
 using TaskService.Application.Validators;
 using TaskService.Extensions;
 using TaskService.Infrastructure.Persistence;
-
-
+using SharedLib.Configuration.Cors;
+using SharedLib.Configuration.jwt;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
 
 builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
 
@@ -44,6 +45,11 @@ builder.Services.AddMediatR(cfg =>                                          // M
 
 builder.Services.AddValidatorsFromAssemblyContaining<UpdateTaskDtoValidator>();                 // This auto-registers all Fluent Validators (for DTO, command, and query validators) in the assembly for dependency injection.
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     // Add MediatR pipeline behavior for Validations -  Allows MediatR to intercept all incoming request (query, command or DTO) and run Fluent validators which were attached to them - If fails throws RequestValidationException
+
+
+builder.Services.BindJwtSettings(builder.Configuration);                            // Binds DevPulseJwtSettings from configuration using the Options pattern.
+builder.Services.InjectDevPulseJwtValidationService(builder.Configuration);         // inject DevPulse user API issued JWT (not entra issued JWT)
+
 
 builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
@@ -78,6 +84,14 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS
+
+app.UseRouting();
+
+app.UseConfiguredCors();                                                    // using CORS configurations with CORS middleware
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapControllers();                                                       // Maps controller endpoints
 
 

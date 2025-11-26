@@ -1,6 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using SharedLib.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedLib.Configuration.databaseConfig;
 using TaskService.Infrastructure.Persistence;
 
 namespace TaskService.Extensions
