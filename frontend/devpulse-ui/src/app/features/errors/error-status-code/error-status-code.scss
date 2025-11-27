@@ -1,0 +1,111 @@
+/* error-page.component.scss */
+:host {
+  display: block;
+  min-height: 100vh;
+  /* no background here — inherits app background */
+  color: #333; /* dark text for readability */
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.error-page {
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+}
+
+.error-card {
+  width: 100%;
+  max-width: 720px;
+  border: 1px solid #ddd;
+  background: #fff; /* light card background */
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+}
+
+.brand {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.status-code {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #222;
+}
+
+.divider {
+  color: #999;
+}
+
+.status-title {
+  color: #333;
+}
+
+.message {
+  margin: 8px 0 16px;
+  color: #555;
+}
+
+.details {
+  margin-top: 10px;
+  border-top: 1px solid #ddd;
+  padding-top: 12px;
+}
+
+.details-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 6px;
+}
+
+.details-text {
+  margin: 0;
+  background: #f9f9f9; /* subtle light background for code block */
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  overflow: auto;
+  max-height: 240px;
+  color: #444;
+}
+
+.actions {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+}
+
+.link {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.btn {
+  background: #1a73e8;
+  color: white;
+  border: 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: #1669d2;
+}

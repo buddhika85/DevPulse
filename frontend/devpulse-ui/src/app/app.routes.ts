@@ -17,6 +17,15 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then((m) => m.Dashboard), // ✅ Lazy-load standalone Dashboard component
       },
 
+      // error page route
+      {
+        path: 'error-status-code/:status',
+        loadComponent: () =>
+          import('./features/errors/error-status-code/error-status-code').then(
+            (m) => m.ErrorStatusCode
+          ),
+      },
+
       // 🔹 User Routes
       {
         path: 'tasks',
@@ -135,6 +144,6 @@ export const routes: Routes = [
     ],
   },
 
-  // ✅ Wildcard route: redirect unknown paths to root
-  { path: '**', redirectTo: '' },
+  // ✅ Wildcard route: redirect unknown paths to 404 not found
+  { path: '**', redirectTo: 'error-status-code/404' },
 ];

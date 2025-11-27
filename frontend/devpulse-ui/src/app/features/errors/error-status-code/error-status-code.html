@@ -1,0 +1,26 @@
+<!-- error-page.component.html -->
+<div class="error-page">
+  <div class="error-card">
+    <div class="brand">DevPulse</div>
+
+    <div class="status-line">
+      <span class="status-code">{{ errorStatusCode }}</span>
+      <span class="divider">|</span>
+      <span class="status-title">{{ title }}</span>
+    </div>
+
+    <p class="message">{{ message }}</p>
+
+    @if (details) {
+    <div class="details">
+      <div class="details-label">Details</div>
+      <pre class="details-text">{{ details }}</pre>
+    </div>
+    }
+
+    <div class="actions">
+      <a routerLink="/" class="link">Go home</a>
+      <button class="btn" (click)="reload()">Reload</button>
+    </div>
+  </div>
+</div>
