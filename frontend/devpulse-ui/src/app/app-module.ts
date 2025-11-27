@@ -25,6 +25,7 @@ import { APP_INITIALIZER } from '@angular/core';
 import { initializeMsal } from './msal-initializer';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscription-interceptor';
+import { ErrorInterceptor } from './core/interceptors/error-interceptor';
 
 @NgModule({
   declarations: [
@@ -125,6 +126,11 @@ import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscripti
     {
       provide: HTTP_INTERCEPTORS,
       useClass: ApimSubscriptionInterceptor, // Apim SubscriptionI nterceptor to attach Azure Subscription as a header
+      multi: true,
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor, // Catch incoming http response status code errors and display them using redirection to error-status-code component
       multi: true,
     },
   ],
