@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <Folder Include="Application\Mapping\" />
+    <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
   </ItemGroup>

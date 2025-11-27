@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using UserService.Domain.ValueObjects;
+using SharedLib.Domain.ValueObjects;
 
 namespace UserService.Application.Commands
 {

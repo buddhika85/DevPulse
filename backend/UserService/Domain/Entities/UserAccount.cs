@@ -1,6 +1,6 @@
 ﻿using SharedLib.Domain.Entities;
+using SharedLib.Domain.ValueObjects;
 using UserService.Domain.Events;
-using UserService.Domain.ValueObjects;
 
 namespace UserService.Domain.Entities
 {

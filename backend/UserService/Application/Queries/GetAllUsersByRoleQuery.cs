@@ -1,6 +1,6 @@
 ﻿using MediatR;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.User;
-using UserService.Domain.ValueObjects;
 
 namespace UserService.Application.Queries
 {

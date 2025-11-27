@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.User;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
@@ -11,7 +12,6 @@ using UserService.Application.Common.Exceptions;
 using UserService.Application.Common.Models;
 using UserService.Application.Dtos;
 using UserService.Application.Queries;
-using UserService.Domain.ValueObjects;
 using UserService.Services;
 
 namespace UserService.Controllers

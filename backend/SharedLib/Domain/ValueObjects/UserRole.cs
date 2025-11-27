@@ -1,6 +1,4 @@
-﻿using SharedLib.Domain.ValueObjects;
-
-namespace UserService.Domain.ValueObjects
+﻿namespace SharedLib.Domain.ValueObjects
 {
     public class UserRole : ValueObject
     {

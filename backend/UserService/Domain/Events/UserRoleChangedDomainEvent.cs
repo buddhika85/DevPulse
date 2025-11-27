@@ -1,6 +1,6 @@
 ﻿using MediatR;
+using SharedLib.Domain.ValueObjects;
 using UserService.Domain.Entities;
-using UserService.Domain.ValueObjects;
 
 namespace UserService.Domain.Events
 {

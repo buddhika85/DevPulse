@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -63,7 +64,18 @@ namespace OrchestratorService.Controllers
         //}
 
         //[Authorize(AuthenticationSchemes = "EntraJwt")]               // This is for Entra issued Token auth
-        [Authorize(AuthenticationSchemes = "DevPulseJwt")]              // This is for DevPulse user API issued Token auth 
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt")]                                          // This is for DevPulse user API issued Token auth - any role
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = "Admin")]                         // admin
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = "Manager")]                       // manager
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = "User")]                          // user
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = "Admin,Manager")]                 // admin or manager
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = "admin,manager")]                 // does not work - role name case senstive
+
+        // using UserRole value object
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.Admin.Value))]
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.Manager.Value))]
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.User.Value))]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)}")]
         [HttpGet("{userId}")]
         [OutputCache(Duration = 300, Tags = ["dashboard-{userId}"])] // Cache full response for 5 minutes
         [SwaggerOperation(

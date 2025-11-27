@@ -1,7 +1,8 @@
-﻿using SharedLib.DTOs.User;
+﻿using SharedLib.Domain.ValueObjects;
+using SharedLib.DTOs.User;
 using System.Text.Json;
 using UserService.Domain.Entities;
-using UserService.Domain.ValueObjects;
+
 
 namespace TaskService.Application.Common.Mappers
 {

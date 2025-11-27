@@ -6,7 +6,7 @@ using UserService.Application.Common.Enums;
 using UserService.Application.Common.Models;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
-using UserService.Domain.ValueObjects;
+using SharedLib.Domain.ValueObjects;
 using UserService.Infrastructure.Persistence;
 
 namespace UserService.Repositories

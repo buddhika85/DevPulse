@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using UserService.Domain.Entities;
-using UserService.Domain.ValueObjects;
+using SharedLib.Domain.ValueObjects;
 
 namespace UserService.Infrastructure.Persistence
 {
