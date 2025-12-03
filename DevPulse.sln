@@ -24,11 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		backend\global.json = backend\global.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoodService", "MoodService\MoodService.csproj", "{B5568E78-8475-4076-A0F2-05927565AE0D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoodService", "backend\MoodService\MoodService.csproj", "{B5568E78-8475-4076-A0F2-05927565AE0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JournalService", "JournalService\JournalService.csproj", "{9E0D2641-F07A-4C94-8A46-88A3299404DA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JournalService", "backend\JournalService\JournalService.csproj", "{9E0D2641-F07A-4C94-8A46-88A3299404DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskJournalLinkService", "TaskJournalLinkService\TaskJournalLinkService.csproj", "{BEFB2CAF-3D7D-49E9-925B-A00E6E7F5EF2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskJournalLinkService", "backend\TaskJournalLinkService\TaskJournalLinkService.csproj", "{BEFB2CAF-3D7D-49E9-925B-A00E6E7F5EF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
