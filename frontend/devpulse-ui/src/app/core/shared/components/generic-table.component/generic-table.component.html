@@ -1,0 +1,54 @@
+<!-- Filter box -->
+<mat-form-field appearance="outline" class="filter-box">
+  <mat-label>Filter</mat-label>
+  <input matInput (keyup)="applyFilter($event)" placeholder="Search..." />
+</mat-form-field>
+
+<!-- Material table -->
+<table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
+  <!-- Dynamic columns -->
+  @for (col of columns; track col.key) {
+  <ng-container [matColumnDef]="col.key">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ col.label }}</th>
+    <td mat-cell *matCellDef="let row">{{ row[col.key] }}</td>
+  </ng-container>
+  }
+
+  <!--Table empty -->
+  <!-- Empty state row -->
+  <tr class="table-empty" *matNoDataRow>
+    <td [attr.colspan]="displayedColumns().length">No records found</td>
+  </tr>
+
+  <!-- Actions column (only if actions exist) -->
+  @if (actions.length > 0) {
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Actions</th>
+    <td mat-cell *matCellDef="let row">
+      @for (act of actions; track act.action) {
+      <button
+        mat-button
+        [color]="act.color || 'primary'"
+        (click)="onAction(act.action, row)"
+      >
+        @if(act.icon) {
+        <mat-icon class="action-icon">{{ act.icon }}</mat-icon>
+        }
+
+        {{ act.label }}
+      </button>
+      }
+    </td>
+  </ng-container>
+  }
+
+  <!-- Header and row definitions -->
+  <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+</table>
+
+<!-- Paginator -->
+<mat-paginator
+  [pageSizeOptions]="[5, 10, 20]"
+  showFirstLastButtons
+></mat-paginator>

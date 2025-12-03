@@ -26,6 +26,7 @@ import { initializeMsal } from './msal-initializer';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscription-interceptor';
 import { ErrorInterceptor } from './core/interceptors/error-interceptor';
+import { MatSortModule } from '@angular/material/sort';
 
 @NgModule({
   declarations: [

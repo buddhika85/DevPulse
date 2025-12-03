@@ -1,1 +1,9 @@
 <p>user-management works!</p>
+
+<app-generic-table
+  [columns]="taskColumns"
+  [data]="tasks"
+  [actions]="taskActions"
+  (actionTriggered)="handleTaskAction($event)"
+>
+</app-generic-table>
