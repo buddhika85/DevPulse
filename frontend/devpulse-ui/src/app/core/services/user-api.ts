@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from './auth';
 import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
 import { UserProfileResponseDto } from '../models/user-profile-response.dto';
+import { UserAccountDto } from '../models/user-account.dto';
 
 // dedicated for User Micro Service Calls
 
@@ -25,32 +26,12 @@ export class UserApiService {
   // Then User Dto will be returned for that user record
 
   getUserProfile(): Observable<UserProfileResponseDto> {
-    // // from converts async promise returned by getAccessToken
-    // return from(this.authService.getAccessToken(this.apiUrl)).pipe(
-    //   // switchMap takes the emitted token and switches to a new Observable
-    //   // Because we want to cancel any previous token requests if a new one comes in (e.g., rapid reloads).
-
-    //   switchMap((token) => {
-    //     // We create an Authorization header with the token, so the backend knows who the user is.
-
-    //     const headers = new HttpHeaders({
-    //       Authorization: `Bearer ${token}`,
-    //     });
-
-    //     // We make a GET request to https://localhost:7249/api/Profile/me
-
-    //     return this.http.get<UserAccountDto>(`${this.profileControllerUrl}me`, {
-    //       headers,
-    //     });
-    //   }),
-    //   catchError((error) => {
-    //     console.error('Failed to fetch user profile', error);
-    //     return throwError(() => error);
-    //   })
-    // );
-
     return this.http.get<UserProfileResponseDto>(
       `${this.profileControllerUrl}me`
     );
+  }
+
+  getAllUserProfiles(): Observable<UserAccountDto[]> {
+    return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}all`);
   }
 }

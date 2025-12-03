@@ -94,6 +94,7 @@ namespace UserService.Repositories
             try
             {
                 var entities = await _dbContext.UserAccounts
+                    .Include(x => x.Manager)
                     .AsNoTracking()
                     .Where(x => x.IsDeleted == includeDeleted)
                     .OrderByDescending(x => x.CreatedAt)

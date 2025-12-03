@@ -15,9 +15,9 @@ import { LoadingService } from '../../../core/services/loading-service';
 export class DeveloperDashboard implements OnInit, OnDestroy {
   private readonly compositeSubscription: Subscription = new Subscription();
 
-  private loadingService = inject(LoadingService);
-  private userStoreService = inject(UserStoreService);
-  private orchestratorApiService = inject(OrchestratorApiService);
+  private readonly loadingService = inject(LoadingService);
+  private readonly userStoreService = inject(UserStoreService);
+  private readonly orchestratorApiService = inject(OrchestratorApiService);
 
   private userDto: UserAccountDto | null = null;
   userDashBoard: UserDashboardDto | null = null;

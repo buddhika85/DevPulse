@@ -6,4 +6,7 @@ export interface UserAccountDto extends BaseDto {
   email: string;
   userRole: UserRole; // restrict to known roles of backend
   createdAt: string;
+
+  managerId: string;
+  managerName: string;
 }
