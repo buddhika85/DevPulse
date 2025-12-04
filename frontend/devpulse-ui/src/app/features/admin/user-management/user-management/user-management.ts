@@ -7,6 +7,7 @@ import { UserAccountDto } from '../../../../core/models/user-account.dto';
 import { UserApiService } from '../../../../core/services/user-api';
 import { LoadingService } from '../../../../core/services/loading-service';
 import { Subscription } from 'rxjs';
+import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
 
 @Component({
   selector: 'app-user-management',
@@ -18,7 +19,7 @@ export class UserManagement implements OnInit, OnDestroy {
   readonly columns: TableColumn[] = [
     // { key: 'id', label: 'ID' },
     { key: 'displayName', label: 'Name' },
-    { key: 'email', label: 'Username' },
+    { key: 'email', label: 'Username / Email' },
     { key: 'userRole', label: 'Role' },
     { key: 'createdAt', label: 'Created' },
     // { key: 'managerId', label: 'Manager ID' },
@@ -34,6 +35,7 @@ export class UserManagement implements OnInit, OnDestroy {
 
   private readonly userApiService: UserApiService = inject(UserApiService);
   private readonly loadingService: LoadingService = inject(LoadingService);
+  private readonly snackbarService: SnackbarService = inject(SnackbarService);
   private readonly compositeSubscription: Subscription = new Subscription();
 
   ngOnInit(): void {
@@ -44,8 +46,14 @@ export class UserManagement implements OnInit, OnDestroy {
     this.compositeSubscription.unsubscribe();
   }
 
-  handleAction(event: { action: string; row: any }) {
-    alert(`${event.action.toUpperCase()} on ${JSON.stringify(event.row)}`);
+  handleAction(event: { action: string; row: UserAccountDto }) {
+    //alert(`${event.action.toUpperCase()} on ${JSON.stringify(event.row)}`);
+
+    if (event.action === 'edit') {
+      this.snackbarService.info(`Editing ${event.row.displayName}`);
+    } else if (event.action === 'delete') {
+      this.snackbarService.error(`Deleted ${event.row.displayName}`);
+    }
   }
 
   private fetchAllUserProfiles(): void {
@@ -58,6 +66,7 @@ export class UserManagement implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Failed to fetch all user profiles', err);
+        this.snackbarService.error('Failed to fetch all user profiles !');
         this.loadingService.hide();
       },
     });
