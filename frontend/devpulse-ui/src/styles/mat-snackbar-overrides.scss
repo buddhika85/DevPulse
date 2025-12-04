@@ -1,0 +1,47 @@
+/* --------------------------
+   Snackbar
+   -------------------------- */
+.snackbar-success {
+  background-color: #4caf50; /* green */
+  color: #fff;
+}
+
+.snackbar-error {
+  background-color: #f44336; /* red */
+  color: #fff;
+}
+
+.snackbar-info {
+  background-color: #2196f3; /* blue */
+  color: #fff;
+}
+
+/* Keep label white */
+.mat-mdc-snack-bar-container .mat-mdc-snack-bar-action,
+.mat-mdc-snack-bar-container .mdc-button .mdc-button__label {
+  color: #fff !important;
+}
+
+/* Neutralize MDC state layer and ripple inside the snackbar */
+.mat-mdc-snack-bar-container {
+  /* Kill the white state layer on hover/press */
+  --mdc-text-button-hover-state-layer-opacity: 0;
+  --mdc-text-button-pressed-state-layer-opacity: 0;
+
+  /* Optional: if any color sneaks in, keep it subtle */
+  --mdc-text-button-hover-state-layer-color: rgba(255, 255, 255, 0.15);
+  --mdc-text-button-pressed-state-layer-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Disable ripple visuals that can appear white */
+.mat-mdc-snack-bar-container .mdc-button .mdc-button__ripple,
+.mat-mdc-snack-bar-container .mat-mdc-button-persistent-ripple,
+.mat-mdc-snack-bar-container .mat-mdc-button-ripple {
+  opacity: 0 !important;
+}
+
+/* Ensure the button never paints its own background */
+.mat-mdc-snack-bar-container .mdc-button,
+.mat-mdc-snack-bar-container .mat-mdc-snack-bar-action {
+  background-color: transparent !important;
+}

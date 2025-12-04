@@ -50,7 +50,7 @@ export class UserManagement implements OnInit, OnDestroy {
     //alert(`${event.action.toUpperCase()} on ${JSON.stringify(event.row)}`);
 
     if (event.action === 'edit') {
-      this.snackbarService.info(`Editing ${event.row.displayName}`);
+      this.snackbarService.success(`Editing ${event.row.displayName}`);
     } else if (event.action === 'delete') {
       this.snackbarService.error(`Deleted ${event.row.displayName}`);
     }

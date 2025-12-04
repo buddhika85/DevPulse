@@ -1,0 +1,262 @@
+/* --------------------------
+   Filter Box
+   -------------------------- */
+.filter-box {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Form field container */
+.filter-box .mat-mdc-form-field {
+  background: #fff;
+  font-size: 13px;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Input text */
+.filter-box .mat-mdc-input-element {
+  color: #212121 !important;
+  padding-left: 8px; /* more natural spacing than 1% */
+}
+
+/* Placeholder */
+.filter-box .mat-mdc-input-element::placeholder {
+  color: #9e9e9e !important;
+}
+
+::ng-deep .filter-box .mat-mdc-floating-label {
+  color: #616161 !important;
+  font-weight: 400;
+}
+
+/* Outline (default subtle grey) */
+::ng-deep .filter-box .mdc-notched-outline__leading,
+::ng-deep .filter-box .mdc-notched-outline__notch,
+::ng-deep .filter-box .mdc-notched-outline__trailing {
+  border-color: #e0e0e0 !important;
+  border-width: 1px !important;
+}
+
+// /* Focus state (Azure blue accent) */
+// ::ng-deep .filter-box .mat-mdc-form-field {
+//   --mdc-theme-primary: #0078d4; /* jwt.ms Azure blue */
+// }
+
+// ::ng-deep .filter-box {
+//   --mdc-theme-primary: #0078d4;
+// }
+
+/* --------------------------
+   Table Header
+   -------------------------- */
+/* Table header cells */
+.mat-mdc-table .mat-mdc-header-cell,
+.mat-mdc-table .mdc-data-table__header-cell {
+  color: #424242 !important; /* dark grey text */
+  font-weight: 600; /* bold */
+  font-size: 14px;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #f9f9f9; /* subtle light background */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+/* Sortable header text */
+.mat-mdc-table .mat-mdc-header-cell[mat-sort-header] {
+  color: #424242 !important;
+  font-weight: 600;
+}
+
+/* Sort arrow icon */
+.mat-sort-header-arrow {
+  color: #424242 !important; /* dark grey */
+  opacity: 1 !important; /* always visible */
+  transform: scale(0.9); /* slightly smaller for jwt.ms minimalism */
+}
+
+/* Sticky header row */
+.mat-mdc-header-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+/* Sticky action column */
+.mat-column-actions {
+  position: sticky;
+  right: 0;
+  background: inherit; /* match row background */
+  z-index: 1;
+}
+
+/* Action buttons minimal */
+.mat-mdc-cell .mat-mdc-button {
+  min-width: auto; /* remove default wide spacing */
+  padding: 0 8px; /* tighter horizontal padding */
+  font-size: 13px; /* slightly smaller text */
+}
+
+.action-icon {
+  font-size: 18px; /* compact icon size */
+  margin-right: 4px; /* small gap between icon and label */
+}
+
+/* --------------------------
+   Table 
+   -------------------------- */
+
+.mat-mdc-row:hover {
+  background: #f3f6fa; /* very light azure tint */
+}
+
+.mat-mdc-row:nth-child(even) {
+  background: #fcfcfc;
+}
+
+/* Right-align numeric columns */
+// .mat-column-id,
+// .mat-column-amount,
+// .mat-column-count,
+// .mat-column-total {
+//   text-align: right;
+// }
+
+/* Prevent overflow: ellipsis for long text */
+.mat-mdc-cell {
+  max-width: 0; /* enables flex shrink */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --------------------------
+   Responsive adjustments 
+   -------------------------- */
+@media (max-width: 640px) {
+  .mat-mdc-table {
+    border: none;
+    border-radius: 0;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding: 0 8px; /* tighter spacing */
+    font-size: 13px; /* slightly smaller text */
+  }
+
+  .mat-mdc-row {
+    height: 40px; /* compact row height */
+  }
+
+  .mat-column-actions {
+    position: static; /* disable sticky on small screens */
+  }
+}
+
+/* --------------------------
+   Empty and loading states
+   -------------------------- */
+/* Empty state row */
+.table-empty {
+  padding: 24px;
+  text-align: center;
+  color: #757575;
+  font-style: italic;
+}
+
+/* Loading shimmer effect */
+.shimmer {
+  animation: shimmer 1.2s infinite linear;
+  background: linear-gradient(90deg, #f5f5f5 25%, #eaeaea 37%, #f5f5f5 63%);
+  background-size: 400% 100%;
+}
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* --------------------------
+   Paginator (MDC variants)
+   -------------------------- */
+.mat-mdc-paginator {
+  border-top: 1px solid #e0e0e0; /* subtle divider */
+  background: #fafafa; /* light background */
+  font-size: 13px; /* smaller text */
+}
+
+.mat-mdc-paginator .mat-mdc-form-field {
+  font-size: 13px; /* dropdown font size */
+}
+
+.mat-mdc-paginator .mat-mdc-icon-button {
+  color: #616161; /* muted arrow icons */
+}
+
+.mat-mdc-paginator .mat-mdc-icon-button:hover {
+  color: #0078d4; /* Azure blue on hover */
+}
+
+/**/
+
+/* Paginator dropdown polish */
+
+/* 1) Kill MDC outline (all segments) */
+::ng-deep .mat-mdc-paginator .mdc-notched-outline,
+::ng-deep .mat-mdc-paginator .mdc-notched-outline__leading,
+::ng-deep .mat-mdc-paginator .mdc-notched-outline__notch,
+::ng-deep .mat-mdc-paginator .mdc-notched-outline__trailing {
+  border: 0 !important;
+}
+
+/* 2) Kill line ripple (used by filled/standard) and focus overlay */
+::ng-deep .mat-mdc-paginator .mdc-line-ripple,
+::ng-deep .mat-mdc-paginator .mat-mdc-form-field-focus-overlay {
+  display: none !important;
+}
+
+/* 3) Flatten the wrapper so it doesn't add extra chrome */
+::ng-deep .mat-mdc-paginator .mat-mdc-text-field-wrapper {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* 4) Your custom border on the select trigger box */
+::ng-deep .mat-mdc-paginator .mat-mdc-select {
+  min-width: 72px;
+  border: 1px solid #0078d4; /* Azure border */
+  border-radius: 4px;
+  padding: 2px 6px; /* inner padding for the number */
+  background-color: #fff;
+}
+
+/* 5) Trigger text + arrow polish */
+::ng-deep .mat-mdc-paginator .mat-mdc-select-trigger {
+  font-size: 13px;
+  color: #424242;
+}
+
+::ng-deep .mat-mdc-paginator .mat-mdc-select-arrow {
+  color: #616161;
+}
+
+/* 6) Hover/focus border */
+::ng-deep .mat-mdc-paginator .mat-mdc-select:hover,
+::ng-deep .mat-mdc-paginator .mat-mdc-select.mat-focused {
+  border-color: #005a9e; /* darker Azure on focus */
+}
+
+/* 7) Panel + options compactness */
+::ng-deep .mat-mdc-select-panel {
+  font-size: 13px;
+  padding: 4px 0;
+}
+
+::ng-deep .mat-mdc-option {
+  min-height: 32px;
+  font-size: 13px;
+  padding: 0 12px;
+}

@@ -1,23 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
+@use "styles/mat-snackbar-overrides";
+@use "styles/mat-table-overrides";
 
+/* You can add global styles to this file, and also import other style files */
 body {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
-
-/* --------------------------
-   Snackbar
-   -------------------------- */
-.snackbar-success {
-  background-color: #4caf50; /* green */
-  color: #fff;
-}
-
-.snackbar-error {
-  background-color: #f44336; /* red */
-  color: #fff;
-}
-
-.snackbar-info {
-  background-color: #2196f3; /* blue */
-  color: #fff;
 }
