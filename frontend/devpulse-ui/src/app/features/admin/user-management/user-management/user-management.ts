@@ -17,18 +17,31 @@ import { SnackbarService } from '../../../../core/shared/services/snackbar.servi
 })
 export class UserManagement implements OnInit, OnDestroy {
   readonly columns: TableColumn[] = [
-    // { key: 'id', label: 'ID' },
+    { key: 'id', label: 'ID' },
     { key: 'displayName', label: 'Name' },
     { key: 'email', label: 'Username / Email' },
     { key: 'userRole', label: 'Role' },
     { key: 'createdAt', label: 'Created' },
     // { key: 'managerId', label: 'Manager ID' },
     { key: 'managerName', label: 'Manager Name' },
+    { key: 'isActiveStr', label: 'Is Active?' },
   ];
 
   readonly actions: TableAction[] = [
-    { label: 'Edit', color: 'accent', icon: 'edit', action: 'edit' },
-    { label: 'Delete', color: 'warn', icon: 'delete', action: 'delete' },
+    {
+      label: '',
+      color: 'accent',
+      icon: 'edit',
+      action: 'edit',
+      tooltip: 'edit',
+    },
+    {
+      label: '',
+      color: 'warn',
+      icon: 'transform',
+      action: 'activateOrDeactivate',
+      tooltip: 'activate / deactivate',
+    },
   ];
 
   users: UserAccountDto[] = [];
@@ -49,27 +62,94 @@ export class UserManagement implements OnInit, OnDestroy {
   handleAction(event: { action: string; row: UserAccountDto }) {
     //alert(`${event.action.toUpperCase()} on ${JSON.stringify(event.row)}`);
 
-    if (event.action === 'edit') {
-      this.snackbarService.success(`Editing ${event.row.displayName}`);
-    } else if (event.action === 'delete') {
-      this.snackbarService.error(`Deleted ${event.row.displayName}`);
+    if (event.row.userRole === 'Admin') {
+      this.snackbarService.error(
+        'Admin user cannot be deactivated. Please contact Dev Team.'
+      );
+      return;
     }
+
+    if (event.action === 'edit') {
+      this.edit(event.row);
+    } else if (event.action === 'activateOrDeactivate') {
+      this.activateOrDeactivate(event.row);
+    }
+  }
+
+  private activateOrDeactivate(user: UserAccountDto): void {
+    //this.snackbarService.error(`Delete ${user.displayName}`);
+
+    const isDeactivate = user.isActive;
+    const confirmQuestion = isDeactivate
+      ? `Deactivate user ${user.displayName} ?`
+      : `Reactivate user ${user.displayName} ?`;
+    this.snackbarService.confirm(confirmQuestion).subscribe((confirmed) => {
+      if (confirmed) {
+        isDeactivate
+          ? this.deactivateUser(user.id)
+          : this.activateUser(user.id);
+      }
+    });
+  }
+
+  private activateUser(userId: string): void {
+    //alert('activate ' + userId);
+    this.loadingService.show();
+    const subscription = this.userApiService.restoreUser(userId).subscribe({
+      next: () => {
+        this.snackbarService.success('User Activated');
+        this.loadingService.hide();
+
+        this.fetchAllUserProfiles();
+      },
+      error: (err) => {
+        console.error('Failed user activation', err);
+        this.snackbarService.error('Failed user activation !');
+        this.loadingService.hide();
+      },
+    });
+    this.compositeSubscription.add(subscription);
+  }
+
+  private deactivateUser(userId: string): void {
+    //alert('deactivate ' + userId);
+    this.loadingService.show();
+    const subscription = this.userApiService.softDeleteUser(userId).subscribe({
+      next: () => {
+        this.snackbarService.success('User Deactivated');
+        this.loadingService.hide();
+
+        this.fetchAllUserProfiles();
+      },
+      error: (err) => {
+        console.error('Failed user deactivation', err);
+        this.snackbarService.error('Failed user deactivation !');
+        this.loadingService.hide();
+      },
+    });
+    this.compositeSubscription.add(subscription);
+  }
+
+  private edit(user: UserAccountDto): void {
+    this.snackbarService.info(`Editing ${user.displayName}`);
   }
 
   private fetchAllUserProfiles(): void {
     this.loadingService.show();
-    const subscription = this.userApiService.getAllUserProfiles().subscribe({
-      next: (users: UserAccountDto[]) => {
-        this.users = users;
-        console.log('users list: ', this.users);
-        this.loadingService.hide();
-      },
-      error: (err) => {
-        console.error('Failed to fetch all user profiles', err);
-        this.snackbarService.error('Failed to fetch all user profiles !');
-        this.loadingService.hide();
-      },
-    });
+    const subscription = this.userApiService
+      .getAllUserProfiles(true)
+      .subscribe({
+        next: (users: UserAccountDto[]) => {
+          this.users = users;
+          console.log('users list: ', this.users);
+          this.loadingService.hide();
+        },
+        error: (err) => {
+          console.error('Failed to fetch all user profiles', err);
+          this.snackbarService.error('Failed to fetch all user profiles !');
+          this.loadingService.hide();
+        },
+      });
     this.compositeSubscription.add(subscription);
   }
 }

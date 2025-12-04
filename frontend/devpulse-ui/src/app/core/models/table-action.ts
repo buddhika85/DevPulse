@@ -4,4 +4,5 @@ export interface TableAction {
   color?: string; // Angular Material color (primary, accent, warn)
   icon?: string; // optional Material icon name (e.g., 'edit', 'delete')
   action: string; // action identifier emitted to parent
+  tooltip: string;
 }

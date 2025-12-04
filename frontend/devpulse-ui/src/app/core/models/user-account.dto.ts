@@ -9,4 +9,7 @@ export interface UserAccountDto extends BaseDto {
 
   managerId: string;
   managerName: string;
+
+  isActive: boolean;
+  isActiveStr: string;
 }

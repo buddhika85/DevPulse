@@ -26,6 +26,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-generic-table',
@@ -37,6 +38,7 @@ import { MatInputModule } from '@angular/material/input';
     MatIconModule, // icons
     MatFormFieldModule, // <mat-form-field>
     MatInputModule, // <input matInput>
+    MatTooltipModule,
   ],
   templateUrl: './generic-table.component.html',
   styleUrl: './generic-table.component.scss',

@@ -8,6 +8,9 @@
         public string UserRole { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
 
+        public bool IsActive { get; set; }
+        public string IsActiveStr => IsActive ? "Yes" : "No";
+
         public Guid? ManagerId { get; set; }
         public string? ManagerName { get; set; }
     }

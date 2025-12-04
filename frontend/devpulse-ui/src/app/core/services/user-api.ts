@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AuthService } from './auth';
 import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
 import { UserProfileResponseDto } from '../models/user-profile-response.dto';
@@ -31,7 +31,29 @@ export class UserApiService {
     );
   }
 
-  getAllUserProfiles(): Observable<UserAccountDto[]> {
-    return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}all`);
+  getAllUserProfiles(
+    includeDeleted: boolean = false
+  ): Observable<UserAccountDto[]> {
+    // prepare query strings
+    const queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    // send the call
+    return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}all`, {
+      params: queryString,
+    });
+  }
+
+  restoreUser(id: string): Observable<void> {
+    return this.http.patch<void>(
+      `${this.profileControllerUrl}restore/${id}`,
+      {}
+    );
+  }
+
+  softDeleteUser(id: string): Observable<void> {
+    return this.http.patch<void>(
+      `${this.profileControllerUrl}soft-delete/${id}`,
+      {}
+    );
   }
 }

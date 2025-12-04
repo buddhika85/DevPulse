@@ -18,7 +18,8 @@ namespace TaskService.Application.Common.Mappers
                 CreatedAt = entity.CreatedAt.ToShortDateString(),
                 UserRole = entity.Role.Value,
                 ManagerId = entity.ManagerId,
-                ManagerName = entity.Manager?.DisplayName
+                ManagerName = entity.Manager?.DisplayName,
+                IsActive = !entity.IsDeleted
             };
         }
 

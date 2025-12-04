@@ -93,12 +93,15 @@ namespace UserService.Repositories
             _logger.LogInformation("Attempting to retrieve all users with includeDeleted: {IncludeDeleted} at {Time}", includeDeleted, DateTime.UtcNow);
             try
             {
-                var entities = await _dbContext.UserAccounts
+                var query = _dbContext.UserAccounts
                     .Include(x => x.Manager)
-                    .AsNoTracking()
-                    .Where(x => x.IsDeleted == includeDeleted)
-                    .OrderByDescending(x => x.CreatedAt)
-                    .ToListAsync(cancellationToken);
+                    .AsNoTracking();
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var entities = await query.OrderByDescending(x => x.CreatedAt).ToListAsync(cancellationToken);
+
 
                 _logger.LogInformation("Retrieved {UserCount} users with includeDeleted: {IncludeDeleted} at {Time}", entities.Count, includeDeleted, DateTime.UtcNow);
                 return entities;

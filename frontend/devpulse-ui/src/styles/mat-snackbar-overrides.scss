@@ -16,6 +16,14 @@
   color: #fff;
 }
 
+.snackbar-confirm {
+  background-color: #f3f2f1; // light gray
+  color: #323130; // dark gray text
+  font-size: 13px;
+  border: 1px solid #e1dfdd; // subtle border
+  border-radius: 4px;
+}
+
 /* Keep label white */
 .mat-mdc-snack-bar-container .mat-mdc-snack-bar-action,
 .mat-mdc-snack-bar-container .mdc-button .mdc-button__label {
@@ -44,4 +52,45 @@
 .mat-mdc-snack-bar-container .mdc-button,
 .mat-mdc-snack-bar-container .mat-mdc-snack-bar-action {
   background-color: transparent !important;
+}
+
+// action buttons
+
+.snackbar-message {
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+.snackbar-actions {
+  display: flex;
+  gap: 1rem; // spacing between buttons
+  justify-content: flex-end;
+}
+
+.jwt-btn-yes,
+.jwt-btn-no {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none; // remove ALL CAPS
+  border-radius: 4px;
+  padding: 4px 16px;
+  min-width: 80px;
+}
+
+.jwt-btn-yes {
+  background-color: #0078d4; // Microsoft blue
+  color: #fff;
+
+  &:hover {
+    background-color: #106ebe;
+  }
+}
+
+.jwt-btn-no {
+  background-color: #f3f2f1; // neutral gray
+  color: #323130;
+
+  &:hover {
+    background-color: #e1dfdd;
+  }
 }
