@@ -9,6 +9,9 @@ namespace OrchestratorService.Extensions
     {
         public static IServiceCollection AddPollyPolicies(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddHttpContextAccessor();                                                  // HTTP conex access
+            services.AddTransient<JwtForwardingHandler>();                                      // register JwtForwardingHandler
+
             var microServiceUrls = ReadMicroserviceUrls(services, configuration);
             var pollyConfig = ReadPollyConfig(services, configuration);
 
@@ -25,6 +28,7 @@ namespace OrchestratorService.Extensions
             {
                 client.BaseAddress = new Uri(microServiceUrls.TaskAPI);
             })
+            .AddHttpMessageHandler<JwtForwardingHandler>()
             .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(pollyConfig.RetryCount, _ => TimeSpan.FromMilliseconds(pollyConfig.SleepDurationMilliSeconds)));
         }
 
@@ -35,6 +39,7 @@ namespace OrchestratorService.Extensions
             {
                 client.BaseAddress = new Uri(microServiceUrls.UserAPI);
             })
+            .AddHttpMessageHandler<JwtForwardingHandler>()
             .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(pollyConfig.RetryCount, _ => TimeSpan.FromMilliseconds(pollyConfig.SleepDurationMilliSeconds)));
         }
 

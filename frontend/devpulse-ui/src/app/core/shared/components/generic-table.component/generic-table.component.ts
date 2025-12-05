@@ -27,6 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-generic-table',
@@ -39,6 +40,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatFormFieldModule, // <mat-form-field>
     MatInputModule, // <input matInput>
     MatTooltipModule,
+    CommonModule,
   ],
   templateUrl: './generic-table.component.html',
   styleUrl: './generic-table.component.scss',
@@ -46,6 +48,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class GenericTableComponent implements AfterViewInit {
   @Input() columns: TableColumn[] = [];
   @Input() actions: TableAction[] = [];
+  @Input() pageSizeOptions: number[] = [5, 10, 20, 50, 100];
 
   // Data input → updates the MatTableDataSource
   @Input() set data(value: any[]) {

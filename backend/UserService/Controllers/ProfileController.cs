@@ -33,6 +33,7 @@ namespace UserService.Controllers
         }
 
         // Get By Id
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get user by ID", Description = "Returns a single user by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
@@ -68,6 +69,7 @@ namespace UserService.Controllers
         }
 
         // Get all
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
         [SwaggerOperation(Summary = "Get all users", Description = "Returns all the users")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]
@@ -91,6 +93,7 @@ namespace UserService.Controllers
         }
 
         // Get all users by role
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("by-role")]
         [SwaggerOperation(Summary = "Get users by role", Description = "Returns users by their role.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]      
@@ -121,6 +124,7 @@ namespace UserService.Controllers
         }
 
         // Get paginated result
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("search")]
         [SwaggerOperation(Summary = "Filter and paginate users", Description = "Returns a paginated list of users based on filter criteria.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PaginatedResult<UserAccountDto>))]
@@ -163,6 +167,7 @@ namespace UserService.Controllers
 
 
         // Partial update - so patch is used, for full updates [HTTPPut] needs to be used
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpPatch("update/{id:guid}")]
         [SwaggerOperation(Summary = "Update an existing user", Description = "Updates a user by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "User updated")]
@@ -207,6 +212,7 @@ namespace UserService.Controllers
         }
 
         // Soft delete
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpPatch("soft-delete/{id:guid}")]             // not [HTTPDelete] as it is not a - permanent removal
         [SwaggerOperation(Summary = "Soft deleting an existing user", Description = "Soft deletes a user by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "User soft deleted")]
@@ -244,6 +250,7 @@ namespace UserService.Controllers
 
 
         // restore
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpPatch("restore/{id:guid}")]
         [SwaggerOperation(Summary = "Restoring an existing user", Description = "Restoring a soft deleted user by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "User restored")]
@@ -279,6 +286,8 @@ namespace UserService.Controllers
             }
         }
 
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpPost]
         [SwaggerOperation(Summary = "Register a new user", Description = "Registers a new user and returns its location.")]
         [SwaggerResponse(StatusCodes.Status201Created, "User registered")]

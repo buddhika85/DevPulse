@@ -93,6 +93,8 @@
   min-width: auto; /* remove default wide spacing */
   padding: 0 8px; /* tighter horizontal padding */
   font-size: 13px; /* slightly smaller text */
+  border-radius: 3px;
+  border: 1px solid #c0baba; // c0baba
 }
 
 .action-icon {

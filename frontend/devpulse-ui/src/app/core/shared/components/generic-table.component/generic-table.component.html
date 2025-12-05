@@ -28,11 +28,12 @@
       @for (act of actions; track act.action) {
       <button
         mat-button
-        [color]="act.color || 'primary'"
+        [style.background-color]="act.color"
         (click)="onAction(act.action, row)"
         [matTooltip]="act.tooltip"
         matTooltipPosition="above"
         matTooltipClass="tooltip-minimal"
+        style="margin-right: 3px"
       >
         @if(act.icon) {
         <mat-icon class="action-icon">{{ act.icon }}</mat-icon>
@@ -53,6 +54,6 @@
 
 <!-- Paginator -->
 <mat-paginator
-  [pageSizeOptions]="[5, 10, 20]"
+  [pageSizeOptions]="pageSizeOptions"
   showFirstLastButtons
 ></mat-paginator>

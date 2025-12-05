@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OrchestratorService.Extensions;
+using OrchestratorService.Infrastructure.HttpClients;
 using Serilog;
 using SharedLib.Configuration.Cors;
 using SharedLib.Configuration.jwt;

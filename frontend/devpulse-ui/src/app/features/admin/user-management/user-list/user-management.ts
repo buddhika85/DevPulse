@@ -31,19 +31,21 @@ export class UserManagement implements OnInit, OnDestroy {
   readonly actions: TableAction[] = [
     {
       label: '',
-      color: 'accent',
+      color: '#e4e2e2',
       icon: 'edit',
       action: 'edit',
       tooltip: 'edit',
     },
     {
       label: '',
-      color: 'warn',
+      color: '#bdb6b6',
       icon: 'transform',
       action: 'activateOrDeactivate',
       tooltip: 'activate / deactivate',
     },
   ];
+
+  readonly pageSizeOptions: number[] = [10, 20, 30, 40, 50, 100];
 
   users: UserAccountDto[] = [];
 
