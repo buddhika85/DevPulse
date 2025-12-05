@@ -5,6 +5,7 @@ import { AuthService } from './auth';
 import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
 import { UserProfileResponseDto } from '../models/user-profile-response.dto';
 import { UserAccountDto } from '../models/user-account.dto';
+import { UserRole } from '../models/user-role.enum';
 
 // dedicated for User Micro Service Calls
 
@@ -45,6 +46,19 @@ export class UserApiService {
     return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}/all`, {
       params: queryString,
     });
+  }
+
+  getUsersByRole(role: UserRole): Observable<UserAccountDto[]> {
+    // prepare query strings
+    const queryString = new HttpParams().set('role', role);
+
+    // send the call
+    return this.http.get<UserAccountDto[]>(
+      `${this.profileControllerUrl}/by-role`,
+      {
+        params: queryString,
+      }
+    );
   }
 
   restoreUser(id: string): Observable<void> {

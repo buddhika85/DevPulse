@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { LoadingService } from '../../../../core/services/loading-service';
 import { UserApiService } from '../../../../core/services/user-api';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
@@ -20,12 +20,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserRole } from '../../../../core/models/user-role.enum';
-
-// TO DO
-export interface Manager {
-  id: string;
-  displayName: string;
-}
 
 @Component({
   selector: 'app-user-edit',
@@ -52,7 +46,6 @@ export class UserEdit implements OnInit, OnDestroy {
 
   readonly router: Router = inject(Router);
 
-  user!: UserAccountDto;
   userFormGroup!: FormGroup<{
     id: FormControl<string | null>;
     email: FormControl<string | null>;
@@ -63,12 +56,8 @@ export class UserEdit implements OnInit, OnDestroy {
     isActive: FormControl<boolean | null>;
   }>;
   mainHeading!: string;
-  // TO DO
-  managers: Manager[] = [
-    { id: 'm1', displayName: 'Alice Johnson' },
-    { id: 'm2', displayName: 'Bob Smith' },
-    { id: 'm3', displayName: 'Charlie Davis' },
-  ];
+  user!: UserAccountDto; // from API
+  managers!: UserAccountDto[]; // from API
   roles = Object.values(UserRole).map((role) => ({
     value: role,
     label: role,
@@ -77,7 +66,7 @@ export class UserEdit implements OnInit, OnDestroy {
   ngOnInit(): void {
     const userId = this.activatedRoute.snapshot.paramMap.get('id');
     if (userId) {
-      this.fetchUserByUserId(userId);
+      this.fetchUserAndManagers(userId);
     }
   }
 
@@ -98,22 +87,31 @@ export class UserEdit implements OnInit, OnDestroy {
     }
   }
 
-  private fetchUserByUserId(userId: string) {
+  private fetchUserAndManagers(userId: string) {
     this.loadingService.show();
-    const sub = this.userApiService.getUserById(userId).subscribe({
-      next: (user: UserAccountDto) => {
+    const sub = forkJoin({
+      user: this.userApiService.getUserById(userId),
+      managers: this.userApiService.getUsersByRole(UserRole.Manager),
+    }).subscribe({
+      next: ({ user, managers }) => {
         this.user = user;
+        this.managers = managers;
+
         this.setUpPage();
         this.buildReactiveForm();
-        console.log('Edit: ', user);
+
+        console.log('Edit user:', user);
+        console.log('Managers:', managers);
+
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error('Failed to fetch user for editing', err);
-        this.snackbarService.error('Failed to fetch user for editing !');
+        console.error('Failed to fetch user or managers', err);
+        this.snackbarService.error('Failed to fetch user or managers!');
         this.loadingService.hide();
       },
     });
+
     this.compositeSubscription.add(sub);
   }
 
