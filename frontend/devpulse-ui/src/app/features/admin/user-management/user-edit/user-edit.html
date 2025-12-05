@@ -1,0 +1,93 @@
+<div class="page-header">
+  <h1>{{ mainHeading }}</h1>
+</div>
+
+@if (userFormGroup) {
+<form [formGroup]="userFormGroup" (ngSubmit)="onSubmit()" class="form">
+  <!-- User ID -->
+  <div class="form-row">
+    <label for="id">User ID</label>
+    <input id="id" type="text" formControlName="id" readonly />
+    <span class="helper"></span>
+  </div>
+
+  <!-- Email -->
+  <div class="form-row">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" readonly />
+    <span class="helper"></span>
+  </div>
+
+  <!-- Created At -->
+  <div class="form-row">
+    <label for="createdAt">Created At</label>
+    <input id="createdAt" type="text" formControlName="createdAt" readonly />
+    <span class="helper"></span>
+  </div>
+
+  <!-- Display Name -->
+  <div class="form-row">
+    <label for="displayName">Display Name</label>
+    <input id="displayName" type="text" formControlName="displayName" />
+    <span class="error">
+      @if(userFormGroup.get('displayName')?.hasError('required')) {
+      <span>Display Name is required</span>
+      } @if(userFormGroup.get('displayName')?.hasError('minlength')) {
+      <span>Minimum 2 characters</span>
+      }
+    </span>
+  </div>
+
+  <!-- User Role -->
+  <div class="form-row">
+    <label for="userRole">Role</label>
+    <select id="userRole" formControlName="userRole">
+      @for (role of roles; track $index) {
+      <option [value]="role.value">{{ role.label }}</option>
+      }
+    </select>
+    <span class="helper"></span>
+  </div>
+
+  <!-- Manager -->
+  <div class="form-row">
+    <label for="managerName">Manager</label>
+    <select id="managerName" formControlName="managerName">
+      @for (manager of managers; track $index) {
+      <option [value]="manager.id">{{ manager.displayName }}</option>
+      }
+    </select>
+    <span class="helper"></span>
+  </div>
+
+  <!-- Active Status -->
+  <div class="form-row">
+    <label>Is Active?</label>
+    <div class="radio-group">
+      <input
+        type="radio"
+        id="active"
+        formControlName="isActive"
+        [value]="true"
+      />
+      <label for="active">Active</label>
+      <input
+        type="radio"
+        id="inactive"
+        formControlName="isActive"
+        [value]="false"
+      />
+      <label for="inactive">Inactive</label>
+    </div>
+    <span class="helper"></span>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button type="submit" [disabled]="userFormGroup.invalid">
+      Save Changes
+    </button>
+    <button type="button" (click)="router.navigate(['users'])">Cancel</button>
+  </div>
+</form>
+}

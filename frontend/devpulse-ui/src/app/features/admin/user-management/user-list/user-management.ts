@@ -8,6 +8,7 @@ import { UserApiService } from '../../../../core/services/user-api';
 import { LoadingService } from '../../../../core/services/loading-service';
 import { Subscription } from 'rxjs';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-management',
@@ -49,6 +50,7 @@ export class UserManagement implements OnInit, OnDestroy {
   private readonly userApiService: UserApiService = inject(UserApiService);
   private readonly loadingService: LoadingService = inject(LoadingService);
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
+  private readonly router: Router = inject(Router);
   private readonly compositeSubscription: Subscription = new Subscription();
 
   ngOnInit(): void {
@@ -64,7 +66,7 @@ export class UserManagement implements OnInit, OnDestroy {
 
     if (event.row.userRole === 'Admin') {
       this.snackbarService.error(
-        'Admin user cannot be deactivated. Please contact Dev Team.'
+        'Admin user cannot be edited / deactivated. Please contact Dev Team.'
       );
       return;
     }
@@ -131,7 +133,8 @@ export class UserManagement implements OnInit, OnDestroy {
   }
 
   private edit(user: UserAccountDto): void {
-    this.snackbarService.info(`Editing ${user.displayName}`);
+    //this.snackbarService.info(`Editing ${user.displayName}`);
+    this.router.navigate(['users/edit/', user.id]);
   }
 
   private fetchAllUserProfiles(): void {
@@ -141,7 +144,7 @@ export class UserManagement implements OnInit, OnDestroy {
       .subscribe({
         next: (users: UserAccountDto[]) => {
           this.users = users;
-          console.log('users list: ', this.users);
+          //console.log('users list: ', this.users);
           this.loadingService.hide();
         },
         error: (err) => {
@@ -153,32 +156,3 @@ export class UserManagement implements OnInit, OnDestroy {
     this.compositeSubscription.add(subscription);
   }
 }
-
-//  taskColumns: TableColumn[] = [
-//     { key: 'id', label: 'ID' },
-//     { key: 'title', label: 'Title' },
-//     { key: 'status', label: 'Status' },
-//   ];
-
-//   taskActions: TableAction[] = [
-//     { label: 'Edit', color: 'accent', icon: 'edit', action: 'edit' },
-//     { label: 'Delete', color: 'warn', icon: 'delete', action: 'delete' },
-//   ];
-
-//   tasks = [
-//     { id: 1, title: 'Write blog post', status: 'Open' },
-//     { id: 2, title: 'Fix bug #123', status: 'In Progress' },
-//     { id: 3, title: 'Write blog post', status: 'Open' },
-//     {
-//       id: 4,
-//       title:
-//         "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
-//       status: 'In Progress',
-//     },
-//     { id: 5, title: 'Write blog post', status: 'Open' },
-//     { id: 6, title: 'Fix bug #123', status: 'In Progress' },
-//   ];
-
-//   handleTaskAction(event: { action: string; row: any }) {
-//     alert(`Action Triggered ${event.action} on ${JSON.stringify(event.row)}`);
-//   }

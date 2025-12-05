@@ -1,0 +1,48 @@
+// Generic form container
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 700px; // or 40% if you prefer narrow
+}
+
+.form-center-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 700px; // or 40% if you prefer narrow
+  margin: 0 auto;
+}
+
+// Row layout: label | control | helper
+.form-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  align-items: center;
+  gap: 1rem;
+}
+
+// Labels
+.form-row label {
+  font-weight: 500;
+  color: #333;
+}
+
+// Error messages
+.error {
+  font-size: 0.85rem;
+  color: #d32f2f;
+}
+
+// Radio group
+.radio-group {
+  display: flex;
+  gap: 1rem;
+}
+
+// Action buttons
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}

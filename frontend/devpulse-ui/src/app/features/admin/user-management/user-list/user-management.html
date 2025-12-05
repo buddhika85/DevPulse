@@ -1,4 +1,6 @@
-<p>Manage Users</p>
+<div class="page-header">
+  <h1>Manage Users</h1>
+</div>
 
 <app-generic-table
   [columns]="columns"
@@ -7,11 +9,3 @@
   (actionTriggered)="handleAction($event)"
 >
 </app-generic-table>
-
-<!-- <app-generic-table
-  [columns]="taskColumns"
-  [data]="tasks"
-  [actions]="taskActions"
-  (actionTriggered)="handleTaskAction($event)"
->
-</app-generic-table> -->

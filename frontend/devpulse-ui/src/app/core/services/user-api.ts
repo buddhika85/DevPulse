@@ -14,7 +14,7 @@ import { UserAccountDto } from '../models/user-account.dto';
 export class UserApiService {
   // user micro service URL
   private apiUrl = environment.msal.protectedResources.userApi.url;
-  private profileControllerUrl = `${this.apiUrl}api/Profile/`;
+  private profileControllerUrl = `${this.apiUrl}api/Profile`;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -27,8 +27,12 @@ export class UserApiService {
 
   getUserProfile(): Observable<UserProfileResponseDto> {
     return this.http.get<UserProfileResponseDto>(
-      `${this.profileControllerUrl}me`
+      `${this.profileControllerUrl}/me`
     );
+  }
+
+  getUserById(id: string): Observable<UserAccountDto> {
+    return this.http.get<UserAccountDto>(`${this.profileControllerUrl}/${id}`);
   }
 
   getAllUserProfiles(
@@ -38,21 +42,21 @@ export class UserApiService {
     const queryString = new HttpParams().set('includeDeleted', includeDeleted);
 
     // send the call
-    return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}all`, {
+    return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}/all`, {
       params: queryString,
     });
   }
 
   restoreUser(id: string): Observable<void> {
     return this.http.patch<void>(
-      `${this.profileControllerUrl}restore/${id}`,
+      `${this.profileControllerUrl}/restore/${id}`,
       {}
     );
   }
 
   softDeleteUser(id: string): Observable<void> {
     return this.http.patch<void>(
-      `${this.profileControllerUrl}soft-delete/${id}`,
+      `${this.profileControllerUrl}/soft-delete/${id}`,
       {}
     );
   }

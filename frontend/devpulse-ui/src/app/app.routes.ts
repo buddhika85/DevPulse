@@ -104,6 +104,15 @@ export const routes: Routes = [
         canActivate: [roleguardGuard],
       },
       {
+        path: 'users/edit/:id',
+        loadComponent: () =>
+          import('./features/admin/user-management/user-edit/user-edit').then(
+            (m) => m.UserEdit
+          ),
+        data: { roles: ['Admin'] },
+        canActivate: [roleguardGuard],
+      },
+      {
         path: 'limits',
         loadComponent: () =>
           import('./features/admin/api-limits/api-limits/api-limits').then(
