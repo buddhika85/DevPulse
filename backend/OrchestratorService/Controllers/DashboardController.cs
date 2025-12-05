@@ -75,7 +75,7 @@ namespace OrchestratorService.Controllers
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.Admin.Value))]
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.Manager.Value))]
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = nameof(UserRole.User.Value))]
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{userId}")]
         [OutputCache(Duration = 300, Tags = ["dashboard-{userId}"])] // Cache full response for 5 minutes
         [SwaggerOperation(
