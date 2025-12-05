@@ -98,7 +98,7 @@ export const routes: Routes = [
         path: 'users',
         loadComponent: () =>
           import(
-            './features/admin/user-management/user-management/user-management'
+            './features/admin/user-management/user-list/user-management'
           ).then((m) => m.UserManagement),
         data: { roles: ['Admin'] },
         canActivate: [roleguardGuard],
