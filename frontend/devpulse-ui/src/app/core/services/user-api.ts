@@ -6,6 +6,7 @@ import { catchError, from, Observable, switchMap, throwError } from 'rxjs';
 import { UserProfileResponseDto } from '../models/user-profile-response.dto';
 import { UserAccountDto } from '../models/user-account.dto';
 import { UserRole } from '../models/user-role.enum';
+import { UpdateUserDto } from '../models/update-user.dto';
 
 // dedicated for User Micro Service Calls
 
@@ -72,6 +73,13 @@ export class UserApiService {
     return this.http.patch<void>(
       `${this.profileControllerUrl}/soft-delete/${id}`,
       {}
+    );
+  }
+
+  updateUser(id: string, updatedUser: UpdateUserDto): Observable<void> {
+    return this.http.patch<void>(
+      `${this.profileControllerUrl}/update/${id}`,
+      updatedUser
     );
   }
 }

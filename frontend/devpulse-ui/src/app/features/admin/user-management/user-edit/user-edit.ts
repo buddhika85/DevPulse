@@ -20,6 +20,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { UserRole } from '../../../../core/models/user-role.enum';
+import { UpdateUserDto } from '../../../../core/models/update-user.dto';
 
 @Component({
   selector: 'app-user-edit',
@@ -76,15 +77,35 @@ export class UserEdit implements OnInit, OnDestroy {
 
   // need more work
   onSubmit(): void {
-    if (this.userFormGroup.valid) {
-      const updatedUser = {
-        ...this.user,
-        ...this.userFormGroup.getRawValue(), // includes disabled fields if needed
+    if (this.userFormGroup.valid && this.userFormGroup.getRawValue().id) {
+      const updatedUser: UpdateUserDto = {
+        email: this.userFormGroup.getRawValue().email,
+        displayName: this.userFormGroup.getRawValue().displayName,
+        role: this.userFormGroup.getRawValue().userRole,
+        managerId: this.userFormGroup.getRawValue().managerName,
       };
-      // this.userApiService.updateUser(updatedUser).subscribe(() => {
-      //   console.log('User updated successfully');
-      // });
+      console.log('User to update', updatedUser);
+      this.updateUser(this.userFormGroup.getRawValue().id!, updatedUser);
     }
+  }
+
+  private updateUser(userId: string, updatedUser: UpdateUserDto): void {
+    this.loadingService.show();
+    const subscription = this.userApiService
+      .updateUser(userId!, updatedUser)
+      .subscribe({
+        next: () => {
+          this.snackbarService.success('User Updated');
+          this.loadingService.hide();
+          this.router.navigate(['/users']);
+        },
+        error: (err) => {
+          console.error('Failed updating the user', err);
+          this.snackbarService.error('Failed updating the user !');
+          this.loadingService.hide();
+        },
+      });
+    this.compositeSubscription.add(subscription);
   }
 
   private fetchUserAndManagers(userId: string) {
@@ -130,7 +151,7 @@ export class UserEdit implements OnInit, OnDestroy {
       createdAt: [{ value: this.user.createdAt, disabled: true }], // read-only
       userRole: [this.user.userRole, Validators.required], // dropdown
       managerName: [this.user.managerId], // dropdown
-      isActive: [this.user.isActive], // radio toggle
+      isActive: [{ value: this.user.isActive, disabled: true }], // radio toggle read-only
     });
   }
 }

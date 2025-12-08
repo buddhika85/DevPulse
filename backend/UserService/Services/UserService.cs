@@ -210,7 +210,7 @@ namespace UserService.Services
                 }
 
                 _logger.LogWarning("Update operation for User with Id: {Id}, Email: {Email} at {Time} did not affect any records.", entity.Id, entity.Email, DateTime.UtcNow);
-                return false;
+                return true;
             }
             catch (Exception ex)
             {

@@ -31,7 +31,27 @@ builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);        
 builder.Services.AddControllers(options =>                                  // Enables controller routing
 {
     options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicitly - Ensures consistent content negotiation and Swagger documentation
+})
+// System.Text.Json configuration (default serializer in ASP.NET Core)
+.AddJsonOptions(options =>
+{
+    // Register custom converters for System.Text.Json
+    // This ensures UserRole is serialized/deserialized correctly
+    options.JsonSerializerOptions.Converters.Add(
+        new SharedLib.Domain.ValueObjects.Converters.UserRoleJsonConverter()
+    );
+})
+// Newtonsoft.Json configuration (if parts of your stack still use it)
+.AddNewtonsoftJson(options =>
+{
+    // Register custom converters for Newtonsoft.Json
+    // Ensures UserRole is serialized/deserialized correctly
+    options.SerializerSettings.Converters.Add(
+        new SharedLib.Domain.ValueObjects.Converters.UserRoleNewtonsoftConverter()
+    );
 });
+
+
 builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
 builder.Services.AddSwaggerGen(options =>                                   // Swagger generation
 {

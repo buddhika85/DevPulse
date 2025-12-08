@@ -23,8 +23,16 @@ builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);        
 // Register services
 builder.Services.AddControllers(options =>                                  // Enables controller routing
 {
-    options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicityly - Ensures consistent content negotiation and Swagger documentation
-});                                          
+    options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicitly - Ensures consistent content negotiation and Swagger documentation
+})
+.AddJsonOptions(options =>
+{
+    // Register custom converters for System.Text.Json
+    // This ensures UserRole is serialized/deserialized correctly
+    options.JsonSerializerOptions.Converters.Add(
+        new SharedLib.Domain.ValueObjects.Converters.UserRoleJsonConverter()
+    );
+});
 builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
 builder.Services.AddSwaggerGen(options =>                                   // Swagger generation
 {

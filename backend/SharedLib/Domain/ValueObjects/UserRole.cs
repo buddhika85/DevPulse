@@ -1,4 +1,6 @@
-﻿namespace SharedLib.Domain.ValueObjects
+﻿using System.Text.Json.Serialization;
+
+namespace SharedLib.Domain.ValueObjects
 {
     public class UserRole : ValueObject
     {
@@ -6,9 +8,13 @@
         // no setter - Immutable
         public string Value { get; }
 
+        [JsonConstructor] // Newtonsoft will use this
+        public UserRole(string value) => Value = value;
+
+
         // Private constructor ensures controlled creation through static properties.
         // This enforces immutability and restricts status values to known options.
-        private UserRole(string value) => Value = value;
+        //private UserRole(string value) => Value = value;
 
         // Static instance representing each role
         public static readonly UserRole User = new("User");
