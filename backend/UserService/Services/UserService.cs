@@ -247,8 +247,14 @@ namespace UserService.Services
 
                 existing.UpdateDisplayName(updateCommand.DisplayName);
             }
-                        
-            if (updateCommand.ManagerId is not null && (existing.ManagerId is null || existing.ManagerId != updateCommand.ManagerId))
+                
+            if (updateCommand.ManagerId is null)
+            {
+                _logger.LogInformation("Updating ManagerId for user Id: {Id} from '{OldManagerID}' to '{NewManagerID}' at {Time}",
+                    existing.Id, existing.ManagerId, null, timestamp);
+                existing.UpdateManager(null);
+            }
+            else if (existing.ManagerId is null || existing.ManagerId != updateCommand.ManagerId)
             {
                 _logger.LogInformation("Updating ManagerId for user Id: {Id} from '{OldManagerID}' to '{NewManagerID}' at {Time}",
                     existing.Id, existing.ManagerId, updateCommand.ManagerId, timestamp);

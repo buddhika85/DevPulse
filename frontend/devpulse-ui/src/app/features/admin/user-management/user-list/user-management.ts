@@ -66,12 +66,12 @@ export class UserManagement implements OnInit, OnDestroy {
   handleAction(event: { action: string; row: UserAccountDto }) {
     //alert(`${event.action.toUpperCase()} on ${JSON.stringify(event.row)}`);
 
-    if (event.row.userRole === 'Admin') {
-      this.snackbarService.error(
-        'Admin user cannot be edited / deactivated. Please contact Dev Team.'
-      );
-      return;
-    }
+    // if (event.row.userRole === 'Admin') {
+    //   this.snackbarService.error(
+    //     'Admin user cannot be edited / deactivated. Please contact Dev Team.'
+    //   );
+    //   return;
+    // }
 
     if (event.action === 'edit') {
       this.edit(event.row);

@@ -73,10 +73,11 @@ namespace UserService.Domain.Entities
             DomainEvents.Add(new UserRoleChangedDomainEvent(this, oldRole, role));
         }
 
-        public void UpdateManager(Guid managerId)
+        public void UpdateManager(Guid? managerId)
         {
-            var oldManagerId = ManagerId;            
-            DomainEvents.Add(new UserManagerChangedDomainEvent(this, oldManagerId?.ToString(), managerId.ToString()));
+            var oldManagerId = ManagerId;    
+            ManagerId = managerId;
+            DomainEvents.Add(new UserManagerChangedDomainEvent(this, oldManagerId?.ToString(), managerId?.ToString()));
         }
 
         public void SoftDelete()

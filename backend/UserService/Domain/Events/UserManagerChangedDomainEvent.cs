@@ -8,9 +8,9 @@ namespace UserService.Domain.Events
         public UserAccount UserAccount { get; set; }
 
         public string? PreviousManagerId { get; set; }
-        public string NewManagerId { get; set; }
+        public string? NewManagerId { get; set; }
 
-        public UserManagerChangedDomainEvent(UserAccount userAccount, string? previousManagerId, string newManagerId)
+        public UserManagerChangedDomainEvent(UserAccount userAccount, string? previousManagerId, string? newManagerId)
         {
             UserAccount = userAccount;
             PreviousManagerId = previousManagerId;

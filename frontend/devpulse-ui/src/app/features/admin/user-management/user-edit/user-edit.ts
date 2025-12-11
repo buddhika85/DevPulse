@@ -58,7 +58,8 @@ export class UserEdit implements OnInit, OnDestroy {
   }>;
   mainHeading!: string;
   user!: UserAccountDto; // from API
-  managers!: UserAccountDto[]; // from API
+  managersOriginal!: UserAccountDto[]; // from API
+  managers!: UserAccountDto[]; // for 'Manager' and 'Admin' role selections this will be empty, For 'user' role this will be equal to managers
   roles = Object.values(UserRole).map((role) => ({
     value: role,
     label: role,
@@ -116,6 +117,7 @@ export class UserEdit implements OnInit, OnDestroy {
     }).subscribe({
       next: ({ user, managers }) => {
         this.user = user;
+        this.managersOriginal = managers;
         this.managers = managers;
 
         this.setUpPage();
@@ -153,5 +155,24 @@ export class UserEdit implements OnInit, OnDestroy {
       managerName: [this.user.managerId], // dropdown
       isActive: [{ value: this.user.isActive, disabled: true }], // radio toggle read-only
     });
+
+    this.bindFormControlEvents();
+  }
+
+  private bindFormControlEvents(): void {
+    const userRoleControl = this.userFormGroup.get('userRole');
+    if (userRoleControl) {
+      userRoleControl.valueChanges.subscribe((selectedRole) => {
+        if (selectedRole === 'Manager' || selectedRole === 'Admin') {
+          this.managers = [];
+          this.userFormGroup.get('managerName')?.patchValue(null);
+        } else {
+          this.managers = this.managersOriginal;
+          this.userFormGroup
+            .get('managerName')
+            ?.patchValue(this.managers[0].managerId);
+        }
+      });
+    }
   }
 }
