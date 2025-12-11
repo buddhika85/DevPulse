@@ -36,9 +36,12 @@ namespace UserService.Extensions
                 var connectionString = config["AzureServiceBusConnectionString"];
 
                 if (string.IsNullOrWhiteSpace(connectionString))
-                    throw new InvalidOperationException("Missing ServiceBusConnection in configuration");
+                    throw new InvalidOperationException("Missing AzureServiceBusConnectionString in configuration");
 
-                return new ServiceBusClient(connectionString);
+                return new ServiceBusClient(connectionString, new ServiceBusClientOptions
+                {
+                    TransportType = ServiceBusTransportType.AmqpWebSockets          // Required for Azure App Service: avoids blocked AMQP ports
+                });
             });
         }
     }
