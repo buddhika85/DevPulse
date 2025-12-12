@@ -30,12 +30,31 @@ export const routes: Routes = [
       {
         path: 'tasks',
         loadComponent: () =>
-          import('./features/developer/tasks/task-logger/task-logger').then(
-            (m) => m.TaskLogger
+          import('./features/developer/tasks/task-list/task-list').then(
+            (m) => m.TaskList
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
       },
+      {
+        path: 'tasks/add',
+        loadComponent: () =>
+          import('./features/developer/tasks/task-add-edit/task-add-edit').then(
+            (m) => m.TaskAddEdit
+          ),
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
+      },
+      {
+        path: 'tasks/edit/:id',
+        loadComponent: () =>
+          import('./features/developer/tasks/task-add-edit/task-add-edit').then(
+            (m) => m.TaskAddEdit
+          ),
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
+      },
+
       {
         path: 'mood',
         loadComponent: () =>

@@ -33,7 +33,7 @@ namespace UserService.Controllers
         }
 
         // Get By Id
-        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get user by ID", Description = "Returns a single user by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(UserAccountDto))]
