@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Task;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
@@ -50,7 +52,7 @@ namespace TaskService.Controllers
             }
         }
 
-
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("by-user/{id:guid}")]
         [SwaggerOperation(Summary = "Get task by user Id", Description = "Returns all tasks by user Id.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
