@@ -8,7 +8,10 @@
         public string Status { get; set; } = "Pending";
         public DateTime CreatedAt { get; set; }
 
+        public string CreatedAtStr => CreatedAt.ToShortDateString();
+
         public bool IsDeleted { get; set; }
+        public string IsDeletedStr => IsDeleted ? "Yes" : "No";
 
         public Guid UserId { get; set; }
         public string Priority { get; set; } = "Medium";

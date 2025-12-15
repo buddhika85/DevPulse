@@ -5,7 +5,9 @@ export interface TaskItemDto extends BaseDto {
   description: string;
   status: string;
   createdAt: Date;
+  createdAtStr: string;
   isDeleted: boolean;
+  isDeletedStr: string;
 
   userId: string;
   priority: string;

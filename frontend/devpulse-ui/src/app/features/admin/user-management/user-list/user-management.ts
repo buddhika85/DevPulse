@@ -2,7 +2,6 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
 import { TableColumn } from '../../../../core/models/table-column';
 import { TableAction } from '../../../../core/models/table-action';
-import { JsonPipe } from '@angular/common';
 import { UserAccountDto } from '../../../../core/models/user-account.dto';
 import { UserApiService } from '../../../../core/services/user-api';
 import { LoadingService } from '../../../../core/services/loading-service';

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { TaskItemDto } from '../models/task-item.dto';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -27,5 +27,13 @@ export class TaskApiService {
         params: queryString,
       }
     );
+  }
+
+  restoreTask(taskId: string): Observable<void> {
+    return of();
+  }
+
+  softDeleteTask(taskId: string): Observable<void> {
+    return of();
   }
 }

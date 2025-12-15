@@ -1,4 +1,12 @@
-<p>task-list works!</p>
+<div class="page-header">
+  <h1>Manage Tasks</h1>
+</div>
 
-<button (click)="add()">Add</button>
-<button (click)="edit(101)">Edit 101 ID Task</button>
+<app-generic-table
+  [columns]="columns"
+  [data]="tasksOfUser"
+  [actions]="actions"
+  [pageSizeOptions]="pageSizeOptions"
+  (actionTriggered)="handleAction($event)"
+>
+</app-generic-table>
