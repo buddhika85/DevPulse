@@ -102,23 +102,26 @@ namespace TaskService.Repositories
             }
         }
 
-        public async Task<IReadOnlyList<TaskItem>> GetTasksByUserIdAsync(Guid userId, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<TaskItem>> GetTasksByUserIdAsync(Guid userId, CancellationToken cancellationToken, bool includeDeleted = false)
         {
-            _logger.LogInformation("Attempting to retrieve all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+            _logger.LogInformation("Attempting to retrieve all TaskItems for UserId={UserId} includeDeleted={IncludeDeleted} at {Time}", userId, includeDeleted, DateTime.UtcNow);
             try
             {
-                var entities = await _dbContext.Tasks
+                var query = _dbContext.Tasks
                     .AsNoTracking()
-                    .Where(x => !x.IsDeleted && x.UserId == userId)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .ToListAsync(cancellationToken);
+                    .Where(x => x.UserId == userId);
 
-                _logger.LogInformation("Successfully retrieved {Count} TaskItems for UserId={UserId} at {Time}", entities.Count, userId, DateTime.UtcNow);
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                 var entities = await query.OrderByDescending(t => t.CreatedAt).ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Successfully retrieved {Count} TaskItems for UserId={UserId} includeDeleted={IncludeDeleted} at {Time}", entities.Count, userId, includeDeleted, DateTime.UtcNow);
                 return entities;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} includeDeleted={IncludeDeleted} at {Time}", userId, includeDeleted, DateTime.UtcNow);
                 throw;
             }
         }

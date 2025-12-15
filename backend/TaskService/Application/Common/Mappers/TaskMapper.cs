@@ -21,6 +21,7 @@ namespace TaskService.Application.Common.Mappers
                 Description = entity.Description,
                 CreatedAt = entity.CreatedAt,
                 Status = entity.TaskStatus.Value,
+                IsDeleted = entity.IsDeleted,
 
                 UserId = entity.UserId,
                 Priority = entity.TaskPriority.Value,

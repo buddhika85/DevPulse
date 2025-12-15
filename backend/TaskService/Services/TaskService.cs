@@ -63,7 +63,7 @@ namespace TaskService.Services
             try
             {
                 _logger.LogInformation("Fetching task by User ID: {UserId}", query.userId);
-                var entities = await _taskRepository.GetTasksByUserIdAsync(query.userId, cancellationToken);
+                var entities = await _taskRepository.GetTasksByUserIdAsync(query.userId, cancellationToken, query.includeDeleted);
                 var dtos = TaskMapper.ToDtosList(entities);
                 _logger.LogInformation("Retrieved {Count} tasks for User ID={UserId}.", dtos.Count(), query.userId);
                 return dtos.ToList();

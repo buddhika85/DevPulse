@@ -52,22 +52,22 @@ namespace TaskService.Controllers
             }
         }
 
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("by-user/{id:guid}")]
         [SwaggerOperation(Summary = "Get task by user Id", Description = "Returns all tasks by user Id.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
-        public async Task<IActionResult> GetByUserId([FromRoute] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetByUserId([FromRoute] Guid id, CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
         {
-            _logger.LogInformation("Fetching all tasks by user Id {UserId} at {Time}", id, DateTime.UtcNow);
+            _logger.LogInformation("Fetching all tasks by user Id {UserId} Is Deleted: {IncludeDeleted} at {Time}", id, includeDeleted, DateTime.UtcNow);
             try
             {                
-                var tasks = await _mediator.Send(new GetTasksByUserIdQuery(id), cancellationToken);
+                var tasks = await _mediator.Send(new GetTasksByUserIdQuery(id, includeDeleted), cancellationToken);
                 return Ok(tasks);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching all tasks by user Id {UserId} at {Time}", id, DateTime.UtcNow);
+                _logger.LogError(ex, "Error fetching all tasks by user Id {UserId} includeDeleted {IncludeDeleted} at {Time}", id, includeDeleted, DateTime.UtcNow);
                 return InternalError($"An error occurred while retrieving tasks by user Id {id}.");                           // RFC 7807 Error Format - from BaseApiController
             }
         }

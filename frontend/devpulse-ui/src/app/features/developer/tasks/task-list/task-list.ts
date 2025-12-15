@@ -41,7 +41,7 @@ export class TaskList implements OnInit {
   }
 
   private fetchAllUserTasks(userId: string): void {
-    const sub = this.taskApi.getTasksByUserId(userId).subscribe({
+    const sub = this.taskApi.getTasksByUserId(userId, true).subscribe({
       next: (value: TaskItemDto[]) => {
         this.tasksOfUser = value;
         console.log(this.tasksOfUser);

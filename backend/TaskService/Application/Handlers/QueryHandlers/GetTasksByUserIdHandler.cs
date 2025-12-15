@@ -17,7 +17,7 @@ namespace TaskService.Application.Handlers.QueryHandlers
         }
         public async Task<IReadOnlyList<TaskItemDto>> Handle(GetTasksByUserIdQuery query, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Handling GetTasksBy UserId {UserId} at {Time}", query.userId, DateTime.UtcNow);
+            _logger.LogInformation("Handling GetTasksBy UserId {UserId} IsDeleted {IncludeDeleted} at {Time}", query.userId, query.includeDeleted, DateTime.UtcNow);
             return await _taskService.GetTasksByUserIdAsync(query, cancellationToken);
         }
     }

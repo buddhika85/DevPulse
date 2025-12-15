@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { TaskItemDto } from '../models/task-item.dto';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 // dedicated for Task Micro Service Calls
 
@@ -15,9 +15,17 @@ export class TaskApiService {
   private readonly profileControllerUrl = `${this.apiUrl}api/Tasks`;
   private readonly http: HttpClient = inject(HttpClient);
 
-  getTasksByUserId(userId: string): Observable<TaskItemDto[]> {
+  getTasksByUserId(
+    userId: string,
+    includeDeleted: boolean
+  ): Observable<TaskItemDto[]> {
+    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
     return this.http.get<TaskItemDto[]>(
-      `${this.profileControllerUrl}/by-user/${userId}`
+      `${this.profileControllerUrl}/by-user/${userId}`,
+      {
+        params: queryString,
+      }
     );
   }
 }
