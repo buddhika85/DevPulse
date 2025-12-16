@@ -44,7 +44,7 @@ import { UpdateTaskDto } from '../../../../core/models/update-task.dto';
 })
 export class TaskAddEdit implements OnInit, OnDestroy {
   private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-  private readonly taskpiService: TaskApiService = inject(TaskApiService);
+  private readonly taskApiService: TaskApiService = inject(TaskApiService);
   private readonly userStoreService = inject(UserStoreService);
   private readonly loadingService: LoadingService = inject(LoadingService);
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
@@ -103,35 +103,82 @@ export class TaskAddEdit implements OnInit, OnDestroy {
 
   onSubmit(): void {
     if (this.taskFormGroup.valid) {
-      const raw = this.taskFormGroup.getRawValue();
       // add mode
       if (this.isAddMode) {
-        const createTaskDto: CreateTaskDto = {
-          userId: this.userId,
-          description: raw.description ?? '',
-          title: raw.title ?? '',
-          priority: raw.priority ?? 'Low',
-          status: raw.status ?? 'NotStarted',
-          dueDate: raw.dueDate ? new Date(raw.dueDate) : null,
-        };
-
-        console.log('Create: ', createTaskDto);
+        this.createNewTask();
       }
 
       // update mode
       else if (this.editId) {
-        const updateTaskDto: UpdateTaskDto = {
-          id: this.editId,
-          title: raw.title ?? '',
-          description: raw.description ?? '',
-          priority: raw.priority ?? 'Low',
-          status: raw.status ?? 'Pending',
-          dueDate: raw.dueDate ? new Date(raw.dueDate) : null,
-        };
-
-        console.log('Update: ', updateTaskDto);
+        this.updateExistingTask();
       }
     }
+  }
+
+  private createNewTask(): void {
+    const raw = this.taskFormGroup.getRawValue();
+    const createTaskDto: CreateTaskDto = {
+      userId: this.userId,
+      description: raw.description ?? '',
+      title: raw.title ?? '',
+      priority: raw.priority ?? 'Low',
+      status: raw.status ?? 'NotStarted',
+      dueDate: raw.dueDate ? new Date(raw.dueDate) : null,
+    };
+
+    console.log('Create: ', createTaskDto);
+
+    this.loadingService.show();
+    const sub = this.taskApiService.createTask(createTaskDto).subscribe({
+      next: () => {
+        this.snackbarService.success(
+          `New task with title: ${createTaskDto.title} created successfuly!`
+        );
+        this.router.navigate(['tasks']);
+        this.loadingService.hide();
+      },
+      error: (err: any) => {
+        this.snackbarService.error(
+          `Error - New task with title: ${createTaskDto.title} creation failed !!`
+        );
+        this.loadingService.hide();
+      },
+    });
+    this.compositeSubscription.add(sub);
+  }
+
+  private updateExistingTask(): void {
+    const raw = this.taskFormGroup.getRawValue();
+    const updateTaskDto: UpdateTaskDto = {
+      id: this.editId!,
+      title: raw.title ?? '',
+      description: raw.description ?? '',
+      priority: raw.priority ?? 'Low',
+      status: raw.status ?? 'Pending',
+      dueDate: raw.dueDate ? new Date(raw.dueDate) : null,
+    };
+
+    console.log('Update: ', updateTaskDto);
+
+    this.loadingService.show();
+    const sub = this.taskApiService
+      .updateTask(this.editId!, updateTaskDto)
+      .subscribe({
+        next: () => {
+          this.snackbarService.success(
+            `Task with title: ${updateTaskDto.title} updated successfuly!`
+          );
+          this.router.navigate(['tasks']);
+          this.loadingService.hide();
+        },
+        error: (err: any) => {
+          this.snackbarService.error(
+            `Error - Task with title: ${updateTaskDto.title} update failed !!`
+          );
+          this.loadingService.hide();
+        },
+      });
+    this.compositeSubscription.add(sub);
   }
 
   private setupPage(): void {
@@ -150,7 +197,7 @@ export class TaskAddEdit implements OnInit, OnDestroy {
   private fetchTask() {
     if (this.editId) {
       this.loadingService.show();
-      const sub = this.taskpiService.getTaskById(this.editId).subscribe({
+      const sub = this.taskApiService.getTaskById(this.editId).subscribe({
         next: (value: TaskItemDto) => {
           this.originalTaskToEdit = value;
           this.mainHeading = `${this.mainHeading} - ${this.originalTaskToEdit.title}`;
