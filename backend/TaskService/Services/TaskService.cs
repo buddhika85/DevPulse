@@ -148,6 +148,22 @@ namespace TaskService.Services
             }
         }
 
+        public async Task<bool> RestoreTaskAsync(RestoreTaskCommand command, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Restoring task ID: {Id}", command.Id);
+                var success = await _taskRepository.RestoreAsync(command.Id, cancellationToken);
+                _logger.LogInformation("Task restore {Status} for ID: {Id}", success ? "succeeded" : "failed", command.Id);
+                return success;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while restoring task ID: {Id}", command.Id);
+                return false;
+            }
+        }
+
         public async Task<PaginatedResult<TaskItemDto>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken)
         {
             try
@@ -214,7 +230,9 @@ namespace TaskService.Services
             }
             return taskPriority;
         }
-              
+
+     
+
         #endregion Helpers
     }
 }

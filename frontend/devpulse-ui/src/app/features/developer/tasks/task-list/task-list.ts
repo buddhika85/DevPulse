@@ -89,13 +89,13 @@ export class TaskList implements OnInit {
   }
 
   private restoreOrSoftDelete(task: TaskItemDto): void {
-    const isDeactivate = task.isDeleted;
-    const confirmQuestion = isDeactivate
-      ? `Delete task ${task.title} ?`
-      : `Restore task ${task.title} ?`;
+    const isRestore = task.isDeleted;
+    const confirmQuestion = isRestore
+      ? `Restore task ${task.title} ?`
+      : `Delete task ${task.title} ?`;
     this.snackbarService.confirm(confirmQuestion).subscribe((confirmed) => {
       if (confirmed) {
-        isDeactivate ? this.softDeleteTask(task.id) : this.restoreTask(task.id);
+        isRestore ? this.restoreTask(task.id) : this.softDeleteTask(task.id);
       }
     });
   }
@@ -105,10 +105,9 @@ export class TaskList implements OnInit {
     this.loadingService.show();
     const subscription = this.taskApi.restoreTask(taskId).subscribe({
       next: () => {
+        this.fetchAllUserTasks();
         this.snackbarService.success('Task Restored');
         this.loadingService.hide();
-
-        this.fetchAllUserTasks();
       },
       error: (err: any) => {
         console.error('Failed task restoration', err);

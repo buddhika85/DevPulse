@@ -10,7 +10,9 @@ namespace TaskService.Services
     {
         Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken);
         Task<bool> UpdateTaskAsync(UpdateTaskCommand command, CancellationToken cancellationToken);
+
         Task<bool> DeleteTaskAsync(DeleteTaskCommand command, CancellationToken cancellationToken);
+        Task<bool> RestoreTaskAsync(RestoreTaskCommand command, CancellationToken cancellationToken);
 
 
 
@@ -20,4 +22,5 @@ namespace TaskService.Services
         Task<PaginatedResult<TaskItemDto>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken);
         Task<IReadOnlyList<TaskItemDto>> GetTasksByUserIdAsync(GetTasksByUserIdQuery query, CancellationToken cancellationToken);
     }
+       
 }

@@ -9,5 +9,6 @@ namespace TaskService.Repositories
     {
         Task<IReadOnlyList<TaskItem>> GetTasksByUserIdAsync(Guid userId, CancellationToken cancellationToken, bool includeDeleted = false);
         Task<PaginatedResult<TaskItem>> GetTasksPaginatedAsync(GetTasksPaginatedQuery query, CancellationToken cancellationToken);
+        Task<bool> RestoreAsync(Guid id, CancellationToken cancellationToken);
     }
 }

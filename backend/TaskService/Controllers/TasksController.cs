@@ -247,9 +247,9 @@ namespace TaskService.Controllers
         }
 
 
-        [HttpDelete("{id:guid}")]
-        [SwaggerOperation(Summary = "Delete a task", Description = "Deletes a task by ID.")]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Task deleted")]
+        [HttpPatch("soft-delete/{id:guid}")]
+        [SwaggerOperation(Summary = "Soft Deletes a task", Description = "Soft Deletes a task by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Task soft deleted")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
@@ -278,6 +278,41 @@ namespace TaskService.Controllers
             {
                 _logger.LogError(ex, "Error deleting task ID: {Id} at {Time}", id, DateTime.UtcNow);
                 return InternalError("An error occurred while deleting the task.");
+            }
+        }
+
+
+        [HttpPatch("restore/{id:guid}")]
+        [SwaggerOperation(Summary = "Restores a deleted task", Description = "Restores a deleted task by ID.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Task soft restored")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Task not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> Restore([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Restore an soft deleted Task with id {Id} at {Time}", id, DateTime.UtcNow);
+            try
+            {
+                // map
+                var command = new RestoreTaskCommand(id);
+
+                // MediatR
+                var result = await _mediator.Send(command, cancellationToken);
+
+                if (result)
+                    return NoContent();
+
+                return NotFoundProblem(detail: $"Task with ID {id} not found.");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while deleting an existing Task with id {Id} at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error restoring task ID: {Id} at {Time}", id, DateTime.UtcNow);
+                return InternalError("An error occurred while restoring the task.");
             }
         }
 

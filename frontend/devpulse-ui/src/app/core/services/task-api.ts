@@ -29,11 +29,24 @@ export class TaskApiService {
     );
   }
 
-  restoreTask(taskId: string): Observable<void> {
-    return of();
+  restoreTask(id: string): Observable<void> {
+    return this.http.patch<void>(
+      `${this.profileControllerUrl}/restore/${id}`,
+      {}
+    );
   }
 
-  softDeleteTask(taskId: string): Observable<void> {
-    return of();
+  softDeleteTask(id: string): Observable<void> {
+    return this.http.patch<void>(
+      `${this.profileControllerUrl}/soft-delete/${id}`,
+      {}
+    );
   }
+
+  // updateUser(id: string, updatedUser: UpdateUserDto): Observable<void> {
+  //     return this.http.patch<void>(
+  //       `${this.profileControllerUrl}/update/${id}`,
+  //       updatedUser
+  //     );
+  //   }
 }

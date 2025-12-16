@@ -42,6 +42,15 @@ namespace TaskService.Domain.Entities
             }
         }
 
+        public void Restore()
+        {
+            if (IsDeleted)
+            {
+                IsDeleted = false;
+                RaiseRestoreDeletedEvent();
+            }
+        }
+
         // when IsDelete is set from true to false
         public void UndoSoftDelete()
         {

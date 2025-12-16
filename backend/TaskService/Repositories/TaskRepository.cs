@@ -72,11 +72,44 @@ namespace TaskService.Repositories
                 }
 
                 _logger.LogWarning("Delete operation for Task titled '{Title}' with Id: {Id} at {Time} did not affect any records.", entity.Title, id, DateTime.UtcNow);
-                return false;
+                return true;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while deleting Task with Id: {Id} at {Time}", id, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        public async Task<bool> RestoreAsync(Guid id, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to restore Task with Id: {Id} at {Time}", id, DateTime.UtcNow);
+            try
+            {
+                var entity = await _dbContext.Tasks.FindAsync(new object[] { id }, cancellationToken);
+                if (entity is null)
+                {
+                    _logger.LogWarning("No Task found with Id: {Id} at {Time}. Nothing was deleted.", id, DateTime.UtcNow);
+                    return false;
+                }
+
+                
+                entity.Restore();
+
+                var result = await _dbContext.SaveChangesAsync(cancellationToken);
+
+                if (result > 0)
+                {
+                    _logger.LogInformation("Successfully restored Task titled '{Title}' with Id: {Id} at {Time}", entity.Title, id, DateTime.UtcNow);
+                    return true;
+                }
+
+                _logger.LogWarning("Restore operation for Task titled '{Title}' with Id: {Id} at {Time} did not affect any records.", entity.Title, id, DateTime.UtcNow);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while restoring Task with Id: {Id} at {Time}", id, DateTime.UtcNow);
                 throw;
             }
         }
@@ -284,6 +317,6 @@ namespace TaskService.Repositories
             // raise updated event if its a true update with a change           
             if (existing.Title != incoming.Title || existing.Description != incoming.Description)
                 existing.Update(incoming.Title, incoming.Description, incoming.TaskStatus, incoming.TaskPriority, incoming.DueDate);
-        }
+        }        
     }
 }
