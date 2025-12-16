@@ -1,6 +1,6 @@
 ﻿using FluentValidation.Results;
 
-namespace UserService.Application.Common.Exceptions
+namespace SharedLib.Application.Exceptions
 {
     /// <summary>
     /// Custom exception used to carry FluentValidation failures from the MediatR pipeline.

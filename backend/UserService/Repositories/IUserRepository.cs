@@ -1,6 +1,6 @@
 ﻿using SharedLib.Application.Interfaces;
+using SharedLib.Application.Models;
 using SharedLib.Domain.ValueObjects;
-using UserService.Application.Common.Models;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
 

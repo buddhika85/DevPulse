@@ -1,4 +1,4 @@
-﻿namespace UserService.Application.Common.Models
+﻿namespace SharedLib.Application.Models
 {
     public record class PaginatedResult<T> where T : class
     {

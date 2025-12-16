@@ -1,6 +1,6 @@
 ﻿using MediatR;
+using SharedLib.Application.Models;
 using SharedLib.DTOs.Task;
-using TaskService.Application.Common.Models;
 using TaskService.Application.Queries;
 using TaskService.Services;
 

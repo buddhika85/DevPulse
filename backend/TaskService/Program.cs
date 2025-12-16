@@ -3,7 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using TaskService.Application.Common.Behaviors;
+using SharedLib.Application.Behaviors;
 using TaskService.Application.Validators;
 using TaskService.Extensions;
 using TaskService.Infrastructure.Persistence;

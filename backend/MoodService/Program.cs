@@ -1,3 +1,16 @@
+using FluentValidation;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+//using TaskService.Application.Common.Behaviors;
+//using TaskService.Application.Validators;
+//using TaskService.Extensions;
+//using TaskService.Infrastructure.Persistence;
+using SharedLib.Configuration.Cors;
+using SharedLib.Configuration.jwt;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.

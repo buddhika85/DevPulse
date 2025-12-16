@@ -47,7 +47,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Application\Commands\" />
+    <Folder Include="Application\Common\Behaviors\" />
+    <Folder Include="Application\Common\Exceptions\" />
+    <Folder Include="Application\Common\Models\" />
+    <Folder Include="Application\Dtos\" />
+    <Folder Include="Application\EventHandlers\" />
+    <Folder Include="Application\Handlers\CommandHandlers\" />
+    <Folder Include="Application\Handlers\QueryHandlers\" />
+    <Folder Include="Application\Mapping\" />
+    <Folder Include="Application\Queries\" />
+    <Folder Include="Application\Validators\" />
+    <Folder Include="Domain\Entities\" />
+    <Folder Include="Domain\Events\" />
+    <Folder Include="Domain\ValueObjects\" />
+    <Folder Include="Infrastructure\Identity\" />
+    <Folder Include="Logs\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Repositories\" />
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

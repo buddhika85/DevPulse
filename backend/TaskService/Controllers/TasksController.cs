@@ -8,8 +8,8 @@ using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
 using TaskService.Application.Common.Enums;
-using TaskService.Application.Common.Exceptions;
-using TaskService.Application.Common.Models;
+using SharedLib.Application.Exceptions;
+using SharedLib.Application.Models;
 using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
 

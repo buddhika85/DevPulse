@@ -1,7 +1,7 @@
 ﻿using MediatR;
+using SharedLib.Application.Models;
 using SharedLib.DTOs.Task;
 using TaskService.Application.Common.Enums;
-using TaskService.Application.Common.Models;
 
 
 namespace TaskService.Application.Queries

@@ -49,6 +49,9 @@
 
 
   <ItemGroup>
+    <Folder Include="Application\Common\Behaviors\" />
+    <Folder Include="Application\Common\Exceptions\" />
+    <Folder Include="Application\Common\Models\" />
     <Folder Include="Application\Mapping\" />
     <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Logs\" />

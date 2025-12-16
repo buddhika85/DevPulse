@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using MediatR;
-using UserService.Application.Common.Exceptions;
+using SharedLib.Application.Exceptions;
 
-namespace UserService.Application.Common.Behaviors
+namespace SharedLib.Application.Behaviors
 {
 
     // 🧠 How This Works

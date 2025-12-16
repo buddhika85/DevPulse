@@ -1,5 +1,5 @@
 ﻿using SharedLib.Application.Interfaces;
-using TaskService.Application.Common.Models;
+using SharedLib.Application.Models;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 

@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using System.IdentityModel.Tokens.Jwt;
-using UserService.Application.Common.Behaviors;
 using UserService.Application.Validators;
 using UserService.Extensions;
 using UserService.Infrastructure.Persistence;
 using SharedLib.Configuration.Cors;
+using SharedLib.Application.Behaviors;
 
 
 

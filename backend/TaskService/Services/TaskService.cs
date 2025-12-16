@@ -1,7 +1,7 @@
 ﻿using SharedLib.DTOs.Task;
 using TaskService.Application.Commands;
 using TaskService.Application.Common.Mappers;
-using TaskService.Application.Common.Models;
+using SharedLib.Application.Models;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 using TaskService.Domain.ValueObjects;

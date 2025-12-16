@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using TaskService.Application.Common.Enums;
-using TaskService.Application.Common.Models;
+using SharedLib.Application.Models;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 using TaskService.Infrastructure.Common.Extensions;

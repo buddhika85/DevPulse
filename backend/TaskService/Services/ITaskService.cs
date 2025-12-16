@@ -1,6 +1,6 @@
 ﻿using SharedLib.DTOs.Task;
 using TaskService.Application.Commands;
-using TaskService.Application.Common.Models;
+using SharedLib.Application.Models;
 
 using TaskService.Application.Queries;
 

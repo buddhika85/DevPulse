@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using System.Data;
 using TaskService.Infrastructure.Common.Extensions;
 using UserService.Application.Common.Enums;
-using UserService.Application.Common.Models;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
 using SharedLib.Domain.ValueObjects;
 using UserService.Infrastructure.Persistence;
+using SharedLib.Application.Models;
 
 namespace UserService.Repositories
 {
