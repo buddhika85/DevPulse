@@ -76,7 +76,6 @@ export class UserEdit implements OnInit, OnDestroy {
     this.compositeSubscription.unsubscribe();
   }
 
-  // need more work
   onSubmit(): void {
     if (this.userFormGroup.valid && this.userFormGroup.getRawValue().id) {
       const updatedUser: UpdateUserDto = {

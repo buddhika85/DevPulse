@@ -29,6 +29,10 @@ export class TaskApiService {
     );
   }
 
+  getTaskById(id: string): Observable<TaskItemDto> {
+    return this.http.get<TaskItemDto>(`${this.profileControllerUrl}/${id}`);
+  }
+
   restoreTask(id: string): Observable<void> {
     return this.http.patch<void>(
       `${this.profileControllerUrl}/restore/${id}`,

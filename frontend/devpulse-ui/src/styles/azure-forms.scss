@@ -28,6 +28,12 @@
   color: #333;
 }
 
+.textarea {
+  width: 100%;
+  padding: 8px;
+  resize: vertical;
+}
+
 // Error messages
 .error {
   font-size: 0.85rem;

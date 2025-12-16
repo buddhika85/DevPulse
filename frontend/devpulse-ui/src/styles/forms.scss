@@ -52,8 +52,24 @@ $space-md: 16px;
   }
 }
 
+.textarea {
+  width: 100%;
+  padding: $space-xs $space-sm; // tighter padding
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: vertical;
+  &:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    outline: none;
+  }
+}
+
 // Error messages
 .error {
+  margin-left: 10%;
   font-size: 0.8rem;
   color: #d32f2f;
 }

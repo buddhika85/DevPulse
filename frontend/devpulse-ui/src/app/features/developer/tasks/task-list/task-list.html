@@ -2,6 +2,10 @@
   <h1>Manage Tasks</h1>
 </div>
 
+<button class="azure-btn" (click)="add()" style="margin-bottom: 1%">
+  Add New Task
+</button>
+
 <app-generic-table
   [columns]="columns"
   [data]="tasksOfUser"

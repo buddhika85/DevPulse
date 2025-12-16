@@ -1,0 +1,25 @@
+.azure-btn {
+  background-color: #0078d4; /* Azure blue */
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 120ms ease, transform 80ms ease;
+}
+
+.azure-btn:hover {
+  background-color: #106ebe; /* slightly darker */
+}
+
+.azure-btn:active {
+  background-color: #005a9e;
+  transform: scale(0.97);
+}
+
+.azure-btn:focus {
+  outline: 2px solid #005a9e;
+  outline-offset: 2px;
+}

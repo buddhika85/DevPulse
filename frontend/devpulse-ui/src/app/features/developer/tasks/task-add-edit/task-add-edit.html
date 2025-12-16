@@ -1,1 +1,107 @@
-<p>task-add-edit - {{ testMessage }}</p>
+<!-- <p>task-add-edit - {{ testMessage }}</p> -->
+
+<div class="page-header">
+  <h1>{{ mainHeading }}</h1>
+</div>
+
+@if (taskFormGroup) {
+<form [formGroup]="taskFormGroup" (ngSubmit)="onSubmit()" class="form">
+  <!-- Task ID -->
+  <div class="form-row">
+    <label for="id">Task ID</label>
+    <input id="id" type="text" formControlName="id" readonly />
+    <span class="helper"></span>
+  </div>
+
+  <!-- title -->
+  <div class="form-row">
+    <label for="title">Title</label>
+    <input id="title" type="text" formControlName="title" />
+    @let titleCtrl = taskFormGroup.get('title');
+
+    <span class="error">
+      @if(titleCtrl?.invalid && (titleCtrl?.touched || titleCtrl?.dirty)) {
+      <!-- invalid rouched or dirty-->
+      @if(titleCtrl?.hasError('required')) {
+      <span>Title is required</span>
+      } @if(titleCtrl?.hasError('minlength')) {
+      <span>Minimum 2 characters</span>
+      } }
+    </span>
+  </div>
+
+  <!-- description -->
+  <div class="form-row">
+    <label for="description">Description</label>
+    <textarea
+      id="description"
+      type="text"
+      formControlName="description"
+      rows="4"
+      class="textarea"
+    ></textarea>
+
+    @let descCtrl = taskFormGroup.get('description');
+
+    <span class="error">
+      @if(descCtrl?.invalid && (descCtrl?.touched || descCtrl?.dirty)) {
+      <!-- invalid rouched or dirty-->
+      @if(descCtrl?.hasError('required')) {
+      <span>Description is required</span>
+      } @if(descCtrl?.hasError('minlength')) {
+      <span>Minimum 2 characters</span>
+      } }
+    </span>
+  </div>
+
+  <!-- status -->
+  <div class="form-row">
+    <label for="status">Status</label>
+    <select id="status" formControlName="status">
+      @for (taskStatus of taskStatuses; track $index) {
+      <option [value]="taskStatus.value">{{ taskStatus.label }}</option>
+      }
+    </select>
+    <span class="error">
+      @if(taskFormGroup.get('status')?.hasError('required')) {
+      <span>Status is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- priority -->
+  <div class="form-row">
+    <label for="priority">Priority</label>
+    <select id="priority" formControlName="priority">
+      @for (taskPriority of taskPriorities; track $index) {
+      <option [value]="taskPriority.value">{{ taskPriority.label }}</option>
+      }
+    </select>
+    <span class="error">
+      @if(taskFormGroup.get('priority')?.hasError('required')) {
+      <span>Priority is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- dueDate -->
+  <div class="form-row">
+    <label for="dueDate">Due Date</label>
+    <input type="date" formControlName="dueDate" />
+    <span class="error">
+      @if(taskFormGroup.get('dueDate')?.hasError('required')) {
+      <span>Due Date is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button type="submit" [disabled]="taskFormGroup.invalid">
+      Save Changes
+    </button>
+    <button type="button" (click)="router.navigate(['tasks'])">Cancel</button>
+  </div>
+</form>
+
+}
