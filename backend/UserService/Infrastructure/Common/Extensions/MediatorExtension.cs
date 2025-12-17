@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SharedLib.Domain.Entities;
 
 namespace TaskService.Infrastructure.Common.Extensions
