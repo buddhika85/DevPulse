@@ -6,7 +6,7 @@ namespace TaskService.Domain.ValueObjects
     {
         public string Value { get; }
 
-        public TaskPriority(string value) => Value = value;
+        private TaskPriority(string value) => Value = value;
 
         public static TaskPriority High => new("High");
         public static TaskPriority Low => new("Low");

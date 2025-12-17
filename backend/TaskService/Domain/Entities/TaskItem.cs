@@ -52,14 +52,14 @@ namespace TaskService.Domain.Entities
         }
 
         // when IsDelete is set from true to false
-        public void UndoSoftDelete()
-        {
-            if (IsDeleted)
-            {
-                IsDeleted = false;
-                RaiseRestoreDeletedEvent();
-            }
-        }
+        //public void UndoSoftDelete()
+        //{
+        //    if (IsDeleted)
+        //    {
+        //        IsDeleted = false;
+        //        RaiseRestoreDeletedEvent();
+        //    }
+        //}
 
 
         #region domain_events

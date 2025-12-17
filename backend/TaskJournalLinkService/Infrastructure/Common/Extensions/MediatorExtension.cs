@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SharedLib.Domain.Entities;
 
-namespace TaskService.Infrastructure.Common.Extensions
+namespace TaskJournalLinkService.Infrastructure.Common.Extensions
 {
     public static class MediatorExtension
     {

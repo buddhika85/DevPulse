@@ -1,7 +1,7 @@
 ﻿using Serilog;
-using UserService.Configuration;
+using SharedLib.Configuration.logging;
 
-namespace UserService.Extensions
+namespace MoodService.Extensions
 {
     public static class LoggingExtensions
     {
@@ -22,7 +22,7 @@ namespace UserService.Extensions
                                                    .Enrich.WithThreadId()
                                                    .Enrich.WithProcessId()
                                                    .Enrich.WithEnvironmentUserName()
-                                                   .Enrich.WithProperty("Service", "TaskService") // Custom tag
+                                                   .Enrich.WithProperty("Service", "MoodService") // Custom tag
                                                    .WriteTo.Console()
                                                    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day);                // UserService/Logs/Log-.txt
 

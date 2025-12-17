@@ -62,13 +62,10 @@
     <Folder Include="Application\Mapping\" />
     <Folder Include="Application\Queries\" />
     <Folder Include="Application\Validators\" />
-    <Folder Include="Domain\Entities\" />
+    <Folder Include="Configuration\" />
     <Folder Include="Domain\Events\" />
-    <Folder Include="Domain\ValueObjects\" />
-    <Folder Include="Infrastructure\Identity\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
-    <Folder Include="Repositories\" />
     <Folder Include="Services\" />
   </ItemGroup>
 

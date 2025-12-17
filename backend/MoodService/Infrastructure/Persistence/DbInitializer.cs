@@ -1,10 +1,10 @@
 ﻿//using UserService.Domain.Entities;
 
-namespace UserService.Infrastructure.Persistence
+namespace MoodService.Infrastructure.Persistence
 {
     public static class DbInitializer
     {
-        public static void Seed(UserDbContext context)
+        public static void Seed(MoodDbContext context)
         {
             //if (context.Tasks.Any()) return; // Already seeded
 
