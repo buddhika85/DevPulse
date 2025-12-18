@@ -30,6 +30,7 @@ namespace MoodService.Domain.Entities
         {
             var mood = new MoodEntry
             {
+                Id = Guid.NewGuid(),
                 UserId = userId,
                 Day = day?.Date ?? DateTime.Today.Date,
                 MoodTime = moodTime ?? MoodTime.MorningSession,
@@ -38,28 +39,32 @@ namespace MoodService.Domain.Entities
                 CreatedAt = DateTime.UtcNow
             };
 
-            // mood.DomainEvents.Add(new MoodCreatedDomainEvent(mood));         // TO DO
+            //mood.DomainEvents.Add(new MoodCreatedDomainEvent(mood));         // TO DO
 
             return mood;
         }
 
-        public void Update(MoodLevel moodLevel, string? note)
+        public void Update(DateTime day, MoodTime moodTime, MoodLevel moodLevel, string? note)
         {
+            Day = day.Date.Date;
+            MoodTime = moodTime;
             MoodLevel = moodLevel;
             Note = note ?? string.Empty;
+
+            //DomainEvents.Add(new MoodUpdatedDomainEvent(mood));         // TO DO
         }
 
 
-        // TO DO
-        public void RaiseDeletedEvent()
+        public void Delete()
         {
-            throw new NotImplementedException();
+            ///DomainEvents.Add(new MoodDeletedDomainEvent(mood));         // TO DO
         }
 
         #endregion domain_events
 
-        public bool IsSameSession(DateTime day, MoodTime session)
-            => Day == day.Date && MoodTime == session;
+        // A user can have exactly 1 MoodEntry for given day and a given session
+        public bool IsSameSession(Guid userId, DateTime day, MoodTime session)
+            => UserId == userId && Day.Date == day.Date && MoodTime == session;
 
        
     }

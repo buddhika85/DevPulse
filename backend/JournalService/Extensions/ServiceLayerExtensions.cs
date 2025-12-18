@@ -1,6 +1,4 @@
-﻿//using UserService.Services;
-
-namespace UserService.Extensions
+﻿namespace JournalService.Extensions
 {
     public static class ServiceLayerExtensions
     {

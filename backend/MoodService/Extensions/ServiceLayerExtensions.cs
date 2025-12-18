@@ -1,4 +1,6 @@
-﻿namespace UserService.Extensions
+﻿using MoodService.Services;
+
+namespace MoodService.Extensions
 {
     public static class ServiceLayerExtensions
     {
@@ -11,7 +13,7 @@
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {            
-            //services.AddScoped<ITaskService, Services.TaskService>();
+            services.AddScoped<IMoodService, Services.MoodService>();
             return services;
         }
     }

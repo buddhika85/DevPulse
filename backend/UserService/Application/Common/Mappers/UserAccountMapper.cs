@@ -4,7 +4,7 @@ using System.Text.Json;
 using UserService.Domain.Entities;
 
 
-namespace TaskService.Application.Common.Mappers
+namespace UserService.Application.Common.Mappers
 {
     public static class UserAccountMapper
     {

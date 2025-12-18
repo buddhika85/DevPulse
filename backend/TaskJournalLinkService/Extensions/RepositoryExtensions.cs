@@ -1,6 +1,4 @@
-﻿//using UserService.Repositories;
-
-namespace UserService.Extensions
+﻿namespace TaskJournalLinkService.Extensions
 {
     public static class RepositoryExtensions
     {

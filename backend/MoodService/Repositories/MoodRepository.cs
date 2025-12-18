@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MoodService.Domain.Entities;
+using MoodService.Domain.ValueObjects;
 using MoodService.Infrastructure.Common.Extensions;
 using MoodService.Infrastructure.Persistence;
 
@@ -57,8 +58,6 @@ namespace MoodService.Repositories
                 }
 
                 _dbContext.MoodEntries.Remove(entity);             // this permenently deletes from DB
-                entity.RaiseDeletedEvent();
-
 
                 var result = await _dbContext.SaveChangesAsync(cancellationToken);
 
@@ -77,6 +76,8 @@ namespace MoodService.Repositories
                 throw;
             }
         }
+
+       
 
         public async Task<IReadOnlyList<MoodEntry>> GetAllAsync(CancellationToken cancellationToken)
         {
@@ -137,6 +138,52 @@ namespace MoodService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+
+        // A user can have exactly 1 MoodEntry for given day and a given session
+        public async Task<bool> IsMoodEntryExists(Guid userId, DateTime day, MoodTime session, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Checking if a mood-entry with for user: {UserId}, Day: {Day}, Mood Time: {MoodTime} at {Time}",
+                   userId, day, session, DateTime.UtcNow);
+
+                return await _dbContext.MoodEntries.AnyAsync(x => x.UserId == userId &&
+                                            x.Day.Date == day.Date &&
+                                            x.MoodTime == session, 
+                                            cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while checking if a mood-entry with for user: {UserId}, Day: {Day}, Mood Time: {MoodTime} at {Time}",
+                   userId, day, session, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        // Are there any other mood entreies with same Guid userId, DateTime day, MoodTime session except for excludeId ?
+        // If so we cannot perform this update
+        public async Task<MoodEntry?> FindOtherMoodEntry(Guid excludeId, Guid userId, DateTime day, MoodTime session, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Checking if a mood-entry with for user: {UserId}, Day: {Day}, Mood Time: {MoodTime} with exclusion of Mood-Entry: {ExcludeMoodId} at {Time}",
+                   userId, day, session, excludeId, DateTime.UtcNow);
+
+                return await _dbContext.MoodEntries.FirstOrDefaultAsync(x => 
+                                            x.Id != excludeId &&
+                                            x.UserId == userId &&
+                                            x.Day.Date == day.Date &&
+                                            x.MoodTime == session,
+                                            cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while checking if a mood-entry with for user: {UserId}, Day: {Day}, Mood Time: {MoodTime} with exclusion of Mood-Entry: {ExcludeMoodId} at {Time}",
+                   userId, day, session, excludeId, DateTime.UtcNow);
                 throw;
             }
         }

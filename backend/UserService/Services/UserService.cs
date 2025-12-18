@@ -1,5 +1,4 @@
 ﻿using SharedLib.DTOs.User;
-using TaskService.Application.Common.Mappers;
 using UserService.Application.Commands;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
@@ -7,6 +6,7 @@ using SharedLib.Domain.ValueObjects;
 using UserService.Infrastructure.Identity;
 using UserService.Repositories;
 using SharedLib.Application.Models;
+using UserService.Application.Common.Mappers;
 
 namespace UserService.Services
 {

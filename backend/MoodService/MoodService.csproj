@@ -51,22 +51,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Commands\" />
     <Folder Include="Application\Common\Behaviors\" />
     <Folder Include="Application\Common\Exceptions\" />
     <Folder Include="Application\Common\Models\" />
     <Folder Include="Application\Dtos\" />
     <Folder Include="Application\EventHandlers\" />
-    <Folder Include="Application\Handlers\CommandHandlers\" />
-    <Folder Include="Application\Handlers\QueryHandlers\" />
     <Folder Include="Application\Mapping\" />
-    <Folder Include="Application\Queries\" />
-    <Folder Include="Application\Validators\" />
     <Folder Include="Configuration\" />
     <Folder Include="Domain\Events\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 ﻿using SharedLib.DTOs.User;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using TaskService.Application.Common.Mappers;
+using UserService.Application.Common.Mappers;
 
 namespace UserService.Infrastructure.Identity
 {
