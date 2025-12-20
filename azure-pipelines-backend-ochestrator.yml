@@ -16,7 +16,15 @@ variables:
   resourceGroup: DevPulseRG                   # Azure resource group
   containerAppName: orchestrator-api          # Azure Container App name
   location: australiaeast                     # Azure region
-  tag: v1.0.0                                  # Docker image tag
+
+  # IMPORTANT:
+  # Use a UNIQUE tag for every build to force ACA to pull the new image. 
+  # - 20251220-174855-1234
+  # - Date → 20251220
+  # - Time → 17:48:55
+  # - Build ID → 1234
+  # Build.BuildId is guaranteed unique per pipeline run.
+  tag: $(Date:yyyyMMdd-HHmmss)-$(Build.BuildId)
 
 # Use a Microsoft-hosted Ubuntu agent to run the pipeline
 pool:
@@ -39,6 +47,7 @@ steps:
         # IMPORTANT:
         # --file points to the Dockerfile inside the OrchestratorService folder.
         # The final argument (backend/OrchestratorService) is the build context.
+        # $(tag) ensures each build produces a NEW image version.
         az acr build \
           --registry $(acrName) \
           --image $(imageName):$(tag) \
@@ -47,11 +56,14 @@ steps:
 
         echo "Deploying to Azure Container Apps..."
 
-        # Deploy the new image to your Azure Container App
+        # IMPORTANT:
+        # --revision-suffix forces ACA to create a NEW revision.
+        # This guarantees ACA pulls the new image instead of reusing cached ones.
         az containerapp update \
           --name $(containerAppName) \
           --resource-group $(resourceGroup) \
-          --image $(acrLoginServer)/$(imageName):$(tag)
+          --image $(acrLoginServer)/$(imageName):$(tag) \
+          --revision-suffix $(tag)
 
   # Step 2: Warm up the ACA endpoint to avoid cold start latency
   # This ensures the service is responsive immediately after deployment.
