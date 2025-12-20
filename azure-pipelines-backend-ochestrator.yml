@@ -6,12 +6,17 @@ trigger:
 
 # Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io                         # ACR Login server 
-  imageName: orchestrator-api                                   # Docker image name
-  resourceGroup: DevPulseRG                # Azure resource group
-  containerAppName: orchestrator-api       # Azure Container App name
-  location: australiaeast                  # Azure region
-  tag: v1.0.0                              # Docker image tag
+  # ACR name (NOT the login server). Required by `az acr build --registry`
+  acrName: devpulseacr-cta8h8feeua4cchz
+
+  # ACR Login server (used when referencing the final image)
+  acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io
+
+  imageName: orchestrator-api                 # Docker image name
+  resourceGroup: DevPulseRG                   # Azure resource group
+  containerAppName: orchestrator-api          # Azure Container App name
+  location: australiaeast                     # Azure region
+  tag: v1.0.0                                  # Docker image tag
 
 # Use a Microsoft-hosted Ubuntu agent to run the pipeline
 pool:
@@ -19,7 +24,8 @@ pool:
 
 # Define the pipeline steps
 steps:
-  # Step 1: Build and push the image using ACR build service (avoids DNS resolution issues)
+  # Step 1: Build and push the image using ACR build service
+  # Using ACR Build avoids Docker installation issues and DNS problems on DevOps agents.
   - task: AzureCLI@2
     displayName: 'Build via ACR and Deploy to ACA'
     inputs:
@@ -28,21 +34,27 @@ steps:
       scriptLocation: inlineScript
       failOnStderr: true                                   # Fail the task if any CLI command throws an error
       inlineScript: |
-        # Build and push image using Azure Container Registry build service
         echo "Building and pushing image via ACR..."
+
+        # IMPORTANT:
+        # --file points to the Dockerfile inside the OrchestratorService folder.
+        # The final argument (backend/OrchestratorService) is the build context.
         az acr build \
-          --registry $(acrLoginServer) \
+          --registry $(acrName) \
           --image $(imageName):$(tag) \
-          .
+          --file backend/OrchestratorService/Dockerfile \
+          backend/OrchestratorService
+
+        echo "Deploying to Azure Container Apps..."
 
         # Deploy the new image to your Azure Container App
-        echo "Deploying to Azure Container Apps..."
         az containerapp update \
           --name $(containerAppName) \
           --resource-group $(resourceGroup) \
           --image $(acrLoginServer)/$(imageName):$(tag)
 
   # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  # This ensures the service is responsive immediately after deployment.
   - script: |
       echo "Warming up OrchestratorService..."
       for i in {1..10}; do
