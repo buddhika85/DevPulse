@@ -6,7 +6,7 @@ trigger:
 
 # Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  acrName: devpulseacr-cta8h8feeua4cchz
+  acrName: devpulseacr
   acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io
 
   imageName: orchestrator-api
