@@ -6,64 +6,57 @@ trigger:
 
 # Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  # ACR name (NOT the login server). Required by `az acr build --registry`
   acrName: devpulseacr-cta8h8feeua4cchz
-
-  # ACR Login server (used when referencing the final image)
   acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io
 
-  imageName: orchestrator-api                 # Docker image name
-  resourceGroup: DevPulseRG                   # Azure resource group
-  containerAppName: orchestrator-api          # Azure Container App name
-  location: australiaeast                     # Azure region
+  imageName: orchestrator-api
+  resourceGroup: DevPulseRG
+  containerAppName: orchestrator-api
+  location: australiaeast
 
   # IMPORTANT:
-  # Use a UNIQUE tag for every build to force ACA to pull the new image. 
-  # - 20251220-174855-1234
-  # - Date → 20251220
-  # - Time → 17:48:55
-  # - Build ID → 1234
-  # Build.BuildId is guaranteed unique per pipeline run.
-  tag: $(Date:yyyyMMdd-HHmmss)-$(Build.BuildId)
+  # Keep tag simple here. Timestamp will be generated inside the script.
+  tag: $(Build.BuildId)
 
-# Use a Microsoft-hosted Ubuntu agent to run the pipeline
 pool:
   vmImage: ubuntu-latest
 
-# Define the pipeline steps
 steps:
-  # Step 1: Build and push the image using ACR build service
-  # Using ACR Build avoids Docker installation issues and DNS problems on DevOps agents.
   - task: AzureCLI@2
     displayName: 'Build via ACR and Deploy to ACA'
     inputs:
-      azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'  # Azure service connection name configured in Azure DevOps
+      azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'
       scriptType: bash
       scriptLocation: inlineScript
-      failOnStderr: true                                   # Fail the task if any CLI command throws an error
+      failOnStderr: true
       inlineScript: |
+        echo "Generating timestamp-based tag..."
+
+        # Generate timestamp safely inside Bash
+        timestamp=$(date +'%Y%m%d-%H%M%S')
+
+        # Combine timestamp + BuildId
+        fulltag="${timestamp}-$(tag)"
+
+        echo "Using image tag: $fulltag"
+
         echo "Building and pushing image via ACR..."
 
-        # IMPORTANT:
-        # --file points to the Dockerfile inside the OrchestratorService folder.
-        # The final argument (backend/OrchestratorService) is the build context.
-        # $(tag) ensures each build produces a NEW image version.
         az acr build \
           --registry $(acrName) \
-          --image $(imageName):$(tag) \
+          --image $(imageName):$fulltag \
           --file backend/OrchestratorService/Dockerfile \
           backend/OrchestratorService
 
         echo "Deploying to Azure Container Apps..."
 
-        # IMPORTANT:
-        # --revision-suffix forces ACA to create a NEW revision.
-        # This guarantees ACA pulls the new image instead of reusing cached ones.
+        # Force ACA to pull the new image by using a unique revision suffix
         az containerapp update \
           --name $(containerAppName) \
           --resource-group $(resourceGroup) \
-          --image $(acrLoginServer)/$(imageName):$(tag) \
-          --revision-suffix $(tag)
+          --image $(acrLoginServer)/$(imageName):$fulltag \
+          --revision-suffix $fulltag
+
 
   # Step 2: Warm up the ACA endpoint to avoid cold start latency
   # This ensures the service is responsive immediately after deployment.
