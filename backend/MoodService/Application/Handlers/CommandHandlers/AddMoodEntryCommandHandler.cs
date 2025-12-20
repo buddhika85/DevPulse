@@ -4,7 +4,7 @@ using MoodService.Services;
 
 namespace MoodService.Application.Handlers.CommandHandlers
 {
-    public partial class AddMoodEntryCommandHandler : IRequestHandler<AddMoodEntryCommand, Guid?>
+    public class AddMoodEntryCommandHandler : IRequestHandler<AddMoodEntryCommand, Guid?>
     {
         private readonly ILogger<AddMoodEntryCommandHandler> _logger;
         private readonly IMoodService _moodService;

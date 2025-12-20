@@ -38,9 +38,9 @@ namespace MoodService.Domain.ValueObjects
 
             return value.Trim().ToLowerInvariant() switch
             {
-                "morningsession" => MorningSession,
-                "middaysession" => MidDaySession,
-                "eveningsession" => EveningSession,
+                "morning" => MorningSession,
+                "midday" => MidDaySession,
+                "evening" => EveningSession,
 
                 _ => throw new ArgumentException($"Invalid MoodTime: {value}")
             };

@@ -1,4 +1,5 @@
-﻿using MoodService.Domain.ValueObjects;
+﻿using MoodService.Domain.Events;
+using MoodService.Domain.ValueObjects;
 using SharedLib.Domain.Entities;
 
 namespace MoodService.Domain.Entities
@@ -39,25 +40,28 @@ namespace MoodService.Domain.Entities
                 CreatedAt = DateTime.UtcNow
             };
 
-            //mood.DomainEvents.Add(new MoodCreatedDomainEvent(mood));         // TO DO
+            mood.DomainEvents.Add(new MoodEntryCreatedDomainEvent(mood));      
 
             return mood;
         }
 
         public void Update(DateTime day, MoodTime moodTime, MoodLevel moodLevel, string? note)
         {
+            var beforeUpdate = GetADeepClone();     // GetMemberwiseClone();      
+
             Day = day.Date.Date;
             MoodTime = moodTime;
             MoodLevel = moodLevel;
             Note = note ?? string.Empty;
 
-            //DomainEvents.Add(new MoodUpdatedDomainEvent(mood));         // TO DO
+            DomainEvents.Add(new MoodEntryUpdatedDomainEvent(beforeUpdate, this));
         }
 
+        
 
         public void Delete()
         {
-            ///DomainEvents.Add(new MoodDeletedDomainEvent(mood));         // TO DO
+            DomainEvents.Add(new MoodEntryDeletedDomainEvent(this));         
         }
 
         #endregion domain_events
@@ -66,6 +70,20 @@ namespace MoodService.Domain.Entities
         public bool IsSameSession(Guid userId, DateTime day, MoodTime session)
             => UserId == userId && Day.Date == day.Date && MoodTime == session;
 
-       
+        // manual deep copy
+        private MoodEntry GetADeepClone() => new()
+        {
+            Id = Id,
+            UserId = UserId,
+            Day = Day,
+            MoodTime = MoodTime,
+            MoodLevel = MoodLevel,
+            Note = Note,
+            CreatedAt = CreatedAt
+        };
+
+        // shallow copy, no issues as ValueObjects used
+        private MoodEntry GetMemberwiseClone() => (MoodEntry) MemberwiseClone();
+
     }
 }

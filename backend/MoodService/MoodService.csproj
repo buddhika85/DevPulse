@@ -54,11 +54,8 @@
     <Folder Include="Application\Common\Behaviors\" />
     <Folder Include="Application\Common\Exceptions\" />
     <Folder Include="Application\Common\Models\" />
-    <Folder Include="Application\Dtos\" />
-    <Folder Include="Application\EventHandlers\" />
     <Folder Include="Application\Mapping\" />
     <Folder Include="Configuration\" />
-    <Folder Include="Domain\Events\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
   </ItemGroup>

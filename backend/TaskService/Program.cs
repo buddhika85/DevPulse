@@ -59,6 +59,10 @@ builder.Services.BindJwtSettings(builder.Configuration);                        
 builder.Services.InjectDevPulseJwtValidationService(builder.Configuration);         // inject DevPulse user API issued JWT (not entra issued JWT)
 
 
+builder.Services.InjectCosmosDbServices();                                          // inject services which logs to Azure Cosmos DB 
+builder.Services.InjectAzureServiceBusServices();                                   // inject services which publishes messages to Azure servuice Bus topics
+
+
 builder.Services.InjectDbContext(builder.Configuration);                    // inject DB Context
 builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
 builder.Services.InjectServices(builder.Configuration);                     // inject Services

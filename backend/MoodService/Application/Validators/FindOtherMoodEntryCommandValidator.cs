@@ -6,7 +6,7 @@ namespace MoodService.Application.Validators
     // FindOtherMoodEntryCommand
     public class FindOtherMoodEntryCommandValidator : AbstractValidator<FindOtherMoodEntryCommand>
     {
-        private static readonly string[] AllowedMoodTimes = { "morningsession", "middaysession", "eveningsession" };
+        private static readonly string[] AllowedMoodTimes = { "morning", "midday", "evening" };
 
         public FindOtherMoodEntryCommandValidator()
         {
@@ -22,10 +22,10 @@ namespace MoodService.Application.Validators
                .NotEmpty()
                .WithMessage("Day must not be empty.");
 
-            RuleFor(x => x.MoodTime)            // morningsession, middaysession, eveningsession
-             .NotEmpty()
-             .Must(moodTime => AllowedMoodTimes.Contains(moodTime.ToLower()))
-             .WithMessage("MoodTime must be one of: MorningSession, MidDaySession, EveningSession.");
+            RuleFor(x => x.MoodTime)            // morning, midday, evening
+              .NotEmpty()
+              .Must(moodTime => AllowedMoodTimes.Contains(moodTime.ToLower()))
+              .WithMessage("MoodTime must be one of: Morning, MidDay, Evening.");
         }
     }
 }
