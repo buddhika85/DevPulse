@@ -39,6 +39,7 @@ steps:
         fulltag="${timestamp}-$(tag)"
 
         echo "Using image tag: $fulltag"
+        echo "Full image path: $(acrLoginServer)/$(imageName):$fulltag"
 
         echo "Building and pushing image via ACR..."
 
@@ -46,7 +47,7 @@ steps:
           --registry $(acrName) \
           --image $(imageName):$fulltag \
           --file backend/OrchestratorService/Dockerfile \
-          backend/OrchestratorService
+          .
 
         echo "Deploying to Azure Container Apps..."
 
