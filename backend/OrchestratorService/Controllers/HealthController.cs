@@ -9,7 +9,7 @@ namespace OrchestratorService.Controllers
     {
         private readonly ILogger<HealthController> _logger;
 
-        private const string ApiName = "Orchestrator API - Dockerised";
+        private const string ApiName = "Orchestrator API - Dockerised v2";
 
         public HealthController(ILogger<HealthController> logger)
         {
