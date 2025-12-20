@@ -18,7 +18,10 @@ WORKDIR /src
 # Copy the entire repository into the container
 # IMPORTANT: Because azure-pipelines-backend-ochestrator.yml is inside the root folder but the Dockerfile is inside backend/OrchestratorService,
 # we must go UP TWO LEVELS to copy the whole repo.
-COPY ../../ ./
+#COPY ../../ ./
+# This copies the entire repo into /src (because your WORKDIR is /src).
+COPY . .
+
 
 # Build and publish the OrchestratorService in Release mode
 RUN dotnet publish backend/OrchestratorService/OrchestratorService.csproj -c Release -o /app/publish
