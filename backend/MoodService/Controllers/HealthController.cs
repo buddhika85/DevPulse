@@ -8,7 +8,7 @@ namespace MoodService.Controllers
     public class HealthController : ControllerBase
     {
         private readonly ILogger<HealthController> _logger;
-        private const string ApiName = "Mood API";
+        private const string ApiName = "Mood API V1";
 
         public HealthController(ILogger<HealthController> logger)
         {

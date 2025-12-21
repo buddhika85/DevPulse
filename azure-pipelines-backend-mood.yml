@@ -49,28 +49,28 @@ steps:
           --file backend/MoodService/Dockerfile \
           .
 
-        # echo "Deploying to Azure Container Apps..."
+        echo "Deploying to Azure Container Apps..."
 
-        # # Force ACA to pull the new image by using a unique revision suffix
-        # az containerapp update \
-          # --name $(containerAppName) \
-          # --resource-group $(resourceGroup) \
-          # --image $(acrLoginServer)/$(imageName):$fulltag \
-          # --revision-suffix $fulltag
+        # Force ACA to pull the new image by using a unique revision suffix
+        az containerapp update \
+          --name $(containerAppName) \
+          --resource-group $(resourceGroup) \
+          --image $(acrLoginServer)/$(imageName):$fulltag \
+          --revision-suffix $fulltag
 
 
-  # # Step 2: Warm up the ACA endpoint to avoid cold start latency
-  # # This ensures the service is responsive immediately after deployment.
-  # - script: |
-      # echo "Warming up MoodService..."
-      # for i in {1..10}; do
-        # response=$(curl -s -o /dev/null -w "%{http_code}" https://mood-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
-        # echo "Attempt $i: HTTP $response"
-        # if [ "$response" -eq 200 ]; then
-          # echo "Success - Mood Service is warm."
-          # break
-        # fi
-        # sleep 5
-      # done
-    # displayName: 'Warm up MoodService after deploy'
-    # condition: succeeded()  # Only run this step if the previous deployment succeeded
+  # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  # This ensures the service is responsive immediately after deployment.
+  - script: |
+      echo "Warming up MoodService..."
+      for i in {1..10}; do
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://mood-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
+        echo "Attempt $i: HTTP $response"
+        if [ "$response" -eq 200 ]; then
+          echo "Success - Mood Service is warm."
+          break
+        fi
+        sleep 5
+      done
+    displayName: 'Warm up MoodService after deploy'
+    condition: succeeded()  # Only run this step if the previous deployment succeeded
