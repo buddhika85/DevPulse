@@ -85,12 +85,12 @@ export class MoodList implements OnInit {
   }
 
   add(): void {
-    alert('add');
+    //alert('add');
     this.router.navigate(['moods/add']);
   }
 
   edit(mood: MoodEntryDto): void {
-    alert('edit: ' + JSON.stringify(mood));
+    //alert('edit: ' + JSON.stringify(mood));
     this.router.navigate(['moods/edit', mood.id]);
   }
 
@@ -107,10 +107,24 @@ export class MoodList implements OnInit {
   }
 
   private deleteMood(id: string): void {
-    //this.moodApi.delete()
+    this.loadingService.show();
+    const sub = this.moodApi.deleteMood(id).subscribe({
+      next: () => {
+        this.loadingService.hide();
+        this.fetchAllUserTasks();
+        this.snackbarService.success(`Mood entry deleted`);
+      },
+      error: (err: any) => {
+        console.error('Failed to delete mood entry', err);
+        this.snackbarService.error('FFailed to delete mood entry !');
+        this.loadingService.hide();
+      },
+    });
+    this.compositeSubscription.add(sub);
   }
 
   private fetchAllUserTasks(): void {
+    this.loadingService.show();
     const sub = this.moodApi.getMoodsByUserId(this.userId).subscribe({
       next: (value: MoodEntryDto[]) => {
         this.moodsOfUser = value;

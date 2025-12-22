@@ -65,6 +65,15 @@ export const routes: Routes = [
         canActivate: [roleguardGuard],
       },
       {
+        path: 'moods/add',
+        loadComponent: () =>
+          import('./features/developer/mood/mood-add-edit/mood-add-edit').then(
+            (m) => m.MoodAddEdit
+          ),
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
+      },
+      {
         path: 'moods/edit/:id',
         loadComponent: () =>
           import('./features/developer/mood/mood-add-edit/mood-add-edit').then(

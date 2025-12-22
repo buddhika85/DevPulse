@@ -1,1 +1,88 @@
-<p>mood-add-edit works!</p>
+<!-- <p>task-add-edit - {{ testMessage }}</p> -->
+
+<div class="page-header">
+  <h1>{{ mainHeading }}</h1>
+</div>
+
+@if (moodFormGroup) {
+<form [formGroup]="moodFormGroup" (ngSubmit)="onSubmit()" class="form">
+  <!-- Task ID -->
+  <div class="form-row">
+    <label for="id">Mood ID</label>
+    <input id="id" type="text" formControlName="id" readonly />
+    <span class="helper"></span>
+  </div>
+
+  <!-- day -->
+  <div class="form-row">
+    <label for="day">Date</label>
+    <input type="date" formControlName="day" />
+    <span class="error">
+      @if(moodFormGroup.get('day')?.hasError('required')) {
+      <span>Date is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- mood Time -->
+  <div class="form-row">
+    <label for="moodTime">Status</label>
+    <select id="moodTime" formControlName="moodTime">
+      @for (moodTime of moodTimes; track $index) {
+      <option [value]="moodTime.value">{{ moodTime.label }}</option>
+      }
+    </select>
+    <span class="error">
+      @if(moodFormGroup.get('moodTime')?.hasError('required')) {
+      <span>Mood Time is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- mood Level -->
+  <div class="form-row">
+    <label for="moodLevel">Mood Level</label>
+    <select id="moodLevel" formControlName="moodLevel">
+      @for (moodLevel of moodLevels; track $index) {
+      <option [value]="moodLevel.value">{{ moodLevel.label }}</option>
+      }
+    </select>
+    <span class="error">
+      @if(moodFormGroup.get('moodLevel')?.hasError('required')) {
+      <span>Mood Level is required</span>
+      }
+    </span>
+  </div>
+
+  <!-- description -->
+  <div class="form-row">
+    <label for="note">Note</label>
+    <textarea
+      id="note"
+      type="text"
+      formControlName="note"
+      rows="4"
+      class="textarea"
+    ></textarea>
+
+    @let descCtrl = moodFormGroup.get('note');
+
+    <span class="error">
+      @if(descCtrl?.invalid && (descCtrl?.touched || descCtrl?.dirty)) {
+      <!-- invalid rouched or dirty-->
+      @if(descCtrl?.hasError('minlength')) {
+      <span>Minimum 2 characters</span>
+      } }
+    </span>
+  </div>
+
+  <!-- Actions -->
+  <div class="form-actions">
+    <button type="submit" [disabled]="moodFormGroup.invalid">
+      Save Changes
+    </button>
+    <button type="button" (click)="router.navigate(['moods'])">Cancel</button>
+  </div>
+</form>
+
+}

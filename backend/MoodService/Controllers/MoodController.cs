@@ -88,7 +88,7 @@ namespace MoodService.Controllers
         }
 
         
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("by-user/{userId:guid}")]
         [SwaggerOperation(Summary = "Get all mood-entries by user ID", Description = "Returns all mood-entries by user Id.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<MoodEntryDto>))]       
@@ -121,12 +121,11 @@ namespace MoodService.Controllers
 
 
         // checking before insert
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("is-exists/{userid:guid}")]
         [SwaggerOperation(Summary = "Before an insert, checks if a mood-entry already exists by user ID, day & time", 
             Description = "Returns a true if a mood-entry already exists by user ID, day & time.")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(MoodEntryDto))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> IsMoodEntryExists([FromRoute] Guid userid, [FromQuery] DateTime day, [FromQuery] string time, CancellationToken cancellationToken)
@@ -161,12 +160,11 @@ namespace MoodService.Controllers
 
 
         // checking before update
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("find-other/{userid:guid}")]
         [SwaggerOperation(Summary = "Before an update, checks if a mood-entry already exists by user ID, day & time with excluded Id",
             Description = "Returns a true if a mood-entry already exists by user ID, day & time with excluded Id")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(MoodEntryDto))]
-        [SwaggerResponse(StatusCodes.Status404NotFound, "Not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> FindOtherMoodEntry([FromRoute] Guid userid, 
@@ -208,7 +206,7 @@ namespace MoodService.Controllers
 
 
         
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPost]
         [SwaggerOperation(Summary = "Adds a new mood-entry", Description = "Adds a new user and returns its location. Call only if 'is-exists/{userid:guid}' returns false.")]
         [SwaggerResponse(StatusCodes.Status201Created, "User registered")]
@@ -265,7 +263,7 @@ namespace MoodService.Controllers
 
 
        
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("update/{id:guid}")]
         [SwaggerOperation(Summary = "Update an existing mood-entry", Description = "Updates a mood-entry by ID. Call only if 'find-other/{userid:guid}' returns false.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Mood-entry updated")]
@@ -304,7 +302,7 @@ namespace MoodService.Controllers
 
 
         
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpDelete("delete/{id:guid}")]             // [HTTPDelete] as it is a - permanent removal
         [SwaggerOperation(Summary = "Permanantly deleting an existing user mood-entry", Description = "Deleting an existing user mood-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Mood-entry soft deleted")]
