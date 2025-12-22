@@ -56,14 +56,24 @@ export const routes: Routes = [
       },
 
       {
-        path: 'mood',
+        path: 'moods',
         loadComponent: () =>
-          import('./features/developer/mood/mood-tracker/mood-tracker').then(
-            (m) => m.MoodTracker
+          import('./features/developer/mood/mood-list/mood-list').then(
+            (m) => m.MoodList
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
       },
+      {
+        path: 'moods/edit/:id',
+        loadComponent: () =>
+          import('./features/developer/mood/mood-add-edit/mood-add-edit').then(
+            (m) => m.MoodAddEdit
+          ),
+        data: { roles: ['User'] },
+        canActivate: [roleguardGuard],
+      },
+
       {
         path: 'journal',
         loadComponent: () =>

@@ -1,0 +1,16 @@
+<div class="page-header">
+  <h1>Manage Moods</h1>
+</div>
+
+<button class="azure-btn" (click)="add()" style="margin-bottom: 1%">
+  Add New Mood
+</button>
+
+<app-generic-table
+  [columns]="columns"
+  [data]="moodsOfUser"
+  [actions]="actions"
+  [pageSizeOptions]="pageSizeOptions"
+  (actionTriggered)="handleAction($event)"
+>
+</app-generic-table>

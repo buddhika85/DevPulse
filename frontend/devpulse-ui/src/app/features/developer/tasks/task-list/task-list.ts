@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TaskApiService } from '../../../../core/services/task-api';
 import { Subscription } from 'rxjs';
@@ -16,7 +16,7 @@ import { GenericTableComponent } from '../../../../core/shared/components/generi
   templateUrl: './task-list.html',
   styleUrl: './task-list.scss',
 })
-export class TaskList implements OnInit {
+export class TaskList implements OnInit, OnDestroy {
   readonly columns: TableColumn[] = [
     // { key: 'id', label: 'ID' },
     { key: 'title', label: 'Title' },

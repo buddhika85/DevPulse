@@ -1,8 +1,27 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { MoodEntryDto } from '../models/mood-entry.dto';
 
 // dedicated for Mood Micro Service Calls
 
 @Injectable({
   providedIn: 'root',
 })
-export class MoodApiService {}
+export class MoodApiService {
+  //micro service URL
+  private readonly apiUrl = environment.msal.protectedResources.moodApi.url;
+  private readonly moodControllerUrl = `${this.apiUrl}api/Mood`;
+  private readonly http: HttpClient = inject(HttpClient);
+
+  getMoodsByUserId(userId: string): Observable<MoodEntryDto[]> {
+    return this.http.get<MoodEntryDto[]>(
+      `${this.moodControllerUrl}/by-user/${userId}`
+    );
+  }
+
+  getMoodById(id: string): Observable<MoodEntryDto> {
+    return this.http.get<MoodEntryDto>(`${this.moodControllerUrl}/${id}`);
+  }
+}

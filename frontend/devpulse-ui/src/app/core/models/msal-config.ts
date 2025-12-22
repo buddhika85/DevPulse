@@ -9,8 +9,7 @@ export type ResourceKey =
   | 'orchestratorApi'
   | 'moodApi'
   | 'journalApi'
-  | 'dashboardApi'
-  | 'tenantApi';
+  | 'taskJournalListApi';
 
 export interface MsalConfig {
   clientId: string;

@@ -26,20 +26,17 @@ export const environment: { production: boolean; msal: MsalConfig } = {
         url: 'https://devpulse-apim-consumption.azure-api.net/orchestrator/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
-
       moodApi: {
-        url: '',
+        url: 'https://devpulse-apim-consumption.azure-api.net/mood/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
+
+      // future APIs
       journalApi: {
         url: '',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
-      dashboardApi: {
-        url: '',
-        scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
-      },
-      tenantApi: {
+      taskJournalListApi: {
         url: '',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },

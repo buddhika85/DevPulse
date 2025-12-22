@@ -7,6 +7,7 @@ using MoodService.Application.Dtos;
 using MoodService.Application.Queries;
 using MoodService.Domain.ValueObjects;
 using SharedLib.Application.Exceptions;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Mood;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
@@ -28,7 +29,7 @@ namespace MoodService.Controllers
         }
 
         
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
         [SwaggerOperation(Summary = "Get all mood-entries", Description = "Returns all the mood-entries")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<MoodEntryDto>))]
@@ -51,7 +52,7 @@ namespace MoodService.Controllers
             }
         }
         
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get mood-entry by ID", Description = "Returns a single mood-entry by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(MoodEntryDto))]

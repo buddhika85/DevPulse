@@ -95,12 +95,8 @@ import { MatSortModule } from '@angular/material/sort';
             environment.msal.protectedResources.journalApi.scopes,
           ],
           [
-            environment.msal.protectedResources.dashboardApi.url,
-            environment.msal.protectedResources.dashboardApi.scopes,
-          ],
-          [
-            environment.msal.protectedResources.tenantApi.url,
-            environment.msal.protectedResources.tenantApi.scopes,
+            environment.msal.protectedResources.taskJournalListApi.url,
+            environment.msal.protectedResources.taskJournalListApi.scopes,
           ],
         ]),
       }
