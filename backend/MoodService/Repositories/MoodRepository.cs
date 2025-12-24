@@ -89,7 +89,7 @@ namespace MoodService.Repositories
                     .OrderByDescending(t => t.CreatedAt)
                     .ToListAsync(cancellationToken);
 
-                _logger.LogInformation("Successfully retrieved {Count} TaskItems at {Time}", entities.Count, DateTime.UtcNow);
+                _logger.LogInformation("Successfully retrieved {Count} MoodEntries at {Time}", entities.Count, DateTime.UtcNow);
                 return entities;
             }
             catch (Exception ex)
@@ -137,7 +137,7 @@ namespace MoodService.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while retrieving all MoodEntries for UserId={UserId} at {Time}", userId, DateTime.UtcNow);
                 throw;
             }
         }
