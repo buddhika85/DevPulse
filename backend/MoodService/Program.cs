@@ -41,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>                                   // S
     {
         Version = "v1",
         Title = "DevPulse Mood API",
-        Description = "API for managing developer moods in DevPulse microservice."
+        Description = "API for managing developer Moods in DevPulse."
     });
 });
 

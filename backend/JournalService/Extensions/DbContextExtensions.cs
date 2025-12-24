@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using JournalService.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using SharedLib.Configuration.databaseConfig;
-using UserService.Infrastructure.Persistence;
 
 namespace UserService.Extensions
 {
@@ -31,7 +31,7 @@ namespace UserService.Extensions
 
             // Registers TaskDbContext with dependency injection.
             // Configures EF Core to use SQL Server with the connection string from DatabaseSettings.
-            services.AddDbContext<UserDbContext>(options =>
+            services.AddDbContext<JournalDbContext>(options =>
                 options.UseSqlServer(dbSettings.ConnectionString));
 
             return services;
