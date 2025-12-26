@@ -153,7 +153,7 @@ namespace MoodService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while checking if a mood-entry already exists by user ID={UserId}, day={Day}, & time={Session} at {Time}", userid, day, time, DateTime.UtcNow);
-                return InternalError($"An error occurred while while checking if a mood-entry already exists by user ID={userid}, day={day}, & time={time} at {DateTime.UtcNow}");
+                return InternalError($"An error occurred while checking if a mood-entry already exists by user ID={userid}, day={day}, & time={time} at {DateTime.UtcNow}");
             }
         }
 
@@ -208,8 +208,8 @@ namespace MoodService.Controllers
         
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPost]
-        [SwaggerOperation(Summary = "Adds a new mood-entry", Description = "Adds a new user and returns its location. Call only if 'is-exists/{userid:guid}' returns false.")]
-        [SwaggerResponse(StatusCodes.Status201Created, "User registered")]
+        [SwaggerOperation(Summary = "Adds a new mood-entry", Description = "Adds a new mood and returns its location. Call only if 'is-exists/{userid:guid}?day=[2025/12/20], time=[morning]' returns false.")]
+        [SwaggerResponse(StatusCodes.Status201Created, "Mood added")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> AddMoodEntry([FromBody] AddMoodEntryDto dto, CancellationToken cancellationToken)
@@ -232,7 +232,6 @@ namespace MoodService.Controllers
                     return ValidationProblem(detail: $"A mood-entry already exists by user ID={dto.UserId}, day={day}, & time={time}");
                 }
                 #endregion check_if_entry_already_exists
-
 
                 var command = new AddMoodEntryCommand(dto.UserId, dto.Day, dto.MoodTime, dto.MoodLevel, dto.Note);
                 _logger.LogDebug("AddMoodEntryCommand payload: {@Command}", command);
@@ -305,7 +304,7 @@ namespace MoodService.Controllers
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpDelete("delete/{id:guid}")]             // [HTTPDelete] as it is a - permanent removal
         [SwaggerOperation(Summary = "Permanantly deleting an existing user mood-entry", Description = "Deleting an existing user mood-entry by ID.")]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Mood-entry soft deleted")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Mood-entry pemenetly deleted")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Mood-entry with Id not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]

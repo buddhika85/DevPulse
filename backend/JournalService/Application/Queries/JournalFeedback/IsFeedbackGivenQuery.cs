@@ -2,7 +2,7 @@
 
 namespace JournalService.Application.Queries.JournalFeedback
 {
-    public record IsFeedbackGivenQuery(Guid journalId) : IRequest<bool>
+    public record IsFeedbackGivenQuery(Guid JournalId) : IRequest<bool>
     {
     }
 }

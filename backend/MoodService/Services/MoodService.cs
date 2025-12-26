@@ -171,12 +171,12 @@ namespace MoodService.Services
                     return true;
                 }
 
-                _logger.LogWarning("Deleting User with Id: {MoodEntryId} of user {UserId}, at {Time} did not affect any records.", moodEntry.Id, moodEntry.UserId, DateTime.UtcNow);
+                _logger.LogWarning("Deleting mood with Id: {MoodEntryId} of user {UserId}, at {Time} did not affect any records.", moodEntry.Id, moodEntry.UserId, DateTime.UtcNow);
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Exception occurred while deleting {MoodEntryId} at {Time}", command.Id, DateTime.UtcNow);
+                _logger.LogError(ex, "Exception occurred while deleting a mood with ID: {MoodEntryId} at {Time}", command.Id, DateTime.UtcNow);
                 throw;
             }
         }
@@ -227,7 +227,7 @@ namespace MoodService.Services
                     "Update operation for mood entry with Id {Id} for user {UserId} at {Time} did not affect any records",
                     entity.Id, entity.UserId, now);
 
-                return true; // If this is intentional, keep it
+                return true;
             }
             catch (Exception ex)
             {

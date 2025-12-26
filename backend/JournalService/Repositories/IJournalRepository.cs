@@ -6,6 +6,7 @@ namespace JournalService.Repositories
     public interface IJournalRepository : IBaseRepository<JournalEntry>
     {
         Task<IReadOnlyList<JournalEntry>> GetJournalEntriesByUserIdAsync(Guid userId, CancellationToken cancellationToken, bool includeDeleted = false, bool includeFeedbacks = false);
+        Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken, bool includeDeleted = false);
 
 
         // business rule - journal entry can have exctly one feedback        

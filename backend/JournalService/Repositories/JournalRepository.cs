@@ -61,6 +61,29 @@ namespace JournalService.Repositories
             }
         }
 
+        public async Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken, bool includeDeleted = false)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Checking if a JournalEntry exists with Id: {Id} includeDeleted:{includeDeleted} at {Time}", id, includeDeleted, now);
+            try
+            {
+                var isExists = includeDeleted ? 
+                    await _dbContext.JournalEntries.AnyAsync(x => x.Id == id, cancellationToken) :
+                    await _dbContext.JournalEntries.AnyAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+                
+                if (isExists)                
+                    _logger.LogInformation("A JournalEntry found with Id: {Id} includeDeleted:{includeDeleted} at {Time}", id, includeDeleted, now);
+                else
+                    _logger.LogInformation("No JournalEntry found with Id: {Id} includeDeleted:{includeDeleted} at {Time}", id, includeDeleted, now);
+                return isExists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while checking if a JournalEntry exists Id: {Id} includeDeleted:{includeDeleted} at {Time}", id, includeDeleted, now);
+                throw;
+            }
+        }
+
         public async Task<IReadOnlyList<JournalEntry>> GetJournalEntriesByUserIdAsync(Guid userId, CancellationToken cancellationToken, bool includeDeleted = false, bool includeFeedbacks = false)
         {
             _logger.LogInformation("Attempting to retrieve all JournalEntries for UserId={UserId}, with includeDeleted={includeDeleted}, with includeFeedbacks={includeFeedbacks} at {Time}", 
@@ -241,6 +264,6 @@ namespace JournalService.Repositories
                 _logger.LogError(ex, "Error occurred during SaveChangesAsync or domain event dispatch.");
                 throw;
             }
-        }
+        }       
     }
 }
