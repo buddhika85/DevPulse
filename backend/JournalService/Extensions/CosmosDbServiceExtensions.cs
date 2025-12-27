@@ -1,4 +1,4 @@
-﻿//using TaskService.Infrastructure.Persistence.CosmosEvents;
+﻿using JournalService.Infrastructure.Persistence.CosmosEvents;
 
 namespace JournalService.Extensions
 {
@@ -6,7 +6,7 @@ namespace JournalService.Extensions
     {
         public static IServiceCollection InjectCosmosDbServices(this IServiceCollection services)
         {
-            //services.AddScoped<MoodCosmosEventService>();               // inject MoodCosmosEventService for logging user related events like created, updated...
+            services.AddScoped<JournalCosmosEventService>();               // inject MoodCosmosEventService for logging user related events like created, updated...
             return services;
         }
     }

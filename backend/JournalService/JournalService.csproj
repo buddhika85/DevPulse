@@ -54,8 +54,6 @@
     <Folder Include="Application\Common\Behaviors\" />
     <Folder Include="Application\Common\Exceptions\" />
     <Folder Include="Application\Common\Models\" />
-    <Folder Include="Application\Handlers\CommandHandlers\" />
-    <Folder Include="Application\Handlers\QueryHandlers\" />
     <Folder Include="Application\Mapping\" />
     <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Infrastructure\Identity\" />

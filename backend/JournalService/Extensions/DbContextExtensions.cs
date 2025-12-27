@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SharedLib.Configuration.databaseConfig;
 
-namespace UserService.Extensions
+namespace JournalService.Extensions
 {
 
     public static class DbContextExtensions
