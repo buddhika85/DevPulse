@@ -3,6 +3,7 @@ using JournalService.Infrastructure.Common.Extensions;
 using JournalService.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JournalService.Repositories
 {
@@ -177,6 +178,61 @@ namespace JournalService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred during SaveChangesAsync or domain event dispatch.");
+                throw;
+            }
+        }
+
+
+        
+        // should call this before mark as seen
+        public async Task<bool> IsJounrnalFeedbackExistsAsync(Guid jounralFeedbackId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to check if a JournalFeedback ecxists with Id: {Id} at {Time}", jounralFeedbackId, DateTime.UtcNow);
+            try
+            {
+                var isExists = await _dbContext.JournalFeedbacks.AnyAsync(x => x.Id == jounralFeedbackId, cancellationToken);
+                if (!isExists)
+                {
+                    _logger.LogInformation("No JournalFeedback found with Id: {Id} at {Time}", jounralFeedbackId, DateTime.UtcNow);
+                    return false;
+                }
+
+                _logger.LogInformation("Successfully found a JournalFeedback with Id: {Id} at {Time}", jounralFeedbackId, DateTime.UtcNow);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while checking if a JournalFeedback exists with Id: {Id} at {Time}", jounralFeedbackId, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        public async Task<bool> MarkAsSeenByAsync(JournalFeedback markedAsSeened, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            try
+            {
+                _logger.LogInformation("Saving mark as seened JournalFeedback with Id: {Id} at {Time}", markedAsSeened.Id, DateTime.UtcNow);
+
+                // if entity was received from AsNoTracking() query, we need to manualy re attach it
+                if (_dbContext.Entry(markedAsSeened).State == EntityState.Detached)
+                {
+                    _dbContext.JournalFeedbacks.Update(markedAsSeened);
+                }
+
+                var writeCount = await SaveChangesAsync(cancellationToken);
+                if (writeCount > 0)
+                {
+                    _logger.LogInformation("Successfully persisted JournalFeedback with Id: {Id}, SeenByUser: {SeenByUser} at {Time}", markedAsSeened.Id, markedAsSeened.SeenByUser, now);
+                    return true;
+                }
+
+                _logger.LogWarning("No changes persisted for JournalFeedback with Id: {Id}, SeenByUser {SeenByUser} at {Time}", markedAsSeened.Id, markedAsSeened.SeenByUser, now);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while saving JournalFeedback with Id: {Id} which was mamrked as seened at {Time}", markedAsSeened.Id, now);
                 throw;
             }
         }

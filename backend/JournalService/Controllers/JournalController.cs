@@ -119,7 +119,7 @@ namespace JournalService.Controllers
 
         // checking before insert
         //IsJournalEntryExistsByIdAsync
-        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("is-exists/{journalId:guid}")]
         [SwaggerOperation(Summary = "Before inserting a journal feedback, checks if a journal-entry exists by journal ID",
             Description = "Returns a true if a journal-entry already exists by journal ID.")]
@@ -196,7 +196,7 @@ namespace JournalService.Controllers
         }
 
         //UpdateJournalEntryAsync
-        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("update/{id:guid}")]
         [SwaggerOperation(Summary = "Update an existing journal-entry", Description = "Updates a journal-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry updated")]
@@ -236,7 +236,7 @@ namespace JournalService.Controllers
 
         //DeleteAsync
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
-        [HttpPut("soft-delete/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
+        [HttpPatch("soft-delete/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
         [SwaggerOperation(Summary = "Soft deleting an existing user journal-entry", Description = "Soft Deleting an existing journal-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry soft deleted")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
@@ -273,9 +273,9 @@ namespace JournalService.Controllers
 
         //RestoreAsync
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
-        [HttpPut("restore/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
+        [HttpPatch("restore/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
         [SwaggerOperation(Summary = "Restoring an existing user journal-entry", Description = "Restoring an existing user journal-entry by ID.")]
-        [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry soft deleted")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry restored")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Journal-entry with Id not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]

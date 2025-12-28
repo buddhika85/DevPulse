@@ -10,7 +10,8 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
     public class JournalCosmosEventService
     {
         private readonly CosmosClient _client;
-        private readonly Container _container;
+        private readonly Container _journalContainer;
+        private readonly Container _journalFeedbackContainer;
         private readonly ILogger<JournalCosmosEventService> _logger;
 
         public JournalCosmosEventService(IConfiguration config, ILogger<JournalCosmosEventService> logger)
@@ -19,9 +20,13 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                 config["CosmosDb:AccountEndpoint"],
                 config["CosmosDb:AccountKey"]
             );
-            _container = _client.GetContainer(
+            _journalContainer = _client.GetContainer(
                 config["CosmosDb:DatabaseName"],
-                config["CosmosDb:ContainerName"]
+                config["CosmosDb:JournalContainerName"]
+            );
+            _journalFeedbackContainer = _client.GetContainer(
+                config["CosmosDb:DatabaseName"],
+                config["CosmosDb:JournalFeedbackContainerName"]
             );
             _logger = logger;
         }
@@ -44,7 +49,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
                
-                await _container.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
+                await _journalContainer.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
                 _logger.LogInformation("JournalCreated event logged to Cosmos DB for UserId={UserId}, JournalId={JournalId}, Title={Title}", 
                     journalEntry.UserId, journalEntry.Id, journalEntry.Title);
             }
@@ -81,7 +86,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalEntryBefore.UserId.ToString()));
+                await _journalContainer.CreateItemAsync(evt, new PartitionKey(journalEntryBefore.UserId.ToString()));
                 _logger.LogInformation("JournalUpdated event logged to Cosmos DB for UserId={UserId}, JournalId={JournalId}, Title={Title}",
                     journalEntryBefore.UserId, journalEntryBefore.Id, journalEntryBefore.Title);
             }
@@ -117,7 +122,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalEntryWithFeedback.UserId.ToString()));
+                await _journalContainer.CreateItemAsync(evt, new PartitionKey(journalEntryWithFeedback.UserId.ToString()));
                 _logger.LogInformation("JournalFeedbackProvided event logged to Cosmos DB for UserId={UserId}, JournalId={JournalId}, Title={Title}",
                     journalEntryWithFeedback.UserId, journalEntryWithFeedback.Id, journalEntryWithFeedback.Title);
             }
@@ -152,7 +157,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
+                await _journalContainer.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
                 _logger.LogInformation("JournalRestored event logged to Cosmos DB for UserId={UserId}, JournalId={JournalId}, Title={Title}",
                     journalEntry.UserId, journalEntry.Id, journalEntry.Title);
             }
@@ -187,7 +192,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
+                await _journalContainer.CreateItemAsync(evt, new PartitionKey(journalEntry.UserId.ToString()));
                 _logger.LogInformation("JournalSoftDeleted event logged to Cosmos DB for UserId={UserId}, JournalId={JournalId}, Title={Title}",
                     journalEntry.UserId, journalEntry.Id, journalEntry.Title);
             }
@@ -217,14 +222,14 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     id = Guid.NewGuid().ToString(), // required by Cosmos DB
                     eventType = "JournalFeedbackCreated",
                     journalFeedbacklId = journalFeedback.Id,
-                    journalId = journalFeedback.JournalEntryId,
+                    journalEntryId = journalFeedback.JournalEntryId,
                     feedbackManagerId = journalFeedback.FeedbackManagerId,
                     comment = journalFeedback.Comment,                    
                     journalFeedbackCreatedAt = journalFeedback.CreatedAt,
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalFeedback.JournalEntryId.ToString()));
+                await _journalFeedbackContainer.CreateItemAsync(evt, new PartitionKey(journalFeedback.FeedbackManagerId.ToString()));
                 _logger.LogInformation("JournalFeedbackCreated event logged to Cosmos DB for JournalEntryId={JournalEntryId}, by manager ID={FeedbackManagerId} with ID={JournalFeedbackId}, at={Time}",
                     journalFeedback.JournalEntryId, journalFeedback.FeedbackManagerId, journalFeedback.Id, DateTime.UtcNow);
             }
@@ -252,7 +257,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     id = Guid.NewGuid().ToString(), // required by Cosmos DB
                     eventType = "JournalFeedbackSeen",
                     journalFeedbacklId = journalFeedback.Id,
-                    journalId = journalFeedback.JournalEntryId,
+                    journalEntryId = journalFeedback.JournalEntryId,
                     feedbackManagerId = journalFeedback.FeedbackManagerId,
                     comment = journalFeedback.Comment,
                     seenByUser = journalFeedback.SeenByUser,
@@ -260,7 +265,7 @@ namespace JournalService.Infrastructure.Persistence.CosmosEvents
                     cosmosLoggedAt = DateTime.UtcNow
                 };
 
-                await _container.CreateItemAsync(evt, new PartitionKey(journalFeedback.JournalEntryId.ToString()));
+                await _journalFeedbackContainer.CreateItemAsync(evt, new PartitionKey(journalFeedback.FeedbackManagerId.ToString()));
                 _logger.LogInformation("JournalFeedbackSeen event logged to Cosmos DB for JournalEntryId={JournalEntryId}, by manager ID={FeedbackManagerId} with ID={JournalFeedbackId}, at={Time}",
                     journalFeedback.JournalEntryId, journalFeedback.FeedbackManagerId, journalFeedback.Id, DateTime.UtcNow);
             }

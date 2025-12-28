@@ -13,5 +13,7 @@ namespace JournalService.Repositories
         Task<bool> IsFeedbackGiven(Guid journalId, CancellationToken cancellationToken);
 
         Task<IReadOnlyList<JournalFeedback>> GetJournalFeedbacksByManagerIdAsync(Guid managerId, CancellationToken cancellationToken, bool includeJounral = false);
+        Task<bool> IsJounrnalFeedbackExistsAsync(Guid jounralFeedbackId, CancellationToken cancellationToken);
+        Task<bool> MarkAsSeenByAsync(JournalFeedback entity, CancellationToken cancellationToken);
     }
 }

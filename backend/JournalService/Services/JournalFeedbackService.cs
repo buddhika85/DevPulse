@@ -147,5 +147,39 @@ namespace JournalService.Services
                 throw;
             }
         }
+
+        public async Task<bool> JournalFeedbackSeenByUserAsync(JournalFeedbackSeenByUserCommand command, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Attempting to mark a journal-feedback seened by user for jounral-feedback Id:{JournalId} at {Time}",
+                command.JounralFeedbackId, now);
+
+            try
+            {
+                var entity = await _journalFeedbackRepository.GetByIdAsync(command.JounralFeedbackId, cancellationToken);
+                if (entity == null)
+                {
+                    _logger.LogError("Marking as seended for journal-feedback aborted !! as Journal feedback with Id: {JounralFeedbackId} record does not exist at {Time}", 
+                        command.JounralFeedbackId, now);
+                    return false;
+                }                
+
+                entity.MarkAsSeen();
+                var result = await _journalFeedbackRepository.MarkAsSeenByAsync(entity, cancellationToken);
+                if (result)
+                {
+                    _logger.LogInformation("Journal Feedback with Id:{JounralFeedbackId} marked as seened by user at {Time}", command.JounralFeedbackId, now);
+                    return true;
+                }
+
+                _logger.LogError("Error - Journal Feedback with Id:{JounralFeedbackId} could not be marked as seened by user at {Time}", command.JounralFeedbackId, now);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while marking a journal feedback with Id:{JounralFeedbackId} as seened by user at {Time}", command.JounralFeedbackId, now);
+                throw;
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using JournalService.Application.Commands.JournalFeedback;
+﻿using JournalService.Application.Commands.Journal;
+using JournalService.Application.Commands.JournalFeedback;
 using JournalService.Application.Dtos;
 using JournalService.Application.Queries.JournalFeedback;
 using MediatR;
@@ -8,6 +9,7 @@ using SharedLib.Application.Exceptions;
 using SharedLib.DTOs.Journal;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace JournalService.Controllers
 {
@@ -123,8 +125,8 @@ namespace JournalService.Controllers
         //Task<bool> IsFeedbackGiven(IsFeedbackGivenQuery query, CancellationToken cancellationToken);
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("is-feedback-already-given/{journalId:guid}")]
-        [SwaggerOperation(Summary = "Before inserting a journal feedback, checks if a journal-entry exists by journal ID",
-            Description = "Returns a true if a journal-entry already exists by journal ID.")]
+        [SwaggerOperation(Summary = "Before inserting a journal feedback, checks if a journal-feedback already exists for a journal ID",
+            Description = "Returns a true if a journal-feedback already exists for this journal ID.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(bool))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
@@ -173,7 +175,7 @@ namespace JournalService.Controllers
             _logger.LogInformation("Adding a new journal-feedback by manager Id:{ManagerId} for journalId:{JournalId} at {Time}", dto.FeedbackManagerId, dto.JounralEntryId, now);
             try
             {
-                var command = new AddJournalFeedbackCommand(dto.FeedbackManagerId, dto.JounralEntryId, dto.Comment);
+                var command = new AddJournalFeedbackCommand(dto.JounralEntryId, dto.FeedbackManagerId, dto.Comment);
                 _logger.LogDebug("AddJournalFeedbackCommand payload: {@Command}", command);
 
                 var id = await _mediator.Send(command, cancellationToken);
@@ -196,6 +198,44 @@ namespace JournalService.Controllers
                 _logger.LogError(ex, "Error while creating a new journal-feedback with manager Id:{ManagerId} for journalId:{JournalId} at {Time}", 
                             dto.FeedbackManagerId, dto.JounralEntryId, now);
                 return InternalError($"An error occurred while creating new journal-feedback manager Id:{dto.FeedbackManagerId} for journalId:{dto.JounralEntryId} at {now}");
+            }
+        }
+
+        [HttpPatch("mark-as-seened/{id:guid}")]
+        [SwaggerOperation(Summary = "Mark an existing journal feedback as seened by user.", 
+            Description = "Mark an existing journal feedback with a know Id as seened by user. Before calling this check for existence of feedback by feedback Id.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-feedback marked as seened by user")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Journal-feedback not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> MarkAsSeened([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Attempting to mark a journal-feedback seened by user for jounral-feedback Id:{JournalId} at {Time}",
+                id, now);
+
+            try
+            {
+                var command = new JournalFeedbackSeenByUserCommand(id);
+                var result = await _mediator.Send(command, cancellationToken);
+                if (result)
+                {
+                    _logger.LogInformation("Successfully updated an existing Journal-feedback with id {Id} as seended by user at {Time}", id, DateTime.UtcNow);
+                    return NoContent();
+                }
+
+                _logger.LogError("Journal-feedback not found for update: {Id}", id);
+                return NotFoundProblem($"Journal-feedback not found for update: {id}");
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogWarning(rex, "Validation failed while marking an existing Journal-feedback with id {Id} as seended by user at {Time}", id, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error marking Journal-feedback with ID: {Id} as seended by user at {Time}", id, DateTime.UtcNow);
+                return InternalError($"An error occurred while marking the Journal-feedback with Id: {id} as seended by user at {now}.");
             }
         }
     }
