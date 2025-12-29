@@ -60,7 +60,7 @@ namespace JournalService.Services
             }
         }
 
-        public async Task<JournalEntryDto> GetJournalEntryByIdAsync(GetJournalEntryByIdQuery query, CancellationToken cancellationToken)
+        public async Task<JournalEntryDto?> GetJournalEntryByIdAsync(GetJournalEntryByIdQuery query, CancellationToken cancellationToken)
         {
             try
             {

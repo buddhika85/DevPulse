@@ -88,6 +88,17 @@ namespace OrchestratorService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetDashboard(string userId, CancellationToken cancellationToken)
         {
+            /*To Do:
+             
+             Aggregates based on user role :
+                - tasks
+                - journals
+                - moods
+                - feedback
+                - links
+
+             */
+
             _logger.LogInformation("Ateempting to fetch dashboard information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
             try
             {

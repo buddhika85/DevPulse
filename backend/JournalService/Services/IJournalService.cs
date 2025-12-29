@@ -8,7 +8,7 @@ namespace JournalService.Services
     {
         Task<IReadOnlyList<JournalEntryDto>> GetAllJournalEntriesAsync(CancellationToken cancellationToken);
 
-        Task<JournalEntryDto> GetJournalEntryByIdAsync(GetJournalEntryByIdQuery query, CancellationToken cancellationToken);
+        Task<JournalEntryDto?> GetJournalEntryByIdAsync(GetJournalEntryByIdQuery query, CancellationToken cancellationToken);
 
         Task<bool> IsJournalEntryExistsByIdAsync(IsJournalEntryExistsByIdQuery query, CancellationToken cancellationToken);
 
