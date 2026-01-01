@@ -14,6 +14,7 @@ namespace OrchestratorService.Extensions
         public static IServiceCollection InjectServices(this IServiceCollection services)
         {
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IJournalService, JournalService>();
             return services;
         }
     }

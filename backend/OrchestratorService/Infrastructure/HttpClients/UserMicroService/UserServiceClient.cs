@@ -2,7 +2,7 @@
 using System.Text.Json;
 
 
-namespace OrchestratorService.Infrastructure.HttpClients
+namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
 {
     public class UserServiceClient : IUserServiceClient
     {

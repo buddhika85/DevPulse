@@ -1,7 +1,7 @@
 ﻿using SharedLib.DTOs.Task;
 
 
-namespace OrchestratorService.Infrastructure.HttpClients
+namespace OrchestratorService.Infrastructure.HttpClients.TaskMicroService
 {
     public interface ITaskServiceClient
     {

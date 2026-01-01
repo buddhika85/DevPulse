@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using OrchestratorService.Application.DTOs;
-using OrchestratorService.Infrastructure.HttpClients;
+using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
+using OrchestratorService.Infrastructure.HttpClients.UserMicroService;
 using SharedLib.DTOs.User;
 
 namespace OrchestratorService.Application.Services

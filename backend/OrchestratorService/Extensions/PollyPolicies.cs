@@ -1,5 +1,9 @@
 ﻿using OrchestratorService.Configurations;
 using OrchestratorService.Infrastructure.HttpClients;
+using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
+using OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService;
+using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
+using OrchestratorService.Infrastructure.HttpClients.UserMicroService;
 using Polly;
 
 
@@ -17,8 +21,29 @@ namespace OrchestratorService.Extensions
 
             AddUserMicroServicePolicy(services, microServiceUrls, pollyConfig);
             AddTaskMicroServicePolicy(services, microServiceUrls, pollyConfig);
-
+            AddJournalMicroServicePolicy(services, microServiceUrls, pollyConfig);
+            AddTaskJounralLinklMicroServicePolicy(services, microServiceUrls, pollyConfig);
             return services;
+        }
+
+        private static void AddTaskJounralLinklMicroServicePolicy(IServiceCollection services, MicroServicesUrlSettings microServiceUrls, PollyConfig pollyConfig)
+        {
+            services.AddHttpClient<ITaskJournalLinkService, TaskJournalLinkService>(client =>
+            {
+                client.BaseAddress = new Uri(microServiceUrls.TaskJournalLinkAPI);
+            })
+            .AddHttpMessageHandler<JwtForwardingHandler>()
+            .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(pollyConfig.RetryCount, _ => TimeSpan.FromMilliseconds(pollyConfig.SleepDurationMilliSeconds)));
+        }
+
+        private static void AddJournalMicroServicePolicy(IServiceCollection services, MicroServicesUrlSettings microServiceUrls, PollyConfig pollyConfig)
+        {
+            services.AddHttpClient<IJournalServiceClient, JournalServiceClient>(client =>
+            {
+                client.BaseAddress = new Uri(microServiceUrls.JounralAPI);
+            })
+            .AddHttpMessageHandler<JwtForwardingHandler>()
+            .AddTransientHttpErrorPolicy(p => p.WaitAndRetryAsync(pollyConfig.RetryCount, _ => TimeSpan.FromMilliseconds(pollyConfig.SleepDurationMilliSeconds)));
         }
 
         private static void AddTaskMicroServicePolicy(IServiceCollection services, MicroServicesUrlSettings microServiceUrls, PollyConfig pollyConfig)

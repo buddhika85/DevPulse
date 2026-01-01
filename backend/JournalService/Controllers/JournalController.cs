@@ -2,11 +2,9 @@
 using JournalService.Application.Dtos;
 using JournalService.Application.Queries.Journal;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Application.Exceptions;
-using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Journal;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;

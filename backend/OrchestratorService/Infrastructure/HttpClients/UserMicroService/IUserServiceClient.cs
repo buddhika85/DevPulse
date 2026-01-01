@@ -1,7 +1,7 @@
 ﻿using SharedLib.DTOs.User;
 
 
-namespace OrchestratorService.Infrastructure.HttpClients
+namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
 {
     public interface IUserServiceClient
     {

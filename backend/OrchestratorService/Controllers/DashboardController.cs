@@ -99,7 +99,7 @@ namespace OrchestratorService.Controllers
 
              */
 
-            _logger.LogInformation("Ateempting to fetch dashboard information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
+            _logger.LogInformation("Attempting to fetch dashboard information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
             try
             {
                 var result = await _dashboardService.GetUserDashboardAsync(userId, cancellationToken);
