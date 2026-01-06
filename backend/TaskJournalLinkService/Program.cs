@@ -1,25 +1,99 @@
+using Microsoft.AspNetCore.Mvc;
+using Serilog;
+using TaskJournalLinkService.Extensions;
+using SharedLib.Configuration.Cors;
+using SharedLib.Configuration.jwt;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
+
+
+// Register services
+builder.Services.AddControllers(options =>                                  // Enables controller routing
+{
+    options.Filters.Add(new ProducesAttribute("application/json"));         // All controllers return media type JSON explicitly - Ensures consistent content negotiation and Swagger documentation
+})
+.AddJsonOptions(options =>
+{
+    // Register custom converters for System.Text.Json
+    // This ensures UserRole is serialized/deserialized correctly
+    options.JsonSerializerOptions.Converters.Add(
+        new SharedLib.Domain.ValueObjects.Converters.UserRoleJsonConverter()
+    );
+});
+builder.Services.AddEndpointsApiExplorer();                                 // Required for Swagger
+builder.Services.AddSwaggerGen(options =>                                   // Swagger generation
+{
+    options.EnableAnnotations();                                            // Enables [SwaggerOperation] and related attributes
+    options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "DevPulse TaskJournalLink API",
+        Description = "API for managing developer TaskJournalLinking in DevPulse."
+    });
+});
+
+
+builder.Services.BindJwtSettings(builder.Configuration);                            // Binds DevPulseJwtSettings from configuration using the Options pattern.
+builder.Services.InjectDevPulseJwtValidationService(builder.Configuration);         // inject DevPulse user API issued JWT (not entra issued JWT)
+
+builder.Services.InjectRepositories(builder.Configuration);                 // inject Repositories
+builder.Services.InjectServices(builder.Configuration);                     // inject Services
+
+
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+
+
+
+// Configure middleware
+app.UseExceptionHandler("/error");                                          // If an Unhandled Exception Occurs - Anywhere in the pipeline: controller, service, handler, etc. ASP.NET Core UseExceptionHandler catches it,
+                                                                            // - and redirects to /error endpint (inside ErrorController)
+app.UseStatusCodePages();                                                   // if 404s and other status codes handled - has no body, it generates a simple text or HTML message - Status Code: 404, Content not found
+
+
+
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger();                                                       // Serves Swagger JSON
+    app.UseSwaggerUI(x =>                                                   // Serves Swagger UI
+    {
+        x.ConfigObject.AdditionalItems["showExtensions"] = true;
+        x.SwaggerEndpoint("/swagger/v1/swagger.json", "DevPulse TaskJournalLink API v1");
+    });
 }
 
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();                                                  // Enforces HTTPS
 
+app.UseRouting();
+
+app.UseConfiguredCors();                                                    // using CORS configurations with CORS middleware
+
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapControllers();                                                       // Maps controller endpoints
 
-app.Run();
+
+// starting application
+try
+{
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "TaskJournalLink terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+

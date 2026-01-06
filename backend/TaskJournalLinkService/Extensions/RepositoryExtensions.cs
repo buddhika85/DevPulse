@@ -1,4 +1,6 @@
-﻿namespace TaskJournalLinkService.Extensions
+﻿using TaskJournalLinkService.Repositories;
+
+namespace TaskJournalLinkService.Extensions
 {
     public static class RepositoryExtensions
     {
@@ -11,7 +13,7 @@
         /// <returns>The updated service collection.</returns>
         public static IServiceCollection InjectRepositories(this IServiceCollection services, IConfiguration configuration)
         {
-            //services.AddScoped<ITaskRepository, TaskRepository>();    
+            services.AddScoped<ITaskJournalLinkRepository, TaskJournalLinkRepository>();    
 
             return services;
         }

@@ -76,7 +76,7 @@ namespace SharedLib.Configuration.jwt
         /// <returns>The updated service collection</returns>
         public static IServiceCollection BindJwtSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            // ✅ Bind the "EntraExternalIdSettings" section to a strongly-typed class
+            // ✅ Bind the "DevPulseJwtSettings" section to a strongly-typed class
             services.Configure<DevPulseJwtSettings>(
                 configuration.GetSection("DevPulseJwtSettings"));
 

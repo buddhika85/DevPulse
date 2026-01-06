@@ -2,7 +2,6 @@
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService;
-using SharedLib.DTOs.TaskJournalLink;
 
 namespace OrchestratorService.Application.Services
 {
