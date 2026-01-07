@@ -1,0 +1,76 @@
+# Trigger the pipeline when code is pushed to the 'main' branch
+trigger:
+  branches:
+    include:
+      - main
+
+# Define reusable variables for ACR, ACA, and deployment settings
+variables:
+  acrName: devpulseacr
+  acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io
+
+  imageName: journal-api
+  resourceGroup: DevPulseRG
+  containerAppName: journal-api
+  location: australiaeast
+
+  # IMPORTANT:
+  # Keep tag simple here. Timestamp will be generated inside the script.
+  tag: $(Build.BuildId)
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - task: AzureCLI@2
+    displayName: 'Build Docker Image and Deploy to ACA'
+    inputs:
+      azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'
+      scriptType: bash
+      scriptLocation: inlineScript
+      failOnStderr: true
+      inlineScript: |
+        echo "Generating timestamp-based tag..."
+
+        # Generate timestamp safely inside Bash
+        timestamp=$(date +'%Y%m%d-%H%M%S')
+
+        # Combine timestamp + BuildId
+        fulltag="${timestamp}-$(tag)"
+
+        echo "Using image tag: $fulltag"
+        echo "Full image path: $(acrLoginServer)/$(imageName):$fulltag"
+
+        echo "Building and pushing image to ACR..."
+
+        az acr build \
+          --registry $(acrName) \
+          --image $(imageName):$fulltag \
+          --file backend/JournalService/Dockerfile \
+          .
+
+        echo "Deploying to Azure Container Apps..."
+
+        # Force ACA to pull the new image by using a unique revision suffix
+        az containerapp update \
+          --name $(containerAppName) \
+          --resource-group $(resourceGroup) \
+          --image $(acrLoginServer)/$(imageName):$fulltag \
+          --revision-suffix $fulltag
+
+
+  # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  # This ensures the service is responsive immediately after deployment.
+  - script: |
+      echo "Warming up JournalService..."
+      for i in {1..10}; do
+        response=$(curl -X HEAD -s -o /dev/null -w "%{http_code}" https://journal-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
+        echo "Attempt $i: HTTP $response"
+        if [ "$response" -eq 200 ]; then
+          echo "Success - Journal Service is warm."
+          break
+        fi
+        sleep 5
+      done
+    displayName: 'Warm up JournalService after deploy'
+    condition: succeeded()  # Only run this step if the previous deployment succeeded
