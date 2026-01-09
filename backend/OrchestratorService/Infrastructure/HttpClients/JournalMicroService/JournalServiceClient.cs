@@ -36,12 +36,17 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
                     throw new ApplicationException($"Journal API failed with status {response.StatusCode}");
                 }
 
-                var journalId = await response.Content.ReadFromJsonAsync<Guid?>(cancellationToken: cancellationToken);
-
-                if (journalId is null)
+                var journalIdStr = await response.Content.ReadAsStringAsync(cancellationToken);
+                if (journalIdStr is null)
                 {
                     _logger.LogWarning("Journal API returned null journalId for user ID: {UserId}", addJournalEntryDto.UserId);
                     throw new ApplicationException("Journal API returned null journalId");
+                }
+
+                if (!Guid.TryParse(journalIdStr, out Guid journalId))
+                {
+                    _logger.LogWarning("Journal API returned invalid journalId for user ID: {UserId}", addJournalEntryDto.UserId);
+                    throw new ApplicationException("Journal API returned invalid journalId");
                 }
 
                 _logger.LogInformation("Successfully created journal entry for user ID: {UserId}", addJournalEntryDto.UserId);

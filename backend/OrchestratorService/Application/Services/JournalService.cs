@@ -63,7 +63,8 @@ namespace OrchestratorService.Application.Services
                 // 2. Create Task Links (Polly handles transient retries)
                 var linksCreated = await _taskJournalLinkService.LinkNewJournalWithTasks(
                     journalId.Value,
-                    createJournalDto.LinkedTaskIds);
+                    createJournalDto.LinkedTaskIds,
+                    cancellationToken);
 
                 if (linksCreated is null || linksCreated.Length != createJournalDto.LinkedTaskIds.Length)
                 {
