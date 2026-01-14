@@ -13,7 +13,7 @@ namespace TaskJournalLinkService.Mapper
 
         private static TaskJournalLinkDto ToDto(TaskJournalLinkDocument entity)
         {
-            return new TaskJournalLinkDto { Id =  entity.Id, JounrnalId = entity.JournalId, TaskId = entity.TaskId, CreatedAt = entity.CreatedAt };
+            return new TaskJournalLinkDto { Id =  entity.Id, JounrnalId = Guid.Parse(entity.JournalId), TaskId = entity.TaskId, CreatedAt = entity.CreatedAt };
         }
     }
 }

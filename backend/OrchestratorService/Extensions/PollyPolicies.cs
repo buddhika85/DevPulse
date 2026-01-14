@@ -28,7 +28,7 @@ namespace OrchestratorService.Extensions
 
         private static void AddTaskJounralLinklMicroServicePolicy(IServiceCollection services, MicroServicesUrlSettings microServiceUrls, PollyConfig pollyConfig)
         {
-            services.AddHttpClient<ITaskJournalLinkService, TaskJournalLinkService>(client =>
+            services.AddHttpClient<ITaskJournalLinkServiceClient, TaskJournalLinkServiceClient>(client =>
             {
                 client.BaseAddress = new Uri(microServiceUrls.TaskJournalLinkAPI);
             })

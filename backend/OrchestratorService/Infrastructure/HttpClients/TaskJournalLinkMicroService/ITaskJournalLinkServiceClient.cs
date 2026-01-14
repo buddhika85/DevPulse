@@ -2,7 +2,7 @@
 
 namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService
 {
-    public interface ITaskJournalLinkService
+    public interface ITaskJournalLinkServiceClient
     {
         Task<TaskJournalLinkDto[]> LinkNewJournalWithTasks(Guid jounralId, Guid[] linkedTaskIds, CancellationToken cancellationToken);
     }

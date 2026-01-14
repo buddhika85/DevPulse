@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using Azure;
+using Microsoft.Azure.Cosmos;
 using System.Text.Json;
 using TaskJournalLinkService.Domain.Models;
 
@@ -121,7 +122,10 @@ namespace TaskJournalLinkService.Repositories
                         journalId,
                         taskId);
 
-                    batch.CreateItem(new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId, now));
+                    var doc = new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), now);
+                    var json = JsonSerializer.Serialize(doc);
+                    _logger.LogDebug("Serialized document: {Json}", json);
+                    batch.CreateItem(doc);
                 }
 
                 // Execute the batch as a single atomic operation
@@ -139,6 +143,26 @@ namespace TaskJournalLinkService.Repositories
                         "Transactional batch failed for JournalId {JournalId}. StatusCode: {StatusCode}",
                         journalId,
                         batchResponse.StatusCode);
+
+                    _logger.LogError("Batch failed. Status={Status}, RU={RU}",
+                            batchResponse.StatusCode,
+                            batchResponse.RequestCharge);
+
+
+                    var diagnostics = batchResponse.Diagnostics.ToString();
+                    _logger.LogError("Cosmos diagnostics: {Diag}", diagnostics);
+
+
+
+                    for (int i = 0; i < batchResponse.Count; i++)
+                    {
+                        var op = batchResponse.GetOperationResultAtIndex<object>(i);
+
+                        _logger.LogError("Operation {Index}: Status={Status}",
+                            i,
+                            op.StatusCode);
+                    }
+
 
                     throw new ApplicationException($"Transactional batch failed: {batchResponse.StatusCode}");
                 }

@@ -4,14 +4,14 @@ using System.Text.Json;
 
 namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService
 {
-    public class TaskJournalLinkService : ITaskJournalLinkService
+    public class TaskJournalLinkServiceClient : ITaskJournalLinkServiceClient
     {
         private readonly HttpClient _httpClient;
-        private readonly ILogger<TaskJournalLinkService> _logger;
+        private readonly ILogger<TaskJournalLinkServiceClient> _logger;
 
         private const string TaskJournalLinksRoute = "api/taskJournalLinks/";
 
-        public TaskJournalLinkService(HttpClient httpClient, ILogger<TaskJournalLinkService> logger)
+        public TaskJournalLinkServiceClient(HttpClient httpClient, ILogger<TaskJournalLinkServiceClient> logger)
         {
             _httpClient = httpClient;
             _logger = logger;

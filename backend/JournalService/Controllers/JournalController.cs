@@ -177,7 +177,7 @@ namespace JournalService.Controllers
                     throw new Exception($"An error occurred while creating new journal-Entry user ID={dto.UserId}, Title:{dto.Title} Content:{dto.Content} at {now}");
                 }
 
-                return CreatedAtAction(nameof(GetById), new { id }, null);
+                return CreatedAtAction(nameof(GetById), new { id }, id);
             }
             catch (RequestValidationException rex)
             {

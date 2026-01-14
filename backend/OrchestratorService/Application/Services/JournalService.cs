@@ -8,12 +8,12 @@ namespace OrchestratorService.Application.Services
     public class JournalService : IJournalService
     {
         private readonly IJournalServiceClient _journalServiceClient;
-        private readonly ITaskJournalLinkService _taskJournalLinkService;
+        private readonly ITaskJournalLinkServiceClient _taskJournalLinkService;
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<JournalService> _logger;
         private const byte CachedTimeInMins = 5;                // Cache time in minutes
 
-        public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkService taskJournalLinkService, IMemoryCache inMemoryCache, ILogger<JournalService> logger)
+        public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, IMemoryCache inMemoryCache, ILogger<JournalService> logger)
         {
             _journalServiceClient = journalServiceClient;
             _taskJournalLinkService = taskJournalLinkService;

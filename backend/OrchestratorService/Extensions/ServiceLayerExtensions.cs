@@ -16,7 +16,6 @@ namespace OrchestratorService.Extensions
         {
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IJournalService, JournalService>();
-            services.AddScoped<ITaskJournalLinkService, TaskJournalLinkService>();
             return services;
         }
     }
