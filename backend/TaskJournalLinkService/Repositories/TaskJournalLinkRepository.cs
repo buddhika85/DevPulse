@@ -1,5 +1,4 @@
-﻿using Azure;
-using Microsoft.Azure.Cosmos;
+﻿using Microsoft.Azure.Cosmos;
 using System.Text.Json;
 using TaskJournalLinkService.Domain.Models;
 
@@ -111,6 +110,28 @@ namespace TaskJournalLinkService.Repositories
 
             try
             {
+                //#region test
+                //var docTest = new TaskJournalLinkDocument(Guid.NewGuid(), taskIdsToLink[0], journalId.ToString(), now);
+                //_logger.LogInformation("Single insert test doc: {Json}", Newtonsoft.Json.JsonConvert.SerializeObject(docTest));
+                //try
+                //{
+                //    var response = await _container.CreateItemAsync(
+                //        docTest,
+                //        new PartitionKey(journalId.ToString()),
+                //        cancellationToken: cancellationToken);
+                //    _logger.LogInformation("Single insert status: {Status}", response.StatusCode);
+                //}
+                //catch (CosmosException ex)
+                //{
+                //    _logger.LogError(ex, "Single insert failed. Status={Status}, SubStatus={SubStatus}, Message={Message}",
+                //        ex.StatusCode,
+                //        ex.SubStatusCode,
+                //        ex.Message);
+                //    throw;
+                //}
+                //#endregion
+
+
                 // Create a transactional batch for a single partition (journalId)
                 var batch = _container.CreateTransactionalBatch(new PartitionKey(journalId.ToString()));
 
