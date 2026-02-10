@@ -87,7 +87,8 @@ namespace TaskJournalLinkService.Controllers
 
                 _logger.LogInformation("Success - Linking Journal with Id: {JournalId} with TaskIds: {TaskIds} at {Time}",
                                 linkTasksToJournalDto.JournalId, string.Join(',', linkTasksToJournalDto.TaskIdsToLink), now);
-                return CreatedAtAction(nameof(GetLinksByJournalIdAsync), new { journalId = linkTasksToJournalDto.JournalId }, links);
+                //return CreatedAtAction(nameof(GetLinksByJournalIdAsync), new { journalId = linkTasksToJournalDto.JournalId }, links);
+                return Ok(links);
             }
             catch (Exception ex)
             {

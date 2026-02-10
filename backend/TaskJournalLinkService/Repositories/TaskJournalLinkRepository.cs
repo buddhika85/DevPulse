@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using Newtonsoft.Json;
 using System.Text.Json;
 using TaskJournalLinkService.Domain.Models;
 
@@ -144,7 +145,7 @@ namespace TaskJournalLinkService.Repositories
                         taskId);
 
                     var doc = new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), now);
-                    var json = JsonSerializer.Serialize(doc);
+                    var json = JsonConvert.SerializeObject(doc);
                     _logger.LogDebug("Serialized document: {Json}", json);
                     batch.CreateItem(doc);
                 }
@@ -215,7 +216,12 @@ namespace TaskJournalLinkService.Repositories
 
                     // Deserialize the returned document from the stream
                     using var stream = op.ResourceStream;
-                    var doc = await JsonSerializer.DeserializeAsync<TaskJournalLinkDocument>(stream, cancellationToken: cancellationToken);
+                    using var reader = new StreamReader(stream);
+                    using var jsonReader = new JsonTextReader(reader);
+                    var serializer = Newtonsoft.Json.JsonSerializer.Create();
+
+                    var doc = serializer.Deserialize<TaskJournalLinkDocument>(jsonReader);
+
 
                     if (doc != null)
                     {

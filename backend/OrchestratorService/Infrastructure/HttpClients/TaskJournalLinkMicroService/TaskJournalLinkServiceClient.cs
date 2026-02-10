@@ -9,7 +9,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
         private readonly HttpClient _httpClient;
         private readonly ILogger<TaskJournalLinkServiceClient> _logger;
 
-        private const string TaskJournalLinksRoute = "api/taskJournalLinks/";
+        private const string TaskJournalLinksRoute = "api/TaskJournalLinks";
 
         public TaskJournalLinkServiceClient(HttpClient httpClient, ILogger<TaskJournalLinkServiceClient> logger)
         {
