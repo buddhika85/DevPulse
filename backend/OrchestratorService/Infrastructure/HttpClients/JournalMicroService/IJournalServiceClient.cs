@@ -6,5 +6,6 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
     {
         Task<Guid?> AddJournalEntryAsync(AddJournalEntryDto addJournalEntryDto, CancellationToken cancellationToken);
         Task DeleteJournalEntryAsync(Guid? jounralId, CancellationToken cancellationToken);
+        Task<JournalEntryDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken);
     }
 }

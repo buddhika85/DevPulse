@@ -2,16 +2,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Application.Exceptions;
+using SharedLib.Application.Models;
 using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Task;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
 using TaskService.Application.Common.Enums;
-using SharedLib.Application.Exceptions;
-using SharedLib.Application.Models;
 using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TaskService.Controllers
 {
@@ -51,6 +52,7 @@ namespace TaskService.Controllers
                 return InternalError("An error occurred while retrieving tasks.");                           // RFC 7807 Error Format - from BaseApiController
             }
         }
+
 
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("by-user/{id:guid}")]
@@ -149,6 +151,26 @@ namespace TaskService.Controllers
             }
         }
 
+
+        [HttpPost("filterByIds")]
+        [SwaggerOperation(Summary = "Get all tasks by Ids", Description = "Returns all task items by Ids.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetAllByIds([FromBody] Guid[] taskIds, CancellationToken cancellationToken)
+        {
+            var taskIdsStr = $"[{string.Join(",", taskIds)}]";
+            try
+            {                
+                _logger.LogInformation("Fetching all tasks by TaskIds:{TaskIds} at {Time}",taskIdsStr,  DateTime.UtcNow);
+                var tasks = await _mediator.Send(new GetTasksByIdsQuery(taskIds, includeDeleted: false), cancellationToken);
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all tasks by TaskIds:{TaskIds} at {Time}", taskIdsStr, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving tasks by Ids: {taskIdsStr}.");                           // RFC 7807 Error Format - from BaseApiController
+            }
+        }
 
 
         //Controller

@@ -71,29 +71,12 @@ namespace OrchestratorService.Controllers
         public async Task<IActionResult> GetJounralWithTaskLinksById(Guid id, CancellationToken cancellationToken)
         {
             try
-            {
-                //// 1. Get journal
-                //var journal = await _journalServiceClient.GetJournalByIdAsync(id, cancellationToken);
-                //if (journal is null)
-                //    return NotFound();
-
-                //// 2. Get task links
-                //var links = await _taskJournalLinkService.GetTasksForJournalAsync(id, cancellationToken);
-
-                //// 3. Get task details
-                //var tasks = await _taskServiceClient.GetTasksByIdsAsync(
-                //    links.Select(l => l.TaskId).ToArray(),
-                //    cancellationToken);
-
-                //// 4. Combine into orchestrator DTO
-                //var result = new JournalWithTasksDto
-                //{
-                //    Journal = journal,
-                //    LinkedTasks = tasks
-                //};
-
-                //return Ok(result);
-                return Ok("TO DO");
+            {               
+                var journal = await _journalService.GetJournalByIdAsync(id, cancellationToken);
+                if (journal is null)
+                    return NotFound();
+                
+                return Ok(journal);
             }
             catch (ArgumentException ex)
             {
@@ -101,7 +84,7 @@ namespace OrchestratorService.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving journal {JournalId}", id);
+                _logger.LogError(ex, "Error retrieving journal with Id {JournalId} and tasks linked to it", id);
                 return InternalError(detail: ex.Message);
             }
         }

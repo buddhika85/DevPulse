@@ -1,5 +1,6 @@
 ﻿using SharedLib.DTOs.Journal;
 using SharedLib.DTOs.TaskJournalLink;
+using System.Net;
 using System.Text.Json;
 
 namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService
@@ -94,6 +95,50 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
                     "TaskJournalLink operation was canceled for journal {JournalId}",
                     journalId);
 
+                throw;
+            }
+        }
+
+        public async Task<TaskJournalLinkDto[]> GetLinksByJournalIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching task journal links by journal ID: {JournalId}", id);
+
+                var url = $"{TaskJournalLinksRoute}/{id}";
+                _logger.LogDebug("Calling GET {Url}", url);
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _logger.LogInformation("No Tasks linked to Journal Id: {JournalId}", id);
+                    return [];
+                }
+
+                response.EnsureSuccessStatusCode();     // throws exception if its not a success code
+
+                var links = await response.Content.ReadFromJsonAsync<TaskJournalLinkDto[]>(cancellationToken: cancellationToken);
+                if (links == null)
+                {
+                    _logger.LogInformation("No Tasks linked to Journal Id: {JournalId}", id);
+                    return [];
+                }
+                return links;
+
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching links by journal ID: {JournalId}", id);
+                throw new ApplicationException("Failed to fetch tasks from user API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for TaskJournalLinks response for journal Id {JournalId}", id);
+                throw new ApplicationException("Failed to deserialize TaskJournalLinks data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("TaskJournalLinks fetching operation was canceled for journal Id {JournalId}", id);
                 throw;
             }
         }

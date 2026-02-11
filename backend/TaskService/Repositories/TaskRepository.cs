@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using TaskService.Application.Common.Enums;
 using SharedLib.Application.Models;
+using TaskService.Application.Common.Enums;
 using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 using TaskService.Infrastructure.Common.Extensions;
@@ -155,6 +155,34 @@ namespace TaskService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for UserId={UserId} includeDeleted={IncludeDeleted} at {Time}", userId, includeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+
+        public async Task<IReadOnlyList<TaskItem>> GetTasksByIdsAsync(Guid[] taskIds, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var taskIdsStr = $"[{string.Join(",", taskIds)}]";
+            _logger.LogInformation("Attempting to retrieve all TaskItems for TaskIds={TaskIds} includeDeleted={IncludeDeleted} at {Time}", taskIdsStr, includeDeleted, now);
+            try
+            {
+                var query = _dbContext.Tasks
+                    .AsNoTracking()
+                    .Where(x => taskIds.Contains(x.Id));
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var entities = await query.OrderByDescending(t => t.CreatedAt).ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Successfully retrieved {Count} TaskItems for TaskIds={TaskIds} includeDeleted={IncludeDeleted} at {Time}", 
+                    entities.Count, taskIdsStr, includeDeleted, now);
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all TaskItems for TaskIds={TaskIds} includeDeleted={IncludeDeleted} at {Time}", taskIdsStr, includeDeleted, now);
                 throw;
             }
         }
@@ -317,6 +345,6 @@ namespace TaskService.Repositories
             // raise updated event if its a true update with a change           
             if (existing.Title != incoming.Title || existing.Description != incoming.Description)
                 existing.Update(incoming.Title, incoming.Description, incoming.TaskStatus, incoming.TaskPriority, incoming.DueDate);
-        }        
+        }
     }
 }

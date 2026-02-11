@@ -75,6 +75,26 @@ namespace TaskService.Services
             }
         }
 
+
+        public async Task<IReadOnlyList<TaskItemDto>> GetTasksByIdsAsync(GetTasksByIdsQuery query, CancellationToken cancellationToken)
+        {
+            var taskIds = $"[{string.Join(",", query.taskIds)}]";
+            try
+            {
+                _logger.LogInformation("Fetching tasks by task IDs: {TaskIds} IsDeleted {IncludeDeleted}", taskIds, query.includeDeleted);
+                var entities = await _taskRepository.GetTasksByIdsAsync(query.taskIds, query.includeDeleted, cancellationToken);
+                var dtos = TaskMapper.ToDtosList(entities);
+                _logger.LogInformation("Retrieved {Count} tasks for task IDs: {TaskIds}.", dtos.Count(), taskIds);
+                return dtos.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching tasks task IDs: {TaskIds}", taskIds);
+                return [];
+            }
+        }
+
+
         public async Task<Guid?> CreateTaskAsync(CreateTaskCommand command, CancellationToken cancellationToken)
         {
             try
@@ -230,8 +250,6 @@ namespace TaskService.Services
             }
             return taskPriority;
         }
-
-     
 
         #endregion Helpers
     }

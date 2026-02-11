@@ -43,7 +43,7 @@ namespace TaskJournalLinkService.Repositories
             {
                 // Build the query
                 var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.JournalId = @journalId")
+                    "SELECT * FROM c WHERE c.journalId = @journalId")
                     .WithParameter("@journalId", journalId.ToString());
 
                 _logger.LogDebug(
@@ -72,7 +72,7 @@ namespace TaskJournalLinkService.Repositories
                     results.Count,
                     journalId);
 
-                return results.ToArray();
+                return [.. results];
             }
             catch (Exception ex)
             {
@@ -85,7 +85,7 @@ namespace TaskJournalLinkService.Repositories
             }
         }
 
-
+        #region CreateTaskJournalLinks
 
         /// <summary>
         /// Links journals with tasks as a single transaction - 
@@ -111,82 +111,20 @@ namespace TaskJournalLinkService.Repositories
 
             try
             {
-                //#region test
-                //var docTest = new TaskJournalLinkDocument(Guid.NewGuid(), taskIdsToLink[0], journalId.ToString(), now);
-                //_logger.LogInformation("Single insert test doc: {Json}", Newtonsoft.Json.JsonConvert.SerializeObject(docTest));
-                //try
-                //{
-                //    var response = await _container.CreateItemAsync(
-                //        docTest,
-                //        new PartitionKey(journalId.ToString()),
-                //        cancellationToken: cancellationToken);
-                //    _logger.LogInformation("Single insert status: {Status}", response.StatusCode);
-                //}
-                //catch (CosmosException ex)
-                //{
-                //    _logger.LogError(ex, "Single insert failed. Status={Status}, SubStatus={SubStatus}, Message={Message}",
-                //        ex.StatusCode,
-                //        ex.SubStatusCode,
-                //        ex.Message);
-                //    throw;
-                //}
-                //#endregion
-
-
-                // Create a transactional batch for a single partition (journalId)
-                var batch = _container.CreateTransactionalBatch(new PartitionKey(journalId.ToString()));
-
-                // Add a CreateItem operation for each task link
-                foreach (var taskId in taskIdsToLink)
-                {
-                    _logger.LogDebug(
-                        "Adding CreateItem operation to batch for JournalId {JournalId} and TaskId {TaskId}",
-                        journalId,
-                        taskId);
-
-                    var doc = new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), now);
-                    var json = JsonConvert.SerializeObject(doc);
-                    _logger.LogDebug("Serialized document: {Json}", json);
-                    batch.CreateItem(doc);
-                }
+                // Create Batch
+                TransactionalBatch batch = CreateCosmosTaskJournalLinksBatch(journalId, taskIdsToLink, now);
 
                 // Execute the batch as a single atomic operation
                 _logger.LogInformation(
                     "Executing transactional batch for JournalId {JournalId} with {TaskCount} operations",
                     journalId,
                     taskIdsToLink.Length);
-
                 var batchResponse = await batch.ExecuteAsync(cancellationToken);
 
                 // If the batch fails, none of the operations were committed
                 if (!batchResponse.IsSuccessStatusCode)
                 {
-                    _logger.LogError(
-                        "Transactional batch failed for JournalId {JournalId}. StatusCode: {StatusCode}",
-                        journalId,
-                        batchResponse.StatusCode);
-
-                    _logger.LogError("Batch failed. Status={Status}, RU={RU}",
-                            batchResponse.StatusCode,
-                            batchResponse.RequestCharge);
-
-
-                    var diagnostics = batchResponse.Diagnostics.ToString();
-                    _logger.LogError("Cosmos diagnostics: {Diag}", diagnostics);
-
-
-
-                    for (int i = 0; i < batchResponse.Count; i++)
-                    {
-                        var op = batchResponse.GetOperationResultAtIndex<object>(i);
-
-                        _logger.LogError("Operation {Index}: Status={Status}",
-                            i,
-                            op.StatusCode);
-                    }
-
-
-                    throw new ApplicationException($"Transactional batch failed: {batchResponse.StatusCode}");
+                    HandleCosmosBatchFailure(journalId, batchResponse);
                 }
 
                 // Prepare to collect the created documents
@@ -195,59 +133,15 @@ namespace TaskJournalLinkService.Repositories
                     journalId,
                     batchResponse.Count);
 
-                var results = new List<TaskJournalLinkDocument>();
+                // collect 
+                List<TaskJournalLinkDocument> results = DeserializeCosmosBatchResponse(journalId, batchResponse);
 
-                // Process each operation result in the batch
-                for (int i = 0; i < batchResponse.Count; i++)
-                {
-                    var op = batchResponse[i];
-
-                    // Check if the individual operation succeeded
-                    if (!op.IsSuccessStatusCode)
-                    {
-                        _logger.LogError(
-                            "Batch operation {Index} failed for JournalId {JournalId}. StatusCode: {StatusCode}",
-                            i,
-                            journalId,
-                            op.StatusCode);
-
-                        throw new Exception($"Operation {i} failed: {op.StatusCode}");
-                    }
-
-                    // Deserialize the returned document from the stream
-                    using var stream = op.ResourceStream;
-                    using var reader = new StreamReader(stream);
-                    using var jsonReader = new JsonTextReader(reader);
-                    var serializer = Newtonsoft.Json.JsonSerializer.Create();
-
-                    var doc = serializer.Deserialize<TaskJournalLinkDocument>(jsonReader);
-
-
-                    if (doc != null)
-                    {
-                        _logger.LogDebug(
-                            "Deserialized TaskJournalLinkDocument for JournalId {JournalId}, TaskId {TaskId}",
-                            doc.JournalId,
-                            doc.TaskId);
-
-                        results.Add(doc);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "Operation {Index} returned null document for JournalId {JournalId}",
-                            i,
-                            journalId);
-                    }
-                }
-
-                
                 _logger.LogInformation(
                     "Successfully created {Count} TaskJournalLink documents for JournalId {JournalId}",
                     results.Count,
                     journalId);
 
-                return results.ToArray();
+                return [.. results];
             }
             catch (Exception ex)
             {
@@ -261,5 +155,131 @@ namespace TaskJournalLinkService.Repositories
                 throw;
             }
         }
+
+        /// <summary>
+        /// A helper method to Deserialize Cosmos Batch Response and return the links created. 
+        /// Additionaly checks if the individual link document creation on cosmos was succeeded or not.
+        /// </summary>
+        /// <param name="journalId">journalId</param>
+        /// <param name="batchResponse">cosmos batchResponse</param>
+        /// <returns>A list of TaskJournalLinkDocument created at cosmos DB</returns>
+        /// <exception cref="Exception">Throws if there are any hidden failures at single link document creation for the batch</exception>
+        private List<TaskJournalLinkDocument> DeserializeCosmosBatchResponse(Guid journalId, TransactionalBatchResponse batchResponse)
+        {
+            var results = new List<TaskJournalLinkDocument>();
+
+            // Process each operation result in the batch
+            for (int i = 0; i < batchResponse.Count; i++)
+            {
+                var op = batchResponse[i];
+
+                // Check if the individual operation succeeded
+                if (!op.IsSuccessStatusCode)
+                {
+                    _logger.LogError(
+                        "Batch operation {Index} failed for JournalId {JournalId}. StatusCode: {StatusCode}",
+                        i,
+                        journalId,
+                        op.StatusCode);
+
+                    throw new Exception($"Operation {i} failed: {op.StatusCode}");
+                }
+
+                // Deserialize the returned document from the stream
+                using var stream = op.ResourceStream;
+                using var reader = new StreamReader(stream);
+                using var jsonReader = new JsonTextReader(reader);
+                var serializer = Newtonsoft.Json.JsonSerializer.Create();
+
+                var doc = serializer.Deserialize<TaskJournalLinkDocument>(jsonReader);
+
+
+                if (doc != null)
+                {
+                    _logger.LogDebug(
+                        "Deserialized TaskJournalLinkDocument for JournalId {JournalId}, TaskId {TaskId}",
+                        doc.JournalId,
+                        doc.TaskId);
+
+                    results.Add(doc);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Operation {Index} returned null document for JournalId {JournalId}",
+                        i,
+                        journalId);
+                }
+            }
+
+            return results;
+        }
+
+        /// <summary>
+        /// A helper method to collect & write diagnostic logs for batch failures single link wise for all linkings attempted 
+        /// </summary>
+        /// <param name="journalId">journalId</param>
+        /// <param name="batchResponse">batchResponse returned from Az Cosmos DB</param>
+        /// <exception cref="ApplicationException">Finaly theows ApplicationException batchResponse.StatusCode for retries using polly</exception>
+        private void HandleCosmosBatchFailure(Guid journalId, TransactionalBatchResponse batchResponse)
+        {
+            _logger.LogError(
+                "Transactional batch failed for JournalId {JournalId}. StatusCode: {StatusCode}",
+                journalId,
+                batchResponse.StatusCode);
+
+            _logger.LogError("Batch failed. Status={Status}, RU={RU}",
+                    batchResponse.StatusCode,
+                    batchResponse.RequestCharge);
+
+
+            var diagnostics = batchResponse.Diagnostics.ToString();
+            _logger.LogError("Cosmos diagnostics: {Diag}", diagnostics);
+
+
+
+            for (int i = 0; i < batchResponse.Count; i++)
+            {
+                var op = batchResponse.GetOperationResultAtIndex<object>(i);
+
+                _logger.LogError("Operation {Index}: Status={Status}",
+                    i,
+                    op.StatusCode);
+            }
+
+
+            throw new ApplicationException($"Transactional batch failed: {batchResponse.StatusCode}");
+        }
+
+        /// <summary>
+        /// A helper method to create transactional batch containing journal Id and task Id
+        /// </summary>
+        /// <param name="journalId">journalId - cosmos partition Id</param>
+        /// <param name="taskIdsToLink"taskIdsToLink></param>
+        /// <param name="now">Time for saving time stamp of link creation in cosmos DB</param>
+        /// <returns>TransactionalBatch</returns>
+        private TransactionalBatch CreateCosmosTaskJournalLinksBatch(Guid journalId, Guid[] taskIdsToLink, DateTime now)
+        {
+            // Create a transactional batch for a single partition (journalId)
+            var batch = _container.CreateTransactionalBatch(new PartitionKey(journalId.ToString()));
+
+            // Add a CreateItem operation for each task link
+            foreach (var taskId in taskIdsToLink)
+            {
+                _logger.LogDebug(
+                    "Adding CreateItem operation to batch for JournalId {JournalId} and TaskId {TaskId}",
+                    journalId,
+                    taskId);
+
+                var doc = new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), now);
+                var json = JsonConvert.SerializeObject(doc);
+                _logger.LogDebug("Serialized document: {Json}", json);
+                batch.CreateItem(doc);
+            }
+
+            return batch;
+        }
+
+        #endregion CreateTaskJournalLinks
     }
 }

@@ -1,4 +1,5 @@
 ﻿using SharedLib.DTOs.Journal;
+using System.Net;
 using System.Text.Json;
 
 namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
@@ -62,6 +63,47 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
                 throw;
             }
         }
+
+
+        public async Task<JournalEntryDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Fetching journal by ID: {JournalId}", id);
+
+                var url = $"{RouteToJournalController}{id}"; // have trailing / in RouteToJournalController constant
+                var response = await _httpClient.GetAsync(url, cancellationToken);        
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    _logger.LogInformation("Journal not found: {JournalId}", id);
+                    return null;
+                }
+
+                response.EnsureSuccessStatusCode();     // throws exception if its not a success code
+
+                var journal = await response.Content.ReadFromJsonAsync<JournalEntryDto>(cancellationToken: cancellationToken);
+                return journal;
+
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching journal by Id {JournalId}", id);
+                throw new ApplicationException("Failed to fetch tasks from user API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for journal response for journal Id {JournalId}", id);
+                throw new ApplicationException("Failed to deserialize journal data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Journal fetching operation was canceled for journal Id {JournalId}", id);
+                throw;
+            }
+        }
+
+
 
         public Task DeleteJournalEntryAsync(Guid? jounralId, CancellationToken cancellationToken)
         {

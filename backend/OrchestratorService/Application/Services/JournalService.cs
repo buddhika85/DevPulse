@@ -2,6 +2,10 @@
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService;
+using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
+using SharedLib.DTOs.Journal;
+using SharedLib.DTOs.Task;
+using SharedLib.DTOs.TaskJournalLink;
 
 namespace OrchestratorService.Application.Services
 {
@@ -9,14 +13,17 @@ namespace OrchestratorService.Application.Services
     {
         private readonly IJournalServiceClient _journalServiceClient;
         private readonly ITaskJournalLinkServiceClient _taskJournalLinkService;
+        private readonly ITaskServiceClient _taskServiceClient;
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<JournalService> _logger;
         private const byte CachedTimeInMins = 5;                // Cache time in minutes
 
-        public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, IMemoryCache inMemoryCache, ILogger<JournalService> logger)
+        public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, ITaskServiceClient taskServiceClient, 
+            IMemoryCache inMemoryCache, ILogger<JournalService> logger)
         {
             _journalServiceClient = journalServiceClient;
             _taskJournalLinkService = taskJournalLinkService;
+            _taskServiceClient = taskServiceClient;
             _inMemoryCache = inMemoryCache;
             _logger = logger;
         }
@@ -98,6 +105,41 @@ namespace OrchestratorService.Application.Services
                 throw;
             }
         }
+
+        public async Task<JournalWithTasksDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+
+            _logger.LogInformation("Get Journal by Id {Id} at {Time}", id, now);
+            try
+            {
+                // get journal
+                var journal = await _journalServiceClient.GetJournalByIdAsync(id, cancellationToken);
+                if (journal is null)
+                {
+                    _logger.LogWarning("Journal with Id {JournalId} not found", id);
+                    return null;
+                }
+
+                // get links
+                var links = await _taskJournalLinkService.GetLinksByJournalIdAsync(id, cancellationToken);
+                var taskIds = links.Select(x => x.TaskId);
+                if (links.Length == 0 || taskIds == null || !taskIds.Any())
+                {
+                    return new JournalWithTasksDto(journal, []);
+                }
+
+                // get tasks for each link               
+                var taskDtos = await _taskServiceClient.GetTasksAsync(taskIds, cancellationToken);
+                return new JournalWithTasksDto(journal, taskDtos ?? []);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to Retrieve Journal by Id {Id} at {Time}", id, now);
+                throw;
+            }
+        }
+
     }
     
 }

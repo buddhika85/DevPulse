@@ -66,7 +66,7 @@ namespace TaskJournalLinkService.Controllers
         // /TaskJournalLink
         [HttpPost]
         [SwaggerOperation(Summary = "Links journal with Task Id/s", Description = "After creating a new jounrnal it is linked with an array of task Ids")]
-        [SwaggerResponse(StatusCodes.Status201Created, "Task Journal Links Created. Returns a TaskJournalLinkDto[]")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Task Journal Links Created. Returns a TaskJournalLinkDto[]")]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> LinkNewJournalWithTasksAsync([FromBody] LinkTasksToJournalDto linkTasksToJournalDto, CancellationToken cancellationToken)
