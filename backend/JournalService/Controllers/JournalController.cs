@@ -1,5 +1,4 @@
 ﻿using JournalService.Application.Commands.Journal;
-using JournalService.Application.Dtos;
 using JournalService.Application.Queries.Journal;
 using MediatR;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -212,7 +211,7 @@ namespace JournalService.Controllers
                 var result = await _mediator.Send(command, cancellationToken);
                 if (result)
                 {
-                    _logger.LogInformation("Successfully updated an existing Journal-Entry with id {Id} at {Time}", id, DateTime.UtcNow);
+                    _logger.LogInformation("Successfully updated an existing Journal-Entry with id {Id} at {Time}", id, now);
                     return NoContent();
                 }
 
@@ -221,12 +220,12 @@ namespace JournalService.Controllers
             }
             catch (RequestValidationException rex)
             {
-                _logger.LogWarning(rex, "Validation failed while updating an existing Journal-Entry with id {Id} at {Time}", id, DateTime.UtcNow);
+                _logger.LogWarning(rex, "Validation failed while updating an existing Journal-Entry with id {Id} at {Time}", id, now);
                 return ValidationProblemList(rex.Failures);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating Journal-Entry with ID: {Id} at {Time}", id, DateTime.UtcNow);
+                _logger.LogError(ex, "Error updating Journal-Entry with ID: {Id} at {Time}", id, now);
                 return InternalError($"An error occurred while updating the Journal-Entry with Id: {id}.");
             }
         }

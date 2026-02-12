@@ -20,7 +20,7 @@ namespace TaskJournalLinkService.Controllers
     {
         private readonly ITaskJournalLinkService _service;
         private readonly ILogger<TaskJournalLinksController> _logger;
-        
+
 
         public TaskJournalLinksController(ITaskJournalLinkService taskJournalLinkService, ILogger<TaskJournalLinksController> logger)
         {
@@ -44,7 +44,7 @@ namespace TaskJournalLinkService.Controllers
             try
             {
                 var links = await _service.GetLinksByJournalIdAsync(journalId, cancellationToken);
-                if (links is null || links.Length == 0) 
+                if (links is null || links.Length == 0)
                 {
                     _logger.LogWarning("No Task Journal Links found for journalId: {JournalId} at {Time}", journalId, now);
                     return NotFoundProblem("Not Found - Task Journal Links", $"No Task Journal Links found for journalId: {journalId}");
@@ -95,6 +95,36 @@ namespace TaskJournalLinkService.Controllers
                 _logger.LogError(ex, "Error - Linking Journal with Id: {JournalId} with TaskIds: {TaskIds} at {Time}",
                                 linkTasksToJournalDto.JournalId, string.Join(',', linkTasksToJournalDto.TaskIdsToLink), now);
                 return InternalError($"Failed to link Journal with Id: {linkTasksToJournalDto.JournalId} with TaskIds: {string.Join(',', linkTasksToJournalDto.TaskIdsToLink)} at {now}");
+            }
+        }
+
+
+        [HttpPut("rearrange-links/{journalId:guid}")]
+        [SwaggerOperation(Summary = "Rearranges task journal links for a given journal Id", Description = "Rearranges task journal links for a given journal Id.")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Task Journal Links Rearranges")]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Journal-entry not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> RearrangeTaskJournalLinksAsync([FromRoute] Guid journalId, [FromBody] Guid[] tasksToLink, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (tasksToLink == null || tasksToLink.Length == 0)
+                {
+                    _logger.LogWarning("Rearranging request should atleast 1 task to link. Rearraning unsuccessfull for journal with Id:{JournalId} at {Time}", 
+                        journalId, DateTime.UtcNow);
+                    return ValidationProblem(detail: "Rearranging request should atleast 1 task to link.");
+                }
+
+                //bool journalPartitionExists = await _
+                // rearrange request
+
+                return NoContent();         
+            }
+            catch (Exception ex)
+            {
+
+                throw;
             }
         }
     }

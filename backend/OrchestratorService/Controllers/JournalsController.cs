@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;
+using SharedLib.Application.Exceptions;
 using SharedLib.DTOs.Journal;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
@@ -59,7 +60,7 @@ namespace OrchestratorService.Controllers
             }
         }
 
-        // TO DO
+       
         // GET Jounral By Id - get single journal and tasks linked to it
         // GET /journals/{id}
         [HttpGet("{id:guid}")]
@@ -90,18 +91,59 @@ namespace OrchestratorService.Controllers
         }
 
 
+        // TO DO - does not need for MVP
         // Get All jounrals - gets all jounrals with linked tasks
-        // GET /journals
-
+        // GET /journals     
 
         // Patch Jounral - partial update - Pataches jounral info, re-arranges task jounral links
         // PATCH /journals/{id}
+        [HttpPut("{id:guid}")]
+        [SwaggerOperation(Summary = "Updates journal and rearranges TaskJournalLinks", Description = "Updates journal and replaces TaskJournalLinks")]
+        [SwaggerResponse(StatusCodes.Status204NoContent, "Updated")]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "Journal with ID Not found", typeof(NotFound))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult>UpdateJournalWithTaskLinks([FromRoute] Guid id, [FromBody] UpdateJournalDto dto, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var links = $"[{string.Join(",", dto.LinkedTaskIds)}]";
+            _logger.LogInformation("Updating journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}", 
+                id, dto.UpdateJournalEntryDto.Title, links, now);
 
+            try
+            {
+                if (id != dto.UpdateJournalEntryDto.JournalEntryId)
+                    return ValidationProblem("Route Id parameter should be same is UpdateJournalEntryDto.JournalEntryId value.");
+
+                if (dto.LinkedTaskIds is null)
+                    return ValidationProblem("LinkedTaskIds cannot be null.");
+
+                var isJournalExists = await _journalService.IsJournalEntryExistsByIdAsync(id, cancellationToken);
+                if (!isJournalExists)
+                    return NotFoundProblem($"Journal-Entry not found for update: {id}");
+                var result = await _journalService.TryUpdateJournalAndLinksAsync(dto, cancellationToken);
+                if (!result)
+                {
+                    return InternalError($"Failed to update journal {id}");
+                }
+
+                _logger.LogInformation("Successfully updated journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}",
+                        id, dto.UpdateJournalEntryDto.Title, links, now);
+                return NoContent();
+            }           
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating Journal-Entry with ID: {Id} at {Time}", id, now);
+                return InternalError($"An error occurred while updating the Journal-Entry with Id: {id}.");
+            }
+        }
+
+        // TO DO - does not need for MVP
         // Patch Jounral - soft delete journal - soft deletes jounral, soft deletes task journal links
         // PATCH /journals/{id}/delete
 
+        // TO DO - does not need for MVP
         // Patch Jounral - restore journal - restore jounral, restore task journal links
         // PATCH /journals/{id}/restore
-
     }
 }

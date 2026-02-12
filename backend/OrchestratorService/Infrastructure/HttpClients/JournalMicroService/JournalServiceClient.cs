@@ -1,4 +1,5 @@
-﻿using SharedLib.DTOs.Journal;
+﻿using OrchestratorService.Application.DTOs;
+using SharedLib.DTOs.Journal;
 using System.Net;
 using System.Text.Json;
 
@@ -64,7 +65,6 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
             }
         }
 
-
         public async Task<JournalEntryDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
@@ -104,10 +104,59 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
         }
 
 
-
+        // TO DO
         public Task DeleteJournalEntryAsync(Guid? jounralId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Executing JournalService API and Checking if a journal-entry exists by journal ID={JournalId} at {Time}", id, now);
+            try
+            {
+                var url = $"{RouteToJournalController}is-exists/{id}";
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+                response.EnsureSuccessStatusCode();
+
+                var isExists = await response.Content.ReadFromJsonAsync<bool?>(cancellationToken: cancellationToken);
+                if (isExists is null)
+                {
+                    _logger.LogWarning("JournalService returned null for existence check of {JournalId}", id);
+                    return false;
+                }
+
+                _logger.LogDebug("Journal exists={Exists} for {JournalId} at {Time}", isExists, id, now);
+                return isExists.Value;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to check if a journal-entry exists by journal ID={JournalId} at {Time}", id, now);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateJournalEntryAsync(UpdateJournalEntryDto dto, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Executing JournalService API and updating journal with ID={JournalId} at {Time}", dto.JournalEntryId, now);
+            try
+            {
+                var url = $"{RouteToJournalController}update/{dto.JournalEntryId}";
+                var response = await _httpClient.PatchAsJsonAsync(url, dto, cancellationToken);
+                response.EnsureSuccessStatusCode();         // 204 - no content is expected
+
+                _logger.LogInformation("Successfully updated journal {JournalId} at {Time}",
+                                    dto.JournalEntryId, DateTime.UtcNow);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Updating journal with ID={JournalId} at {Time} was Unsuccessful", dto.JournalEntryId, now);
+                throw;
+            }
         }
     }
 }

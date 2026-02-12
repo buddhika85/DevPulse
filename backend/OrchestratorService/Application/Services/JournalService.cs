@@ -4,8 +4,6 @@ using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
 using SharedLib.DTOs.Journal;
-using SharedLib.DTOs.Task;
-using SharedLib.DTOs.TaskJournalLink;
 
 namespace OrchestratorService.Application.Services
 {
@@ -140,6 +138,61 @@ namespace OrchestratorService.Application.Services
             }
         }
 
-    }
-    
+        public async Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Checking if a journal-entry exists by journal ID={JournalId} at {Time}", id, now);
+            try
+            {
+                var isExists = await _journalServiceClient.IsJournalEntryExistsByIdAsync(id, cancellationToken);
+                if (!isExists)
+                    _logger.LogInformation("Journal-entry does not exits by journal ID={JournalId} at {Time}", id, now);
+                return isExists;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to check if a journal-entry exists by journal ID={JournalId} at {Time}", id, now);
+                throw;
+            }
+        }
+
+        public async Task<bool> TryUpdateJournalAndLinksAsync(UpdateJournalDto dto, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var links = $"[{string.Join(",", dto.LinkedTaskIds)}]";
+            _logger.LogInformation("Updating journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}",
+                dto.UpdateJournalEntryDto.JournalEntryId, dto.UpdateJournalEntryDto.Title, links, now);
+
+            try
+            {
+                // 1 update journal entry
+                var journalUpdateSuccess = await _journalServiceClient.UpdateJournalEntryAsync(dto.UpdateJournalEntryDto, cancellationToken);                 
+                if (!journalUpdateSuccess)
+                {
+                    _logger.LogError("Failed Updating journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}",
+                        dto.UpdateJournalEntryDto.JournalEntryId, dto.UpdateJournalEntryDto.Title, links, now);
+                    return false;
+                }
+
+                // 2 update task journal links
+                var linkRearrangeSuccess = await _taskJournalLinkService.RearrangeTaskJournalLinks(
+                    dto.UpdateJournalEntryDto.JournalEntryId, dto.LinkedTaskIds, cancellationToken);
+                if (!linkRearrangeSuccess)
+                {
+                    _logger.LogError("Journal with Id:{Id} successfully updated, but task links were not updated properly on cosmos DB at {Time}", 
+                        dto.UpdateJournalEntryDto.JournalEntryId, now);
+                    return false;
+                }
+
+                _logger.LogInformation("Journal with Id:{Id} along with task journal links: {TaskJournalLinks} successfully updated at {Time}",
+                       dto.UpdateJournalEntryDto.JournalEntryId, links, now);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating Journal-Entry with ID: {Id} at {Time}", dto.UpdateJournalEntryDto.JournalEntryId, now);
+                throw;
+            }
+        }
+    }    
 }

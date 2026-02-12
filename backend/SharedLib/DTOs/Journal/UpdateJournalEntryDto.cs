@@ -1,4 +1,4 @@
-﻿namespace JournalService.Application.Dtos
+﻿namespace SharedLib.DTOs.Journal
 {
     public record UpdateJournalEntryDto(Guid JournalEntryId,
                                            string Title,

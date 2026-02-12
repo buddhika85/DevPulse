@@ -142,5 +142,40 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
                 throw;
             }
         }
+
+        public async Task<bool> RearrangeTaskJournalLinks(Guid journalId, Guid[] linkedTaskIds, CancellationToken cancellationToken)
+        {
+            try
+            {
+
+
+                return false;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex,
+                    "HTTP request failed while rearranging tasks for journal {JournalId}",
+                    journalId);
+
+                throw new ApplicationException(
+                    "rearranging - Failed to call TaskJournalLink API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex,
+                    "rearranging - Deserialization failed for TaskJournalLink API response for journal {JournalId}",
+                    journalId);
+
+                throw new ApplicationException(
+                    "rearranging - Failed to deserialize TaskJournalLink API response", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "rearranging - TaskJournalLink operation was canceled for journal {JournalId}",
+                    journalId);
+                throw;
+            }
+        }
     }
 }

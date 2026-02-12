@@ -12,7 +12,6 @@ using TaskService.Application.Commands;
 using TaskService.Application.Common.Enums;
 using TaskService.Application.Dtos;
 using TaskService.Application.Queries;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace TaskService.Controllers
 {

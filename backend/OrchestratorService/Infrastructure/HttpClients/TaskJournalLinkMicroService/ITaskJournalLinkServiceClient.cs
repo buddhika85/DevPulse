@@ -6,5 +6,6 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
     {
         Task<TaskJournalLinkDto[]> GetLinksByJournalIdAsync(Guid id, CancellationToken cancellationToken);
         Task<TaskJournalLinkDto[]> LinkNewJournalWithTasks(Guid jounralId, Guid[] linkedTaskIds, CancellationToken cancellationToken);
+        Task<bool> RearrangeTaskJournalLinks(Guid journalEntryId, Guid[] linkedTaskIds, CancellationToken cancellationToken);
     }
 }
