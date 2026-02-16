@@ -1,5 +1,7 @@
-﻿using SharedLib.DTOs.Journal;
+﻿using Microsoft.EntityFrameworkCore;
+using SharedLib.DTOs.Journal;
 using SharedLib.DTOs.TaskJournalLink;
+using TaskJournalLinkService.Domain.Models;
 using TaskJournalLinkService.Mapper;
 using TaskJournalLinkService.Repositories;
 
@@ -96,6 +98,82 @@ namespace TaskJournalLinkService.Services
                     "Error linking Journal {JournalId} with TaskIds {TaskIds}",
                     dto.JournalId,
                     string.Join(',', dto.TaskIdsToLink));
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Rearrange task journal links.
+        /// If there are no task journal links for jounral Id - they will be created.
+        /// If there are existing journal links for jounral Id - the diff will be calculated and added. Whatever link unncessary will be removed.
+        /// </summary>
+        /// <param name="journalId">Guid journalId</param>
+        /// <param name="tasksToLink">Guid[] tasksToLink</param>
+        /// <param name="cancellationToken">cancellationToken</param>
+        /// <returns>bool</returns>
+        public async Task<bool> RearrangeTaskJournalLinksAsync(Guid journalId,
+                                                                 Guid[] tasksToLink,
+                                                                 CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Starting rearrangement of TaskJournalLinks for JournalId={JournalId} with {TaskCount} tasks",
+                    journalId, tasksToLink.Length);
+
+                var existingLinks = await _repository.GetLinksByJournalIdAsync(journalId, cancellationToken);
+
+                // Case 1: No existing links → just create new ones
+                if (existingLinks == null)
+                {
+                    _logger.LogInformation(
+                        "No existing links found for JournalId={JournalId}. Creating {TaskCount} new links.",
+                        journalId, tasksToLink.Length);
+
+                    var created = await _repository.LinkNewJournalWithTasksAsync(journalId, tasksToLink, cancellationToken);
+
+                    var success = created != null && created.Length == tasksToLink.Length;
+
+                    if (!success)
+                    {
+                        _logger.LogWarning(
+                            "Failed to create all links for JournalId={JournalId}. Expected={Expected}, Created={Created}",
+                            journalId, tasksToLink.Length, created?.Length ?? 0);
+                    }
+
+                    return success;
+                }
+
+                // Case 2: Existing links → compute diff
+                var keepSet = existingLinks.Where(x => tasksToLink.Contains(x.TaskId)).ToList();
+                var removeSet = existingLinks.Where(x => !tasksToLink.Contains(x.TaskId)).ToList();
+                var addSet = tasksToLink.Where(x => !keepSet.Any(curr => curr.TaskId == x))
+                    .Select(taskId => new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), DateTime.UtcNow))
+                    .ToList();
+
+                _logger.LogInformation(
+                    "Rearranging links for JournalId={JournalId}: Keep={Keep}, Remove={Remove}, Add={Add}",
+                    journalId, keepSet.Count, removeSet.Count, addSet.Count);
+
+                // Remove old links & Add new links
+                var rearranged = await _repository.RearrangeTaskJournalLinksAsync(journalId, removeSet, addSet, cancellationToken);
+                if (!rearranged)
+                {
+                    _logger.LogWarning(
+                        "Failed to remove or add links for JournalId={JournalId}",
+                        journalId);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while rearranging TaskJournalLinks for JournalId={JournalId}",
+                    journalId);
 
                 throw;
             }

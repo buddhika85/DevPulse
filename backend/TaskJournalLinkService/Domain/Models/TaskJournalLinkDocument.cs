@@ -79,6 +79,21 @@ namespace TaskJournalLinkService.Domain.Models
             JournalId = journalId;
             CreatedAt = createdAt;
         }
+
+        //public override bool Equals(object? obj)
+        //{
+        //    if (obj is not TaskJournalLinkDocument other)
+        //        return false;
+
+        //    return TaskId == other.TaskId &&
+        //           string.Equals(JournalId, other.JournalId, StringComparison.Ordinal);
+        //}
+
+        //public override int GetHashCode()
+        //{
+        //    return HashCode.Combine(TaskId, JournalId);
+        //}
+
     }
 
 }

@@ -6,5 +6,6 @@ namespace TaskJournalLinkService.Services
     {
         Task<TaskJournalLinkDto[]> GetLinksByJournalIdAsync(Guid journalId, CancellationToken cancellationToken);
         Task<TaskJournalLinkDto[]> LinkNewJournalWithTasksAsync(SharedLib.DTOs.Journal.LinkTasksToJournalDto linkTasksToJournalDto, CancellationToken cancellationToken);
+        Task<bool> RearrangeTaskJournalLinksAsync(Guid journalId, Guid[] tasksToLink, CancellationToken cancellationToken);
     }
 }

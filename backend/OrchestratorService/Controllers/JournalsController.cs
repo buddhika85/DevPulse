@@ -103,38 +103,80 @@ namespace OrchestratorService.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Journal with ID Not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
-        public async Task<IActionResult>UpdateJournalWithTaskLinks([FromRoute] Guid id, [FromBody] UpdateJournalDto dto, CancellationToken cancellationToken)
+        public async Task<IActionResult> UpdateJournalWithTaskLinks([FromRoute] Guid id,
+                                                                        [FromBody] UpdateJournalDto dto,
+                                                                        CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
             var links = $"[{string.Join(",", dto.LinkedTaskIds)}]";
-            _logger.LogInformation("Updating journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}", 
+
+            _logger.LogInformation(
+                "Received request to update JournalId={JournalId} with Title={Title} and TaskLinks={TaskLinks} at {Time}",
                 id, dto.UpdateJournalEntryDto.Title, links, now);
 
             try
             {
+                // Validation: route ID must match DTO ID
                 if (id != dto.UpdateJournalEntryDto.JournalEntryId)
-                    return ValidationProblem("Route Id parameter should be same is UpdateJournalEntryDto.JournalEntryId value.");
+                {
+                    _logger.LogWarning(
+                        "Route ID mismatch for JournalId={JournalId}. DTO JournalEntryId={DtoId} at {Time}",
+                        id, dto.UpdateJournalEntryDto.JournalEntryId, now);
 
+                    return ValidationProblem("Route Id parameter must match UpdateJournalEntryDto.JournalEntryId.");
+                }
+
+                // Validation: LinkedTaskIds cannot be null
                 if (dto.LinkedTaskIds is null)
-                    return ValidationProblem("LinkedTaskIds cannot be null.");
+                {
+                    _logger.LogWarning(
+                        "LinkedTaskIds is null for JournalId={JournalId} at {Time}",
+                        id, now);
 
-                var isJournalExists = await _journalService.IsJournalEntryExistsByIdAsync(id, cancellationToken);
-                if (!isJournalExists)
-                    return NotFoundProblem($"Journal-Entry not found for update: {id}");
+                    return ValidationProblem("LinkedTaskIds cannot be null.");
+                }
+
+                // Check journal existence
+                var exists = await _journalService.IsJournalEntryExistsByIdAsync(id, cancellationToken);
+                if (!exists)
+                {
+                    _logger.LogWarning(
+                        "JournalId={JournalId} not found. Update aborted at {Time}",
+                        id, now);
+
+                    return NotFoundProblem($"Journal-entry not found for update: {id}");
+                }
+
+                // Perform update + link rearrangement
+                _logger.LogInformation(
+                    "Attempting update + link rearrangement for JournalId={JournalId} at {Time}",
+                    id, now);
+
                 var result = await _journalService.TryUpdateJournalAndLinksAsync(dto, cancellationToken);
+
                 if (!result)
                 {
+                    _logger.LogWarning(
+                        "Update or link rearrangement FAILED for JournalId={JournalId} at {Time}",
+                        id, now);
+
                     return InternalError($"Failed to update journal {id}");
                 }
 
-                _logger.LogInformation("Successfully updated journal-entry {Id} with journal-Entry Title={Title}, & TaskLinks={TaskLinks} at {Time}",
-                        id, dto.UpdateJournalEntryDto.Title, links, now);
+                _logger.LogInformation(
+                    "Successfully updated JournalId={JournalId} with Title={Title} and TaskLinks={TaskLinks} at {Time}",
+                    id, dto.UpdateJournalEntryDto.Title, links, now);
+
                 return NoContent();
-            }           
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error updating Journal-Entry with ID: {Id} at {Time}", id, now);
-                return InternalError($"An error occurred while updating the Journal-Entry with Id: {id}.");
+                _logger.LogError(
+                    ex,
+                    "Unexpected error while updating JournalId={JournalId} at {Time}",
+                    id, now);
+
+                return InternalError($"An error occurred while updating the journal-entry with Id: {id}.");
             }
         }
 

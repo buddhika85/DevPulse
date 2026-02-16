@@ -24,66 +24,6 @@ namespace TaskJournalLinkService.Repositories
             _logger = logger;
         }
 
-        /// <summary>
-        /// Reads all Task Journal Links by journalId
-        /// </summary>
-        /// <param name="journalId">journalId</param>
-        /// <param name="cancellationToken">cancellationToken</param>
-        /// <returns>TaskJournalLinkDocument[]</returns>
-        /// <summary>
-        /// Reads all Task Journal Links by journalId.
-        /// </summary>
-        public async Task<TaskJournalLinkDocument[]> GetLinksByJournalIdAsync(Guid journalId, CancellationToken cancellationToken)
-        {
-            _logger.LogInformation(
-                "Querying TaskJournalLinks for JournalId {JournalId}",
-                journalId);
-
-            try
-            {
-                // Build the query
-                var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.journalId = @journalId")
-                    .WithParameter("@journalId", journalId.ToString());
-
-                _logger.LogDebug(
-                    "Cosmos DB query: {QueryText}",
-                    query.QueryText);
-
-                // Create iterator scoped to the partition key
-                var iterator = _container.GetItemQueryIterator<TaskJournalLinkDocument>(
-                    query,
-                    requestOptions: new QueryRequestOptions
-                    {
-                        PartitionKey = new PartitionKey(journalId.ToString())
-                    });
-
-                var results = new List<TaskJournalLinkDocument>();
-
-                // Read all pages
-                while (iterator.HasMoreResults)
-                {
-                    var response = await iterator.ReadNextAsync(cancellationToken);
-                    results.AddRange(response.Resource);
-                }
-
-                _logger.LogInformation(
-                    "Retrieved {Count} TaskJournalLinks for JournalId {JournalId}",
-                    results.Count,
-                    journalId);
-
-                return [.. results];
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(
-                    ex,
-                    "Error querying TaskJournalLinks for JournalId {JournalId}",
-                    journalId);
-
-                throw;
-            }
-        }
 
         #region CreateTaskJournalLinks
 
@@ -280,6 +220,159 @@ namespace TaskJournalLinkService.Repositories
             return batch;
         }
 
+
+
         #endregion CreateTaskJournalLinks
+
+
+
+
+        /// <summary>
+        /// Reads all Task Journal Links by journalId
+        /// </summary>
+        /// <param name="journalId">journalId</param>
+        /// <param name="cancellationToken">cancellationToken</param>
+        /// <returns>TaskJournalLinkDocument[]</returns>
+        /// <summary>
+        /// Reads all Task Journal Links by journalId.
+        /// </summary>
+        public async Task<TaskJournalLinkDocument[]> GetLinksByJournalIdAsync(Guid journalId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation(
+                "Querying TaskJournalLinks for JournalId {JournalId}",
+                journalId);
+
+            try
+            {
+                // Build the query
+                var query = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.journalId = @journalId")
+                    .WithParameter("@journalId", journalId.ToString());
+
+                _logger.LogDebug(
+                    "Cosmos DB query: {QueryText}",
+                    query.QueryText);
+
+                // Create iterator scoped to the partition key
+                var iterator = _container.GetItemQueryIterator<TaskJournalLinkDocument>(
+                    query,
+                    requestOptions: new QueryRequestOptions
+                    {
+                        PartitionKey = new PartitionKey(journalId.ToString())
+                    });
+
+                var results = new List<TaskJournalLinkDocument>();
+
+                // Read all pages
+                while (iterator.HasMoreResults)
+                {
+                    var response = await iterator.ReadNextAsync(cancellationToken);
+                    results.AddRange(response.Resource);
+                }
+
+                _logger.LogInformation(
+                    "Retrieved {Count} TaskJournalLinks for JournalId {JournalId}",
+                    results.Count,
+                    journalId);
+
+                return [.. results];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error querying TaskJournalLinks for JournalId {JournalId}",
+                    journalId);
+
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Performs an atomic rearrangement of TaskJournalLinks for the specified journal.
+        /// Uses a Cosmos DB TransactionalBatch to remove old links and add new ones within
+        /// the same partition, ensuring ACID guarantees.
+        /// </summary>
+        /// <param name="journalId">The journal identifier (also used as the partition key).</param>
+        /// <param name="removeSet">The TaskJournalLink documents to remove.</param>
+        /// <param name="addSet">The TaskJournalLink documents to add.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>
+        /// True if the batch operation succeeds; otherwise, false.
+        /// </returns>
+
+        public async Task<bool> RearrangeTaskJournalLinksAsync(Guid journalId,
+                                                                    List<TaskJournalLinkDocument> removeSet,
+                                                                    List<TaskJournalLinkDocument> addSet,
+                                                                    CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation(
+                    "Starting transactional batch for JournalId={JournalId}. RemoveCount={RemoveCount}, AddCount={AddCount}",
+                    journalId, removeSet.Count, addSet.Count);
+
+                var partitionKey = new PartitionKey(journalId.ToString());
+                var batch = _container.CreateTransactionalBatch(partitionKey);
+
+                // Remove old links
+                foreach (var item in removeSet)
+                {
+                    _logger.LogDebug(
+                        "Batch delete: JournalId={JournalId}, LinkId={LinkId}, TaskId={TaskId}",
+                        journalId, item.Id, item.TaskId);
+
+                    batch.DeleteItem(item.Id.ToString());
+                }
+
+                // Add new links
+                foreach (var item in addSet)
+                {
+                    _logger.LogDebug(
+                        "Batch create: JournalId={JournalId}, LinkId={LinkId}, TaskId={TaskId}",
+                        journalId, item.Id, item.TaskId);
+
+                    batch.CreateItem(item);
+                }
+
+                var batchResponse = await batch.ExecuteAsync(cancellationToken);
+
+                if (!batchResponse.IsSuccessStatusCode)
+                {
+                    HandleCosmosBatchFailure(journalId, batchResponse);
+
+                    _logger.LogWarning(
+                        "Transactional batch FAILED for JournalId={JournalId}. StatusCode={StatusCode}",
+                        journalId, batchResponse.StatusCode);
+
+                    return false;
+                }
+
+                _logger.LogInformation(
+                    "Transactional batch SUCCEEDED for JournalId={JournalId}. OperationCount={OperationCount}",
+                    journalId, batchResponse.Count);
+
+                return true;
+            }
+            catch (CosmosException cex)
+            {
+                _logger.LogError(
+                    cex,
+                    "CosmosException during transactional batch for JournalId={JournalId}. StatusCode={StatusCode}",
+                    journalId, cex.StatusCode);
+
+                throw;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Unexpected error during transactional batch for JournalId={JournalId}",
+                    journalId);
+
+                throw;
+            }
+        }
     }
 }
