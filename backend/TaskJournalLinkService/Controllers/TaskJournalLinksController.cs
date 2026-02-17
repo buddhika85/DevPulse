@@ -76,7 +76,7 @@ namespace TaskJournalLinkService.Controllers
                 linkTasksToJournalDto.JournalId, string.Join(',', linkTasksToJournalDto.TaskIdsToLink), now);
             try
             {
-                if (linkTasksToJournalDto.TaskIdsToLink is null || linkTasksToJournalDto.TaskIdsToLink.Length == 0)
+                if (linkTasksToJournalDto.TaskIdsToLink is null || linkTasksToJournalDto.TaskIdsToLink.Count == 0)
                     return ValidationProblem("TaskIdsToLink cannot be empty.");
 
                 var links = await _service.LinkNewJournalWithTasksAsync(linkTasksToJournalDto, cancellationToken);   // TaskJournalLinkDto[]
@@ -108,10 +108,10 @@ namespace TaskJournalLinkService.Controllers
         [SwaggerResponse(StatusCodes.Status404NotFound, "Journal-entry not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> RearrangeTaskJournalLinksAsync([FromRoute] Guid journalId,
-                                                        [FromBody] Guid[] tasksToLink,
+                                                        [FromBody] HashSet<Guid> tasksToLink,
                                                         CancellationToken cancellationToken)
         {
-            if (tasksToLink == null || tasksToLink.Length == 0)
+            if (tasksToLink == null || tasksToLink.Count == 0)
             {
                 _logger.LogWarning(
                     "Rearranging request must contain at least 1 task. JournalId={JournalId} at {Time}",

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
 using Newtonsoft.Json;
-using System.Text.Json;
 using TaskJournalLinkService.Domain.Models;
 
 namespace TaskJournalLinkService.Repositories
@@ -37,7 +36,7 @@ namespace TaskJournalLinkService.Repositories
         /// <returns>TaskJournalLinkDocument[]</returns>
         /// <exception cref="ApplicationException">If Transaction fails on cosmos level</exception>
         public async Task<TaskJournalLinkDocument[]> LinkNewJournalWithTasksAsync(Guid journalId,
-                                                                                    Guid[] taskIdsToLink,
+                                                                                    HashSet<Guid> taskIdsToLink,
                                                                                     CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
@@ -46,7 +45,7 @@ namespace TaskJournalLinkService.Repositories
             _logger.LogInformation(
                 "Starting transactional batch to link JournalId {JournalId} with {TaskCount} TaskIds at {Time}",
                 journalId,
-                taskIdsToLink.Length,
+                taskIdsToLink.Count,
                 now);
 
             try
@@ -58,7 +57,7 @@ namespace TaskJournalLinkService.Repositories
                 _logger.LogInformation(
                     "Executing transactional batch for JournalId {JournalId} with {TaskCount} operations",
                     journalId,
-                    taskIdsToLink.Length);
+                    taskIdsToLink.Count);
                 var batchResponse = await batch.ExecuteAsync(cancellationToken);
 
                 // If the batch fails, none of the operations were committed
@@ -90,7 +89,7 @@ namespace TaskJournalLinkService.Repositories
                     ex,
                     "Error while linking JournalId {JournalId} with {TaskCount} TaskIds at {Time}",
                     journalId,
-                    taskIdsToLink.Length,
+                    taskIdsToLink.Count,
                     now);
                 throw;
             }
@@ -198,7 +197,7 @@ namespace TaskJournalLinkService.Repositories
         /// <param name="taskIdsToLink"taskIdsToLink></param>
         /// <param name="now">Time for saving time stamp of link creation in cosmos DB</param>
         /// <returns>TransactionalBatch</returns>
-        private TransactionalBatch CreateCosmosTaskJournalLinksBatch(Guid journalId, Guid[] taskIdsToLink, DateTime now)
+        private TransactionalBatch CreateCosmosTaskJournalLinksBatch(Guid journalId, HashSet<Guid> taskIdsToLink, DateTime now)
         {
             // Create a transactional batch for a single partition (journalId)
             var batch = _container.CreateTransactionalBatch(new PartitionKey(journalId.ToString()));

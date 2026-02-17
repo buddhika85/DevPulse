@@ -66,7 +66,7 @@ namespace TaskJournalLinkService.Services
             _logger.LogInformation(
                 "Linking Journal {JournalId} with {TaskCount} TaskIds",
                 dto.JournalId,
-                dto.TaskIdsToLink.Length);
+                dto.TaskIdsToLink.Count);
 
             try
             {
@@ -113,14 +113,14 @@ namespace TaskJournalLinkService.Services
         /// <param name="cancellationToken">cancellationToken</param>
         /// <returns>bool</returns>
         public async Task<bool> RearrangeTaskJournalLinksAsync(Guid journalId,
-                                                                 Guid[] tasksToLink,
+                                                                 HashSet<Guid> tasksToLink,
                                                                  CancellationToken cancellationToken)
         {
             try
             {
                 _logger.LogInformation(
                     "Starting rearrangement of TaskJournalLinks for JournalId={JournalId} with {TaskCount} tasks",
-                    journalId, tasksToLink.Length);
+                    journalId, tasksToLink.Count);
 
                 var existingLinks = await _repository.GetLinksByJournalIdAsync(journalId, cancellationToken);
 
@@ -129,17 +129,17 @@ namespace TaskJournalLinkService.Services
                 {
                     _logger.LogInformation(
                         "No existing links found for JournalId={JournalId}. Creating {TaskCount} new links.",
-                        journalId, tasksToLink.Length);
+                        journalId, tasksToLink.Count);
 
                     var created = await _repository.LinkNewJournalWithTasksAsync(journalId, tasksToLink, cancellationToken);
 
-                    var success = created != null && created.Length == tasksToLink.Length;
+                    var success = created != null && created.Length == tasksToLink.Count;
 
                     if (!success)
                     {
                         _logger.LogWarning(
                             "Failed to create all links for JournalId={JournalId}. Expected={Expected}, Created={Created}",
-                            journalId, tasksToLink.Length, created?.Length ?? 0);
+                            journalId, tasksToLink.Count, created?.Length ?? 0);
                     }
 
                     return success;
@@ -155,6 +155,14 @@ namespace TaskJournalLinkService.Services
                 _logger.LogInformation(
                     "Rearranging links for JournalId={JournalId}: Keep={Keep}, Remove={Remove}, Add={Add}",
                     journalId, keepSet.Count, removeSet.Count, addSet.Count);
+
+                // Check if there is anything to add or remove
+                if (removeSet.Count == 0 && addSet.Count == 0)
+                {
+                    _logger.LogInformation("No TaskJournalLink changes required for JournalId={JournalId}. RemoveSet=0, AddSet=0 — links already in desired state.",
+                                                journalId);
+                    return true;
+                }
 
                 // Remove old links & Add new links
                 var rearranged = await _repository.RearrangeTaskJournalLinksAsync(journalId, removeSet, addSet, cancellationToken);

@@ -12,6 +12,6 @@ namespace SharedLib.DTOs.Journal
 
         [Required]
         [MinLength(1)]
-        public required Guid[] TaskIdsToLink { get; init; }
+        public required HashSet<Guid> TaskIdsToLink { get; init; }
     }
 }

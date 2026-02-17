@@ -10,7 +10,7 @@ namespace OrchestratorService.Application.DTOs
 
         [Required]
         [MinLength(1)]
-        public required Guid[] LinkedTaskIds { get; init; }
+        public required HashSet<Guid> LinkedTaskIds { get; init; }
 
     }
 }

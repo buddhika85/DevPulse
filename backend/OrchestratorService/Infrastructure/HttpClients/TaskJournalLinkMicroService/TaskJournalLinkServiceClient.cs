@@ -20,12 +20,12 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
 
 
 
-        public async Task<TaskJournalLinkDto[]> LinkNewJournalWithTasks(Guid journalId, Guid[] linkedTaskIds, CancellationToken cancellationToken)
+        public async Task<TaskJournalLinkDto[]> LinkNewJournalWithTasks(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
         {
             try
             {
                 _logger.LogInformation("Linking {TaskCount} tasks to journal {JournalId}",
-                    linkedTaskIds.Length, journalId);
+                    linkedTaskIds.Count, journalId);
 
                 var payload = new LinkTasksToJournalDto
                 {
@@ -143,37 +143,64 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
             }
         }
 
-        public async Task<bool> RearrangeTaskJournalLinks(Guid journalId, Guid[] linkedTaskIds, CancellationToken cancellationToken)
+        public async Task<bool> RearrangeTaskJournalLinks(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
         {
+            var now = DateTime.UtcNow;
+            var links = $"[{string.Join(",", linkedTaskIds)}]";
+
+            _logger.LogInformation(
+                "Calling TaskJournalLink API to rearrange links for JournalId={JournalId} with TaskLinks={TaskLinks} at {Time}",
+                journalId, links, now);
+
             try
             {
+                var url = $"{TaskJournalLinksRoute}/rearrange-links/{journalId}";
+                var response = await _httpClient.PutAsJsonAsync(url, linkedTaskIds, cancellationToken);
 
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
-                return false;
+                    _logger.LogWarning(
+                        "TaskJournalLink API returned failure for JournalId={JournalId}. StatusCode={StatusCode}, Body={Body}",
+                        journalId, response.StatusCode, errorBody);
+
+                    throw new ApplicationException(
+                        $"TaskJournalLink API failed with status code {response.StatusCode} for JournalId={journalId}");
+                }
+
+                _logger.LogInformation(
+                    "Successfully rearranged TaskJournalLinks for JournalId={JournalId} at {Time}",
+                    journalId, now);
+
+                return true;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogError(ex,
-                    "HTTP request failed while rearranging tasks for journal {JournalId}",
+                _logger.LogError(
+                    ex,
+                    "HTTP request error while calling TaskJournalLink API for JournalId={JournalId}",
                     journalId);
 
                 throw new ApplicationException(
-                    "rearranging - Failed to call TaskJournalLink API", ex);
+                    $"Failed to call TaskJournalLink API for JournalId={journalId}", ex);
             }
             catch (JsonException ex)
             {
-                _logger.LogError(ex,
-                    "rearranging - Deserialization failed for TaskJournalLink API response for journal {JournalId}",
+                _logger.LogError(
+                    ex,
+                    "JSON serialization/deserialization error while calling TaskJournalLink API for JournalId={JournalId}",
                     journalId);
 
                 throw new ApplicationException(
-                    "rearranging - Failed to deserialize TaskJournalLink API response", ex);
+                    $"Failed to process TaskJournalLink API response for JournalId={journalId}", ex);
             }
             catch (OperationCanceledException)
             {
                 _logger.LogWarning(
-                    "rearranging - TaskJournalLink operation was canceled for journal {JournalId}",
+                    "TaskJournalLink API call was canceled for JournalId={JournalId}",
                     journalId);
+
                 throw;
             }
         }

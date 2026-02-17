@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;
-using SharedLib.Application.Exceptions;
 using SharedLib.DTOs.Journal;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;

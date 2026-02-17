@@ -44,7 +44,7 @@ namespace OrchestratorService.Application.Services
             _logger.LogInformation(
                 "Creating Journal '{Title}' with {TaskCount} linked tasks for UserId {UserId} at {Time}",
                 createJournalDto.AddJournalEntryDto.Title,
-                createJournalDto.LinkedTaskIds.Length,
+                createJournalDto.LinkedTaskIds.Count,
                 createJournalDto.AddJournalEntryDto.UserId,
                 now);
 
@@ -63,7 +63,7 @@ namespace OrchestratorService.Application.Services
                 _logger.LogInformation(
                     "Journal created with Id {JournalId}. Creating {TaskCount} TaskJournalLinks...",
                     journalId,
-                    createJournalDto.LinkedTaskIds.Length);
+                    createJournalDto.LinkedTaskIds.Count);
 
                 // 2. Create Task Links (Polly handles transient retries)
                 var linksCreated = await _taskJournalLinkService.LinkNewJournalWithTasks(
@@ -71,7 +71,7 @@ namespace OrchestratorService.Application.Services
                     createJournalDto.LinkedTaskIds,
                     cancellationToken);
 
-                if (linksCreated is null || linksCreated.Length != createJournalDto.LinkedTaskIds.Length)
+                if (linksCreated is null || linksCreated.Length != createJournalDto.LinkedTaskIds.Count)
                 {
                     _logger.LogWarning(
                         "Task linking failed for JournalId {JournalId}. Rolling back journal...",
@@ -87,7 +87,7 @@ namespace OrchestratorService.Application.Services
                 _logger.LogInformation(
                     "Journal {JournalId} created and linked to {TaskCount} tasks for UserId {UserId}",
                     journalId,
-                    createJournalDto.LinkedTaskIds.Length,
+                    createJournalDto.LinkedTaskIds.Count,
                     createJournalDto.AddJournalEntryDto.UserId);
 
                 return journalId;
@@ -97,7 +97,7 @@ namespace OrchestratorService.Application.Services
                 _logger.LogError(ex,
                     "Failed to create Journal '{Title}' with {TaskCount} task links for UserId {UserId}",
                     createJournalDto.AddJournalEntryDto.Title,
-                    createJournalDto.LinkedTaskIds.Length,
+                    createJournalDto.LinkedTaskIds.Count,
                     createJournalDto.AddJournalEntryDto.UserId);
 
                 throw;
