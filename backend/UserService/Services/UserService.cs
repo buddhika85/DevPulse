@@ -400,5 +400,31 @@ namespace UserService.Services
             }
         }
 
+        public async Task<IReadOnlyList<UserAccountDto>> GetTeamMembersForManagerAsync(GetTeamMemberForManagerQuery query, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all team members for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}", query.ManagerId, query.IncludeDeleted, DateTime.UtcNow);
+            try
+            {
+                var entities = await _userRepository.GetTeamMembersForManagerAsync(Guid.Parse(query.ManagerId), query.IncludeDeleted, cancellationToken); 
+                _logger.LogInformation("Successfully retrieved {MemberCount} team members for manager: {ManagerId}  at {Time}", entities?.Count ?? 0, query.ManagerId, DateTime.UtcNow);
+
+                if (entities is null)
+                {
+                    _logger.LogInformation("No team members to convert to DTOs for manager Id: {ManagerId} at {Time}", query.ManagerId, DateTime.UtcNow);
+                    return [];
+                }
+
+                var dtos = UserAccountMapper.ToDtosList(entities);
+                _logger.LogInformation("Successfully DTO converted {MemberCount} team members for manager: {ManagerId}  at {Time}", dtos.Count(), query.ManagerId, DateTime.UtcNow);
+
+                return [.. dtos];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving team members for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}", 
+                    query.ManagerId, query.IncludeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
     }
 }

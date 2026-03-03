@@ -18,7 +18,10 @@ export class UserApiService {
   private apiUrl = environment.msal.protectedResources.userApi.url;
   private profileControllerUrl = `${this.apiUrl}api/Profile`;
 
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+  ) {}
 
   // This method returns an Observable that will eventually emit a UserProfile object
   // Whoever subscribes to getUserProfile() will receive the user profile once the token is acquired and the API responds.
@@ -29,7 +32,7 @@ export class UserApiService {
 
   getUserProfile(): Observable<UserProfileResponseDto> {
     return this.http.get<UserProfileResponseDto>(
-      `${this.profileControllerUrl}/me`
+      `${this.profileControllerUrl}/me`,
     );
   }
 
@@ -38,7 +41,7 @@ export class UserApiService {
   }
 
   getAllUserProfiles(
-    includeDeleted: boolean = false
+    includeDeleted: boolean = false,
   ): Observable<UserAccountDto[]> {
     // prepare query strings
     const queryString = new HttpParams().set('includeDeleted', includeDeleted);
@@ -47,6 +50,21 @@ export class UserApiService {
     return this.http.get<UserAccountDto[]>(`${this.profileControllerUrl}/all`, {
       params: queryString,
     });
+  }
+
+  getTeamMembersForManager(
+    includeDeleted: boolean = false,
+  ): Observable<UserAccountDto[]> {
+    // prepare query strings
+    const queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    // send the call
+    return this.http.get<UserAccountDto[]>(
+      `${this.profileControllerUrl}/team-for-manager`,
+      {
+        params: queryString,
+      },
+    );
   }
 
   getUsersByRole(role: UserRole): Observable<UserAccountDto[]> {
@@ -58,28 +76,28 @@ export class UserApiService {
       `${this.profileControllerUrl}/by-role`,
       {
         params: queryString,
-      }
+      },
     );
   }
 
   restoreUser(id: string): Observable<void> {
     return this.http.patch<void>(
       `${this.profileControllerUrl}/restore/${id}`,
-      {}
+      {},
     );
   }
 
   softDeleteUser(id: string): Observable<void> {
     return this.http.patch<void>(
       `${this.profileControllerUrl}/soft-delete/${id}`,
-      {}
+      {},
     );
   }
 
   updateUser(id: string, updatedUser: UpdateUserDto): Observable<void> {
     return this.http.patch<void>(
       `${this.profileControllerUrl}/update/${id}`,
-      updatedUser
+      updatedUser,
     );
   }
 }

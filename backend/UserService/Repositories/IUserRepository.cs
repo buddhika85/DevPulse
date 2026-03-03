@@ -18,6 +18,7 @@ namespace UserService.Repositories
         Task<bool> SoftDeleteUserAsync(UserAccount userToSoftDelete, CancellationToken cancellationToken);
         Task<bool> RestoreUserAsync(UserAccount userToRestore, CancellationToken cancellationToken);
         Task<bool> IsUserExistsAsync(Guid managerId, UserRole manager, CancellationToken cancellationToken);
+        Task<IReadOnlyList<UserAccount>> GetTeamMembersForManagerAsync(Guid managerId, bool includeDeleted, CancellationToken cancellationToken);
 
         // Filter by role or tenant (future)
         //GetByRoleIdAsync();

@@ -1,13 +1,14 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SharedLib.Application.Models;
+using SharedLib.Domain.ValueObjects;
 using System.Data;
 using TaskService.Infrastructure.Common.Extensions;
 using UserService.Application.Common.Enums;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
-using SharedLib.Domain.ValueObjects;
 using UserService.Infrastructure.Persistence;
-using SharedLib.Application.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace UserService.Repositories
 {
@@ -390,6 +391,33 @@ namespace UserService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while checking if user exists with Id={Id} on role={Role} at {Time}", userId, role, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        // get all team members by manager Id
+        public async Task<IReadOnlyList<UserAccount>> GetTeamMembersForManagerAsync(Guid managerId, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all team members for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}", 
+                managerId, includeDeleted, DateTime.UtcNow);
+            try
+            {
+                var query = _dbContext.UserAccounts
+                    .AsNoTracking()
+                    .Where(x => x.ManagerId != null && x.ManagerId.Equals(managerId));
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var entities = await query.OrderByDescending(x => x.CreatedAt).ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Retrieved {TeamMemberCount} team members at {Time}", entities.Count, DateTime.UtcNow);
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving team members for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}",
+                        managerId, includeDeleted, DateTime.UtcNow);
                 throw;
             }
         }

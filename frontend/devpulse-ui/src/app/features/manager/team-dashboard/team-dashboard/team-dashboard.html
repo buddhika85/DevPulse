@@ -1,1 +1,12 @@
-<p>team-dashboard works!</p>
+<div class="page-header">
+  <h1>View My Team Members</h1>
+</div>
+
+<app-generic-table
+  [columns]="columns"
+  [data]="users"
+  [actions]="actions"
+  [pageSizeOptions]="pageSizeOptions"
+  (actionTriggered)="handleAction($event)"
+>
+</app-generic-table>
