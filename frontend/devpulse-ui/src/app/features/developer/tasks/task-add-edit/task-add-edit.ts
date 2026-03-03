@@ -132,14 +132,14 @@ export class TaskAddEdit implements OnInit, OnDestroy {
     const sub = this.taskApiService.createTask(createTaskDto).subscribe({
       next: () => {
         this.snackbarService.success(
-          `New task with title: ${createTaskDto.title} created successfuly!`
+          `New task with title: ${createTaskDto.title} created successfuly!`,
         );
         this.router.navigate(['tasks']);
         this.loadingService.hide();
       },
       error: (err: any) => {
         this.snackbarService.error(
-          `Error - New task with title: ${createTaskDto.title} creation failed !!`
+          `Error - New task with title: ${createTaskDto.title} creation failed !!`,
         );
         this.loadingService.hide();
       },
@@ -166,14 +166,14 @@ export class TaskAddEdit implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.snackbarService.success(
-            `Task with title: ${updateTaskDto.title} updated successfuly!`
+            `Task with title: ${updateTaskDto.title} updated successfuly!`,
           );
           this.router.navigate(['tasks']);
           this.loadingService.hide();
         },
         error: (err: any) => {
           this.snackbarService.error(
-            `Error - Task with title: ${updateTaskDto.title} update failed !!`
+            `Error - Task with title: ${updateTaskDto.title} update failed !!`,
           );
           this.loadingService.hide();
         },
@@ -209,7 +209,7 @@ export class TaskAddEdit implements OnInit, OnDestroy {
           console.error(
             'Error in fetching task for edit with Id ',
             this.editId,
-            err
+            err,
           );
           this.loadingService.hide();
         },
@@ -253,9 +253,12 @@ export class TaskAddEdit implements OnInit, OnDestroy {
   private buildReactiveForm(): void {
     this.taskFormGroup = this.fb.group({
       id: this.fb.control({ value: this.taskFormDto.id, disabled: true }),
-      title: this.fb.control(this.taskFormDto.title, {
-        validators: [Validators.required, Validators.minLength(2)],
-      }),
+      title: this.fb.control(
+        { value: this.taskFormDto.title, disabled: true },
+        {
+          validators: [Validators.required, Validators.minLength(2)],
+        },
+      ),
       description: this.fb.control(this.taskFormDto.description, {
         validators: [Validators.required, Validators.minLength(2)],
       }),
@@ -267,12 +270,15 @@ export class TaskAddEdit implements OnInit, OnDestroy {
       }),
       // Convert Date → "YYYY-MM-DD"
       dueDate: this.fb.control(
-        this.taskFormDto.dueDate
-          ? this.taskFormDto.dueDate.toISOString().substring(0, 10)
-          : null,
+        {
+          value: this.taskFormDto.dueDate
+            ? this.taskFormDto.dueDate.toISOString().substring(0, 10)
+            : null,
+          disabled: true,
+        },
         {
           validators: [Validators.required],
-        }
+        },
       ),
     });
   }

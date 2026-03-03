@@ -88,11 +88,7 @@ namespace OrchestratorService.Controllers
                 return InternalError(detail: ex.Message);
             }
         }
-
-
-        // TO DO - does not need for MVP
-        // Get All jounrals - gets all jounrals with linked tasks
-        // GET /journals     
+           
 
         // Patch Jounral - partial update - Pataches jounral info, re-arranges task jounral links
         // PATCH /journals/{id}
@@ -186,5 +182,9 @@ namespace OrchestratorService.Controllers
         // TO DO - does not need for MVP
         // Patch Jounral - restore journal - restore jounral, restore task journal links
         // PATCH /journals/{id}/restore
+
+        // TO DO - does not need for MVP
+        // Get All jounrals - gets all jounrals with linked tasks
+        // GET /journals  
     }
 }

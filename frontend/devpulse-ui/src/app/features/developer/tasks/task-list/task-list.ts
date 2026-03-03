@@ -36,13 +36,13 @@ export class TaskList implements OnInit, OnDestroy {
       action: 'edit',
       tooltip: 'edit',
     },
-    {
-      label: '',
-      color: '#bdb6b6',
-      icon: 'transform',
-      action: 'activateOrDeactivate',
-      tooltip: 'activate / deactivate',
-    },
+    // {
+    //   label: '',
+    //   color: '#bdb6b6',
+    //   icon: 'transform',
+    //   action: 'activateOrDeactivate',
+    //   tooltip: 'activate / deactivate',
+    // },
   ];
 
   readonly pageSizeOptions: number[] = [10, 20, 30, 40, 50, 100];
@@ -147,7 +147,7 @@ export class TaskList implements OnInit, OnDestroy {
       error: (err: any) => {
         console.error('Failed to fetch user tasks', err);
         this.snackbarService.error(
-          'Failed to fetch all user tasks for the logged in user !'
+          'Failed to fetch all user tasks for the logged in user !',
         );
         this.loadingService.hide();
       },

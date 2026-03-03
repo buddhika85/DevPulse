@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using JournalService.Application.Validators;
 using JournalService.Application.Validators.Journal;
 using JournalService.Extensions;
 using JournalService.Infrastructure.Persistence;
