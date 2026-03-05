@@ -9,7 +9,8 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
         private readonly HttpClient _httpClient;
         private readonly ILogger<UserServiceClient> _logger;
 
-        private const string routeUserById = "api/profile/";
+        private const string routeToProfileController = "api/profile";
+        private const string routeToUserController = "api/users";
 
         public UserServiceClient(HttpClient httpClient, ILogger<UserServiceClient> logger)
         {
@@ -30,7 +31,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
                 _logger.LogInformation("Fetching user profile for user ID: {UserId}", userIdGuid);
 
                 var user = await _httpClient.GetFromJsonAsync<UserAccountDto>(
-                    $"{routeUserById}{userIdGuid}", cancellationToken);                                    // api/profile/user-id
+                    $"{routeToProfileController}/{userIdGuid}", cancellationToken);                                    // api/profile/user-id
 
                 if (user is null)
                 {
@@ -54,6 +55,53 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
             catch (OperationCanceledException)
             {
                 _logger.LogWarning("User profile fetch operation was canceled for user ID: {UserId}", userIdGuid);
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<Guid>> GetTeamMembersForManager(Guid managerId, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Fetching team user IDs for manager {ManagerId} at {Time}", managerId, now);
+
+            try
+            {
+                var url = $"{routeToUserController}/team-for-manager";
+
+                _logger.LogInformation("Calling User API endpoint {Url} for manager {ManagerId}", url, managerId);
+
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+
+                // Throws if status code is not 2xx
+                response.EnsureSuccessStatusCode();
+
+                var userIds = await response.Content.ReadFromJsonAsync<IReadOnlyList<Guid>>(cancellationToken: cancellationToken);
+
+                if (userIds is null)
+                {
+                    _logger.LogWarning("User API returned null team member list for manager {ManagerId}", managerId);
+                    throw new InvalidOperationException($"Team user IDs not found for manager {managerId}");
+                }
+
+                _logger.LogInformation(
+                    "Successfully retrieved {Count} team member IDs for manager {ManagerId} at {Time}",
+                    userIds.Count, managerId, now);
+
+                return userIds;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching team user IDs for manager {ManagerId}", managerId);
+                throw new ApplicationException("Failed to fetch team user IDs from User API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for team user IDs for manager {ManagerId}", managerId);
+                throw new ApplicationException("Failed to deserialize team user ID data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Team user ID fetch operation was canceled for manager {ManagerId}", managerId);
                 throw;
             }
         }

@@ -5,8 +5,9 @@ import {
   AdminDashboardDto,
   UserDashboardDto,
 } from '../models/base-dashbaord.dto';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { ManagerDashboard } from '../../features/manager/manager-dashboard/manager-dashboard';
+import { TaskItemDto } from '../models/task-item.dto';
 
 // dedicated for Orchestrator Micro Service Calls
 
@@ -17,24 +18,36 @@ export class OrchestratorApiService {
   // orchestratorApi micro service URL
   private apiUrl = environment.msal.protectedResources.orchestratorApi.url;
   private dashbaordControllerUrl = `${this.apiUrl}api/dashboard/`;
+  private tasksControllerUrl = `${this.apiUrl}api/tasks/`;
 
   constructor(private http: HttpClient) {}
 
   getAdminDashBaord(userId: string): Observable<AdminDashboardDto> {
     return this.http.get<AdminDashboardDto>(
-      `${this.dashbaordControllerUrl}${userId}`
+      `${this.dashbaordControllerUrl}${userId}`,
     );
   }
 
   getManagerDashBaord(userId: string): Observable<ManagerDashboard> {
     return this.http.get<ManagerDashboard>(
-      `${this.dashbaordControllerUrl}${userId}`
+      `${this.dashbaordControllerUrl}${userId}`,
     );
   }
 
   getDeveloperDashBaord(userId: string): Observable<UserDashboardDto> {
     return this.http.get<UserDashboardDto>(
-      `${this.dashbaordControllerUrl}${userId}`
+      `${this.dashbaordControllerUrl}${userId}`,
+    );
+  }
+
+  getManagedTasks(includeDeleted: boolean): Observable<TaskItemDto[]> {
+    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    return this.http.get<TaskItemDto[]>(
+      `${this.tasksControllerUrl}tasks-for-team`,
+      {
+        params: queryString,
+      },
     );
   }
 }

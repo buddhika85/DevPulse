@@ -6,6 +6,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskMicroService
     {
         Task<List<TaskItemDto>> GetTasksAsync(string userId, CancellationToken cancellationToken);        
         Task<TaskItemDto[]?> GetTasksAsync(IEnumerable<Guid> taskIds, CancellationToken cancellationToken);
+        Task<IReadOnlyList<TaskItemDto>> GetTasksForTeamMembers(IReadOnlyList<Guid> teamMemberIds, bool includeDeleted, CancellationToken cancellationToken);
     }
 
 }

@@ -31,20 +31,6 @@ export class TaskApiService {
     );
   }
 
-  getManagedTasks(
-    managerId: string,
-    includeDeleted: boolean,
-  ): Observable<TaskItemDto[]> {
-    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
-
-    return this.http.get<TaskItemDto[]>(
-      `${this.taskControllerUrl}/by-manager/${managerId}`,
-      {
-        params: queryString,
-      },
-    );
-  }
-
   getTaskById(id: string): Observable<TaskItemDto> {
     return this.http.get<TaskItemDto>(`${this.taskControllerUrl}/${id}`);
   }

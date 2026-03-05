@@ -94,6 +94,60 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskMicroService
                 throw;
             }
         }
+
+        public async Task<IReadOnlyList<TaskItemDto>> GetTasksForTeamMembers(IReadOnlyList<Guid> teamMemberIds, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            if (teamMemberIds is null || !teamMemberIds.Any())
+                return [];
+
+            var now = DateTime.UtcNow;
+            var teamMemberIdsStr = $"[{string.Join(",", teamMemberIds)}]";
+
+            _logger.LogInformation(
+                "Fetching tasks for team members {TeamMemberIdsList} (includeDeleted={IncludeDeleted}) at {Time}",
+                teamMemberIdsStr, includeDeleted, now);
+
+            try
+            {
+                var url = $"{RouteToTasksController}/by-team-members?includeDeleted={includeDeleted}";
+
+                _logger.LogInformation("Calling Task API endpoint {Url} at {Time}", url, now);
+
+                var response = await _httpClient.PostAsJsonAsync(url, teamMemberIds, cancellationToken);
+
+                response.EnsureSuccessStatusCode();
+
+                var tasks = await response.Content.ReadFromJsonAsync<IReadOnlyList<TaskItemDto>>(cancellationToken: cancellationToken);
+
+                return tasks ?? [];
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "HTTP request failed while fetching tasks for team members {TeamMemberIdsList} (includeDeleted={IncludeDeleted}) at {Time}",
+                    teamMemberIdsStr, includeDeleted, now);
+
+                throw new ApplicationException("Failed to fetch tasks from Task API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Deserialization failed for tasks for team members {TeamMemberIdsList} (includeDeleted={IncludeDeleted}) at {Time}",
+                    teamMemberIdsStr, includeDeleted, now);
+
+                throw new ApplicationException("Failed to deserialize task data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "Task fetching operation was canceled for team members {TeamMemberIdsList} (includeDeleted={IncludeDeleted}) at {Time}",
+                    teamMemberIdsStr, includeDeleted, now);
+
+                throw;
+            }
+        }
     }
 
 }

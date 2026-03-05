@@ -9,6 +9,7 @@ import { TaskApiService } from '../../../../core/services/task-api';
 import { UserStoreService } from '../../../../core/services/user-store.service';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
+import { OrchestratorApiService } from '../../../../core/services/orchestrator-api';
 
 @Component({
   selector: 'app-task-list',
@@ -51,6 +52,7 @@ export class TaskList {
 
   private readonly router: Router = inject(Router);
   private readonly taskApi = inject(TaskApiService);
+  private readonly orchestratorApi = inject(OrchestratorApiService);
   private readonly userStoreService = inject(UserStoreService);
   private readonly loadingService = inject(LoadingService);
   private readonly compositeSubscription: Subscription = new Subscription();
@@ -138,7 +140,7 @@ export class TaskList {
   }
 
   private fetchAllManagedTasks(): void {
-    const sub = this.taskApi.getManagedTasks(this.userId, true).subscribe({
+    const sub = this.orchestratorApi.getManagedTasks(true).subscribe({
       next: (value: TaskItemDto[]) => {
         this.tasksOfUser = value;
         console.log(this.tasksOfUser);
