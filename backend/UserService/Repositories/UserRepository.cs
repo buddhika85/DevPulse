@@ -420,5 +420,31 @@ namespace UserService.Repositories
                 throw;
             }
         }
+
+        public async Task<IReadOnlyList<Guid>> GetTeamMemberGuidsForManagerAsync(Guid managerId, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all team member guids for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}",
+               managerId, includeDeleted, DateTime.UtcNow);
+            try
+            {
+                var query = _dbContext.UserAccounts.Include(x => x.Manager)
+                    .AsNoTracking()
+                    .Where(x => x.ManagerId != null && x.ManagerId.Equals(managerId));
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var guids = await query.OrderByDescending(x => x.CreatedAt).Select(x => x.Id).ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Retrieved {TeamMemberCount} team members at {Time}", guids.Count, DateTime.UtcNow);
+                return guids;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving team member guids for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}",
+                        managerId, includeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
     }
 }

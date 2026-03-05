@@ -426,5 +426,29 @@ namespace UserService.Services
                 throw;
             }
         }
+
+        public async Task<IReadOnlyList<Guid>> GetTeamMemberGuidsForManagerAsync(GetTeamMemberGuidsForManagerQuery query, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to retrieve all team member guids for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}", query.ManagerId, query.IncludeDeleted, DateTime.UtcNow);
+            try
+            {
+                var guids = await _userRepository.GetTeamMemberGuidsForManagerAsync(Guid.Parse(query.ManagerId), query.IncludeDeleted, cancellationToken);
+                _logger.LogInformation("Successfully retrieved {MemberCount} team members for manager: {ManagerId}  at {Time}", guids?.Count ?? 0, query.ManagerId, DateTime.UtcNow);
+
+                if (guids is null)
+                {
+                    _logger.LogInformation("No team members to convert to DTOs for manager Id: {ManagerId} at {Time}", query.ManagerId, DateTime.UtcNow);
+                    return [];
+                }
+
+                return guids;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving team member guids for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}",
+                    query.ManagerId, query.IncludeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
     }
 }

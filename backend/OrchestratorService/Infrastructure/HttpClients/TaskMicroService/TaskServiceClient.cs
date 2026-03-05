@@ -1,7 +1,4 @@
-﻿using SharedLib.DTOs.Journal;
-using SharedLib.DTOs.Task;
-using SharedLib.DTOs.TaskJournalLink;
-using System.Net;
+﻿using SharedLib.DTOs.Task;
 using System.Text.Json;
 
 

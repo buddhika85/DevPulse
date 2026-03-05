@@ -22,5 +22,6 @@ namespace UserService.Services
 
         Task<UserAccountDto?> ResolveOrCreateAsync(string userId, CancellationToken cancellationToken);         // userId == entra tokens oid
         Task<IReadOnlyList<UserAccountDto>> GetTeamMembersForManagerAsync(GetTeamMemberForManagerQuery query, CancellationToken cancellationToken);
+        Task<IReadOnlyList<Guid>> GetTeamMemberGuidsForManagerAsync(GetTeamMemberGuidsForManagerQuery query, CancellationToken cancellationToken);
     }
 }

@@ -19,7 +19,7 @@ namespace UserService.Application.Handlers.QueryHandlers
 
         public async Task<IReadOnlyList<UserAccountDto>> Handle(GetTeamMemberForManagerQuery query, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Handling GetUserByIdQuery at {Time}", DateTime.UtcNow);
+            _logger.LogInformation("Handling GetTeamMemberForManagerQuery at {Time}", DateTime.UtcNow);
             return await _service.GetTeamMembersForManagerAsync(query, cancellationToken);
         }
     }

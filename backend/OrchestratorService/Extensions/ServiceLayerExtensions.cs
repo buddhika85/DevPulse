@@ -1,5 +1,4 @@
 ﻿using OrchestratorService.Application.Services;
-using OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroService;
 
 namespace OrchestratorService.Extensions
 {
@@ -15,6 +14,7 @@ namespace OrchestratorService.Extensions
         public static IServiceCollection InjectServices(this IServiceCollection services)
         {
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IJournalService, JournalService>();
             return services;
         }
