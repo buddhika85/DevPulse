@@ -74,6 +74,7 @@ namespace TaskService.Controllers
         }
 
 
+
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get task by ID", Description = "Returns a single task item by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskItemDto))]
@@ -337,5 +338,42 @@ namespace TaskService.Controllers
             }
         }
 
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
+        [HttpPost("by-team-members")]
+        [SwaggerOperation(Summary = "Get tasks for team members", Description = "Returns all tasks for team members.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetByTeamMembers([FromBody] Guid[] teamMembers,
+                                                        CancellationToken cancellationToken,
+                                                        [FromQuery] bool includeDeleted = false)
+        {
+
+            var now = DateTime.UtcNow;
+            var teamCsv = string.Join(",", teamMembers);
+
+            _logger.LogInformation(
+                "Fetching tasks for team members {TeamMembers} (includeDeleted={IncludeDeleted}) at {Time}",
+                teamCsv, includeDeleted, now);
+
+            try
+            {
+                var tasks = await _mediator.Send(
+                    new GetTasksByTeamQuery(teamMembers, includeDeleted),
+                    cancellationToken);
+
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching tasks for team members {TeamMembers} (includeDeleted={IncludeDeleted}) at {Time}",
+                    teamCsv, includeDeleted, now);
+
+                return InternalError($"An error occurred while retrieving tasks for team members: {teamCsv}.");
+            }
+
+        }
     }
 }

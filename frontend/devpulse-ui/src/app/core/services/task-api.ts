@@ -19,7 +19,7 @@ export class TaskApiService {
 
   getTasksByUserId(
     userId: string,
-    includeDeleted: boolean
+    includeDeleted: boolean,
   ): Observable<TaskItemDto[]> {
     var queryString = new HttpParams().set('includeDeleted', includeDeleted);
 
@@ -27,7 +27,21 @@ export class TaskApiService {
       `${this.taskControllerUrl}/by-user/${userId}`,
       {
         params: queryString,
-      }
+      },
+    );
+  }
+
+  getManagedTasks(
+    managerId: string,
+    includeDeleted: boolean,
+  ): Observable<TaskItemDto[]> {
+    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    return this.http.get<TaskItemDto[]>(
+      `${this.taskControllerUrl}/by-manager/${managerId}`,
+      {
+        params: queryString,
+      },
     );
   }
 
@@ -42,7 +56,7 @@ export class TaskApiService {
   softDeleteTask(id: string): Observable<void> {
     return this.http.patch<void>(
       `${this.taskControllerUrl}/soft-delete/${id}`,
-      {}
+      {},
     );
   }
 
@@ -53,7 +67,7 @@ export class TaskApiService {
   updateTask(id: string, updatedTask: UpdateTaskDto): Observable<void> {
     return this.http.patch<void>(
       `${this.taskControllerUrl}/${id}`,
-      updatedTask
+      updatedTask,
     );
   }
 }

@@ -22,7 +22,7 @@ export const routes: Routes = [
         path: 'error-status-code/:status',
         loadComponent: () =>
           import('./features/errors/error-status-code/error-status-code').then(
-            (m) => m.ErrorStatusCode
+            (m) => m.ErrorStatusCode,
           ),
       },
 
@@ -31,7 +31,7 @@ export const routes: Routes = [
         path: 'tasks',
         loadComponent: () =>
           import('./features/developer/tasks/task-list/task-list').then(
-            (m) => m.TaskList
+            (m) => m.TaskList,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -40,7 +40,7 @@ export const routes: Routes = [
         path: 'tasks/add',
         loadComponent: () =>
           import('./features/developer/tasks/task-add-edit/task-add-edit').then(
-            (m) => m.TaskAddEdit
+            (m) => m.TaskAddEdit,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -49,7 +49,7 @@ export const routes: Routes = [
         path: 'tasks/edit/:id',
         loadComponent: () =>
           import('./features/developer/tasks/task-add-edit/task-add-edit').then(
-            (m) => m.TaskAddEdit
+            (m) => m.TaskAddEdit,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -59,7 +59,7 @@ export const routes: Routes = [
         path: 'moods',
         loadComponent: () =>
           import('./features/developer/mood/mood-list/mood-list').then(
-            (m) => m.MoodList
+            (m) => m.MoodList,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -68,7 +68,7 @@ export const routes: Routes = [
         path: 'moods/add',
         loadComponent: () =>
           import('./features/developer/mood/mood-add-edit/mood-add-edit').then(
-            (m) => m.MoodAddEdit
+            (m) => m.MoodAddEdit,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -77,7 +77,7 @@ export const routes: Routes = [
         path: 'moods/edit/:id',
         loadComponent: () =>
           import('./features/developer/mood/mood-add-edit/mood-add-edit').then(
-            (m) => m.MoodAddEdit
+            (m) => m.MoodAddEdit,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
@@ -86,18 +86,18 @@ export const routes: Routes = [
       {
         path: 'journal',
         loadComponent: () =>
-          import(
-            './features/developer/journal/journal-entry/journal-entry'
-          ).then((m) => m.JournalEntry),
+          import('./features/developer/journal/journal-entry/journal-entry').then(
+            (m) => m.JournalEntry,
+          ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
       },
       {
         path: 'export',
         loadComponent: () =>
-          import(
-            './features/developer/summary/summary-export/summary-export'
-          ).then((m) => m.SummaryExport),
+          import('./features/developer/summary/summary-export/summary-export').then(
+            (m) => m.SummaryExport,
+          ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
       },
@@ -106,17 +106,46 @@ export const routes: Routes = [
       {
         path: 'team-dashboard',
         loadComponent: () =>
-          import(
-            './features/manager/team-dashboard/team-dashboard/team-dashboard'
-          ).then((m) => m.TeamDashboard),
+          import('./features/manager/team-dashboard/team-dashboard/team-dashboard').then(
+            (m) => m.TeamDashboard,
+          ),
+        data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
+      },
+
+      {
+        path: 'task-management',
+        loadComponent: () =>
+          import('./features/manager/task-management/task-list/task-list').then(
+            (m) => m.TaskList,
+          ),
         data: { roles: ['Manager'] },
         canActivate: [roleguardGuard],
       },
       {
+        path: 'task-management/add',
+        loadComponent: () =>
+          import('./features/manager/task-management/task-add-edit/task-add-edit').then(
+            (m) => m.TaskAddEdit,
+          ),
+        data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
+      },
+      {
+        path: 'task-management/edit/:id',
+        loadComponent: () =>
+          import('./features/manager/task-management/task-add-edit/task-add-edit').then(
+            (m) => m.TaskAddEdit,
+          ),
+        data: { roles: ['Manager'] },
+        canActivate: [roleguardGuard],
+      },
+
+      {
         path: 'feedback',
         loadComponent: () =>
           import('./features/manager/feedback/feedback/feedback').then(
-            (m) => m.Feedback
+            (m) => m.Feedback,
           ),
         data: { roles: ['Manager'] },
         canActivate: [roleguardGuard],
@@ -125,7 +154,7 @@ export const routes: Routes = [
         path: 'goals',
         loadComponent: () =>
           import('./features/manager/goals/goal-setter/goal-setter').then(
-            (m) => m.GoalSetter
+            (m) => m.GoalSetter,
           ),
         data: { roles: ['Manager'] },
         canActivate: [roleguardGuard],
@@ -135,9 +164,9 @@ export const routes: Routes = [
       {
         path: 'users',
         loadComponent: () =>
-          import(
-            './features/admin/user-management/user-list/user-management'
-          ).then((m) => m.UserManagement),
+          import('./features/admin/user-management/user-list/user-management').then(
+            (m) => m.UserManagement,
+          ),
         data: { roles: ['Admin'] },
         canActivate: [roleguardGuard],
       },
@@ -145,7 +174,7 @@ export const routes: Routes = [
         path: 'users/edit/:id',
         loadComponent: () =>
           import('./features/admin/user-management/user-edit/user-edit').then(
-            (m) => m.UserEdit
+            (m) => m.UserEdit,
           ),
         data: { roles: ['Admin'] },
         canActivate: [roleguardGuard],
@@ -154,7 +183,7 @@ export const routes: Routes = [
         path: 'limits',
         loadComponent: () =>
           import('./features/admin/api-limits/api-limits/api-limits').then(
-            (m) => m.ApiLimits
+            (m) => m.ApiLimits,
           ),
         data: { roles: ['Admin'] },
         canActivate: [roleguardGuard],
@@ -162,9 +191,9 @@ export const routes: Routes = [
       {
         path: 'health',
         loadComponent: () =>
-          import(
-            './features/admin/system-health/system-health/system-health'
-          ).then((m) => m.SystemHealth),
+          import('./features/admin/system-health/system-health/system-health').then(
+            (m) => m.SystemHealth,
+          ),
         data: { roles: ['Admin'] },
         canActivate: [roleguardGuard],
       },
@@ -174,7 +203,7 @@ export const routes: Routes = [
         path: 'devtools',
         loadComponent: () =>
           import('./features/devtools/devtools/devtools').then(
-            (m) => m.Devtools
+            (m) => m.Devtools,
           ),
         data: { roles: ['Admin', 'Manager', 'User'] },
         canActivate: [roleguardGuard],
@@ -185,7 +214,7 @@ export const routes: Routes = [
         path: 'unauthorized',
         loadComponent: () =>
           import('./features/errors/unauthorized/unauthorized').then(
-            (m) => m.Unauthorized
+            (m) => m.Unauthorized,
           ),
       },
     ],

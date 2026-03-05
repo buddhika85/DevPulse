@@ -8,7 +8,6 @@ using UserService.Application.Common.Enums;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
 using UserService.Infrastructure.Persistence;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace UserService.Repositories
 {
@@ -402,7 +401,7 @@ namespace UserService.Repositories
                 managerId, includeDeleted, DateTime.UtcNow);
             try
             {
-                var query = _dbContext.UserAccounts
+                var query = _dbContext.UserAccounts.Include(x => x.Manager)
                     .AsNoTracking()
                     .Where(x => x.ManagerId != null && x.ManagerId.Equals(managerId));
 

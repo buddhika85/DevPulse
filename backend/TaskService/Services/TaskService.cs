@@ -215,6 +215,32 @@ namespace TaskService.Services
         }
 
 
+        public async Task<IReadOnlyList<TaskItemDto>> GetTasksByTeamAsync(GetTasksByTeamQuery query, CancellationToken cancellationToken)
+        {
+            var teamCsv = string.Join(',', query.TeamMembers);
+            _logger.LogInformation("Attempting to retrieve all TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}", teamCsv, query.IncludeDeleted, DateTime.UtcNow);
+            try
+            {
+                var entities = await _taskRepository.GetTasksByTeamAsync(query.TeamMembers, query.IncludeDeleted, cancellationToken);
+
+                _logger.LogInformation("Found {TeamTaskCount} TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}",
+                    entities.Count, teamCsv, query.IncludeDeleted, DateTime.UtcNow);
+
+                var dtos = TaskMapper.ToDtosList(entities);
+
+                _logger.LogInformation("Converted {TeamTaskCount} TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}",
+                   entities.Count, teamCsv, query.IncludeDeleted, DateTime.UtcNow);
+
+                return [.. dtos];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while attempting to retrieve all TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}",
+                   teamCsv, query.IncludeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
+
         #region Helpers
 
         private Domain.ValueObjects.TaskStatus? MapTaskStatus(string status)

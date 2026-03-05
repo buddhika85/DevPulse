@@ -6,6 +6,7 @@ using TaskService.Application.Queries;
 using TaskService.Domain.Entities;
 using TaskService.Infrastructure.Common.Extensions;
 using TaskService.Infrastructure.Persistence;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace TaskService.Repositories
 {
@@ -315,6 +316,36 @@ namespace TaskService.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while retrieving paginated TaskItems at {Time}", DateTime.UtcNow);
+                throw;
+            }
+        }
+
+
+        public async Task<IReadOnlyList<TaskItem>> GetTasksByTeamAsync(Guid[] teamMembers, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            var teamCsv = string.Join(',', teamMembers);
+            _logger.LogInformation("Attempting to retrieve all TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}", teamCsv, includeDeleted, DateTime.UtcNow);
+
+            try
+            {               
+                var query = _dbContext.Tasks
+                    .AsNoTracking()
+                    .Where(x => teamMembers.Contains(x.UserId));
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var entities = await query.OrderByDescending(x => x.CreatedAt).ToListAsync(cancellationToken);
+
+                _logger.LogInformation("Found {TeamTaskCount} TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}",
+                    entities.Count, teamCsv, includeDeleted, DateTime.UtcNow);
+
+                return entities;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while attempting to retrieve all TaskItems for Team={Team} includeDeleted={IncludeDeleted} at {Time}",
+                    teamCsv, includeDeleted, DateTime.UtcNow);
                 throw;
             }
         }
