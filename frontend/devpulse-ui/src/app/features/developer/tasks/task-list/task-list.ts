@@ -23,6 +23,7 @@ export class TaskList implements OnInit, OnDestroy {
     { key: 'description', label: 'Description' },
     { key: 'status', label: 'Status' },
     { key: 'createdAtStr', label: 'Created' },
+    { key: 'dueDateStr', label: 'Due' },
 
     { key: 'priority', label: 'Priority' },
     { key: 'isDeletedStr', label: 'Is Deleted?' },

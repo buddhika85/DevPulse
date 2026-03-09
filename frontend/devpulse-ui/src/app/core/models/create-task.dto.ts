@@ -1,5 +1,5 @@
 export interface CreateTaskDto {
-  userId: string;
+  userId: string | null;
   title: string | null;
   description: string | null;
   dueDate: Date | null;

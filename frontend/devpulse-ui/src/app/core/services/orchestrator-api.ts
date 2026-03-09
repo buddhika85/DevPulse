@@ -7,7 +7,7 @@ import {
 } from '../models/base-dashbaord.dto';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ManagerDashboard } from '../../features/manager/manager-dashboard/manager-dashboard';
-import { TaskItemDto } from '../models/task-item.dto';
+import { TaskItemWithUserDto } from '../models/task-item.dto';
 
 // dedicated for Orchestrator Micro Service Calls
 
@@ -40,10 +40,10 @@ export class OrchestratorApiService {
     );
   }
 
-  getManagedTasks(includeDeleted: boolean): Observable<TaskItemDto[]> {
+  getManagedTasks(includeDeleted: boolean): Observable<TaskItemWithUserDto[]> {
     var queryString = new HttpParams().set('includeDeleted', includeDeleted);
 
-    return this.http.get<TaskItemDto[]>(
+    return this.http.get<TaskItemWithUserDto[]>(
       `${this.tasksControllerUrl}tasks-for-team`,
       {
         params: queryString,

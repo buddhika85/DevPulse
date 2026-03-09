@@ -12,4 +12,9 @@ export interface TaskItemDto extends BaseDto {
   userId: string;
   priority: string;
   dueDate: Date | null;
+  dueDateStr: string;
+}
+
+export interface TaskItemWithUserDto extends TaskItemDto {
+  userDisplayName: string;
 }

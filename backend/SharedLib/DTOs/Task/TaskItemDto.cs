@@ -16,5 +16,7 @@
         public Guid UserId { get; set; }
         public string Priority { get; set; } = "Medium";
         public DateTime? DueDate { get; set; }
+
+        public string DueDateStr => DueDate?.ToShortDateString() ?? string.Empty;
     }
 }

@@ -3,7 +3,10 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { TableAction } from '../../../../core/models/table-action';
 import { TableColumn } from '../../../../core/models/table-column';
-import { TaskItemDto } from '../../../../core/models/task-item.dto';
+import {
+  TaskItemDto,
+  TaskItemWithUserDto,
+} from '../../../../core/models/task-item.dto';
 import { LoadingService } from '../../../../core/services/loading-service';
 import { TaskApiService } from '../../../../core/services/task-api';
 import { UserStoreService } from '../../../../core/services/user-store.service';
@@ -24,26 +27,31 @@ export class TaskList {
     { key: 'description', label: 'Description' },
     { key: 'status', label: 'Status' },
     { key: 'createdAtStr', label: 'Created' },
+    { key: 'dueDateStr', label: 'Due' },
 
     { key: 'priority', label: 'Priority' },
     { key: 'isDeletedStr', label: 'Is Deleted?' },
+
+    //{ key: 'userId', label: 'UserId' },
+
+    { key: 'userDisplayName', label: 'User' },
   ];
 
   readonly actions: TableAction[] = [
-    {
-      label: '',
-      color: '#e4e2e2',
-      icon: 'edit',
-      action: 'edit',
-      tooltip: 'edit',
-    },
     // {
     //   label: '',
-    //   color: '#bdb6b6',
-    //   icon: 'transform',
-    //   action: 'activateOrDeactivate',
-    //   tooltip: 'activate / deactivate',
+    //   color: '#e4e2e2',
+    //   icon: 'edit',
+    //   action: 'edit',
+    //   tooltip: 'edit',
     // },
+    {
+      label: '',
+      color: '#bdb6b6',
+      icon: 'transform',
+      action: 'activateOrDeactivate',
+      tooltip: 'activate / deactivate',
+    },
   ];
 
   readonly pageSizeOptions: number[] = [10, 20, 30, 40, 50, 100];
@@ -58,7 +66,7 @@ export class TaskList {
   private readonly compositeSubscription: Subscription = new Subscription();
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
 
-  tasksOfUser: TaskItemDto[] = [];
+  tasksOfManager: TaskItemWithUserDto[] = [];
 
   ngOnInit(): void {
     const user = this.userStoreService.userDto();
@@ -83,11 +91,11 @@ export class TaskList {
   }
 
   add(): void {
-    this.router.navigate(['tasks/add']);
+    this.router.navigate(['task-management/add']);
   }
 
   edit(task: TaskItemDto): void {
-    this.router.navigate(['tasks/edit', task.id]);
+    this.router.navigate(['task-management/edit', task.id]);
   }
 
   private restoreOrSoftDelete(task: TaskItemDto): void {
@@ -141,9 +149,9 @@ export class TaskList {
 
   private fetchAllManagedTasks(): void {
     const sub = this.orchestratorApi.getManagedTasks(true).subscribe({
-      next: (value: TaskItemDto[]) => {
-        this.tasksOfUser = value;
-        console.log(this.tasksOfUser);
+      next: (value: TaskItemWithUserDto[]) => {
+        this.tasksOfManager = value;
+        console.log(this.tasksOfManager);
         this.loadingService.hide();
       },
       error: (err: any) => {

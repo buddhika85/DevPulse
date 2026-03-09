@@ -5,4 +5,5 @@ export interface TaskFormDto {
   status: string;
   priority: string;
   dueDate: Date;
+  userId: string | null;
 }

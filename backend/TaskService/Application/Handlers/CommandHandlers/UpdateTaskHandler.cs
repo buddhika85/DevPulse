@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using MediatR;
+﻿using MediatR;
 using TaskService.Application.Commands;
 using TaskService.Services;
 

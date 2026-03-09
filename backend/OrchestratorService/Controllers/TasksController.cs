@@ -31,7 +31,7 @@ namespace OrchestratorService.Controllers
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("tasks-for-team")]
         [SwaggerOperation(Summary = "Get tasks for team by manager Id", Description = "Returns tasks for team by manager Id")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]      
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemWithUserDto>))]      
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetTasksByTeam(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)

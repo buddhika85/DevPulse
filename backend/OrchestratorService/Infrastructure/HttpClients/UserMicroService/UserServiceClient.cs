@@ -59,7 +59,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
             }
         }
 
-        public async Task<IReadOnlyList<Guid>> GetTeamMembersForManager(Guid managerId, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<Guid>> GetTeamMembersIdsForManager(Guid managerId, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
             _logger.LogInformation("Fetching team user IDs for manager {ManagerId} at {Time}", managerId, now);
@@ -105,6 +105,55 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
                 throw;
             }
         }
+
+
+        public async Task<IReadOnlyList<UserAccountDto>> GetTeamMembersForManager(Guid managerId, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            _logger.LogInformation("Fetching team user users for manager {ManagerId} at {Time}", managerId, now);
+
+            try
+            {
+                var url = $"{routeToProfileController}/team-for-manager";
+
+                _logger.LogInformation("Calling User API endpoint {Url} for manager {ManagerId}", url, managerId);
+
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+
+                // Throws if status code is not 2xx
+                response.EnsureSuccessStatusCode();
+
+                var userIds = await response.Content.ReadFromJsonAsync<IReadOnlyList<UserAccountDto>>(cancellationToken: cancellationToken);
+
+                if (userIds is null)
+                {
+                    _logger.LogWarning("User API returned null team member list for manager {ManagerId}", managerId);
+                    throw new InvalidOperationException($"Team user users not found for manager {managerId}");
+                }
+
+                _logger.LogInformation(
+                    "Successfully retrieved {Count} team member users for manager {ManagerId} at {Time}",
+                    userIds.Count, managerId, now);
+
+                return userIds;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching team users for manager {ManagerId}", managerId);
+                throw new ApplicationException("Failed to fetch team user from User API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for team users for manager {ManagerId}", managerId);
+                throw new ApplicationException("Failed to deserialize team user data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Team members fetch operation was canceled for manager {ManagerId}", managerId);
+                throw;
+            }
+        }
+
     }
 
 }

@@ -2,18 +2,13 @@
   <h1>My Teams - Tasks</h1>
 </div>
 
-<button
-  class="azure-btn"
-  (click)="add()"
-  style="margin-bottom: 1%"
-  [disabled]="true"
->
+<button class="azure-btn" (click)="add()" style="margin-bottom: 1%">
   Add Task & Assign
 </button>
 
 <app-generic-table
   [columns]="columns"
-  [data]="tasksOfUser"
+  [data]="tasksOfManager"
   [actions]="actions"
   [pageSizeOptions]="pageSizeOptions"
   (actionTriggered)="handleAction($event)"

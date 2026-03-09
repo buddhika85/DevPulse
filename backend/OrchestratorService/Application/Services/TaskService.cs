@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-using OrchestratorService.Application.DTOs;
 using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
 using OrchestratorService.Infrastructure.HttpClients.UserMicroService;
 using SharedLib.DTOs.Task;
+using SharedLib.DTOs.User;
 
 namespace OrchestratorService.Application.Services
 {
@@ -22,26 +22,26 @@ namespace OrchestratorService.Application.Services
             _logger = logger;
         }
 
-        public async Task<IReadOnlyList<TaskItemDto>> GetTasksByTeam(Guid managerId, bool includeDeleted,  CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<TaskItemWithUserDto>> GetTasksByTeam(Guid managerId, bool includeDeleted,  CancellationToken cancellationToken)
         {
-            var now = DateTime.UtcNow;
-            _logger.LogInformation("Finding tasks for team by manager {ManagerId} (includeDeleted={IncludeDeleted}) at {Time}", managerId, includeDeleted, now);
+           
+            _logger.LogInformation("Finding tasks for team by manager {ManagerId} (includeDeleted={IncludeDeleted}) at {Time}", managerId, includeDeleted, DateTime.UtcNow);
 
             var cacheKey = $"TeamMembersForManagerId:{managerId}";
 
             try
             {
-                _logger.LogInformation("Step 1 - retrieving team member IDs for manager {ManagerId}", managerId);
+                _logger.LogInformation("Step 1 - retrieving team members for manager {ManagerId}", managerId);
 
-                if (!_inMemoryCache.TryGetValue(cacheKey, out IReadOnlyList<Guid>? teamMemberIds) || teamMemberIds is null)
+                if (!_inMemoryCache.TryGetValue(cacheKey, out IReadOnlyList<UserAccountDto>? teamMembers) || teamMembers is null)
                 {
                     _logger.LogInformation("Cache miss for manager {ManagerId}. Requesting from User Microservice.", managerId);
-                    teamMemberIds = await _userClient.GetTeamMembersForManager(managerId, cancellationToken);
+                    teamMembers = await _userClient.GetTeamMembersForManager(managerId, cancellationToken);
 
-                    if (teamMemberIds is not null)
+                    if (teamMembers is not null)
                     {
-                        _logger.LogInformation("Caching {TeamMemberCount} team members for manager {ManagerId}", teamMemberIds.Count, managerId);
-                        _inMemoryCache.Set(cacheKey, teamMemberIds, TimeSpan.FromMinutes(CachedTimeInMins));
+                        _logger.LogInformation("Caching {TeamMemberCount} team members for manager {ManagerId}", teamMembers.Count, managerId);
+                        _inMemoryCache.Set(cacheKey, teamMembers, TimeSpan.FromMinutes(CachedTimeInMins));
                     }
                 }
                 else
@@ -49,17 +49,24 @@ namespace OrchestratorService.Application.Services
                     _logger.LogInformation("Cache hit for manager {ManagerId}", managerId);
                 }
 
-                if (teamMemberIds is null || !teamMemberIds.Any())
+                if (teamMembers is null || !teamMembers.Any())
                 {
                     _logger.LogInformation("No team members found for manager {ManagerId}", managerId);
                     return [];
                 }
 
-                _logger.LogInformation("Step 2 - retrieving tasks for {TeamMemberCount} team members", teamMemberIds.Count);
+                _logger.LogInformation("Step 2 - retrieving tasks for {TeamMemberCount} team members", teamMembers.Count);
 
-                var tasks = await _taskClient.GetTasksForTeamMembers(teamMemberIds, includeDeleted, cancellationToken);
+                var tasks = await _taskClient.GetTasksForTeamMembers([.. teamMembers.Select(x => x.Id)], includeDeleted, cancellationToken);
 
-                return tasks;
+
+
+                _logger.LogInformation("Step 3 - Hydrating task items with assigned user display name");
+
+                // enrich tasks with assigned user display name
+                var tasksEnrichedWithUser = HydrateTaskWithUserDisplayName(teamMembers, tasks);
+
+                return tasksEnrichedWithUser.AsReadOnly();
             }
             catch (Exception ex)
             {
@@ -67,6 +74,48 @@ namespace OrchestratorService.Application.Services
                 throw;
             }
 
+        }
+
+        /// <summary>
+        /// Enriches a collection of task items with the display name of the user
+        /// they are assigned to. This method performs a left join between the
+        /// provided task list and the manager's team member list, ensuring that
+        /// tasks are still returned even if the assigned user is no longer part
+        /// of the team.
+        /// </summary>
+        /// <param name="teamMembers">
+        /// The list of users belonging to the manager's team. Used to resolve
+        /// the display name for each task's assigned user.
+        /// </param>
+        /// <param name="tasks">
+        /// The list of task items retrieved from the Task microservice. Each task
+        /// contains a UserId that is matched against the team member list.
+        /// </param>
+        /// <returns>
+        /// A list of <see cref="TaskItemWithUserDto"/> objects where each task is
+        /// enriched with the corresponding user's display name. If a matching user
+        /// cannot be found (e.g., user removed from team), the display name is set
+        /// to "unknown".
+        /// </returns>
+        private static List<TaskItemWithUserDto> HydrateTaskWithUserDisplayName(IReadOnlyList<UserAccountDto> teamMembers, IReadOnlyList<TaskItemDto> tasks)
+        {
+            return [.. (from task in tasks
+                    join user in teamMembers on task.UserId equals user.Id into userGroup
+                    from user in userGroup.DefaultIfEmpty()
+                    orderby task.CreatedAt descending
+                    select new TaskItemWithUserDto
+                    {
+                        Id = task.Id,
+                        UserId = task.UserId,
+                        CreatedAt = task.CreatedAt,
+                        Description = task.Description,
+                        DueDate = task.DueDate,
+                        IsDeleted = task.IsDeleted,
+                        Priority = task.Priority,
+                        Status = task.Status,
+                        Title = task.Title,
+                        UserDisplayName = user.DisplayName ?? "unknown"
+                    })];
         }
     }
 }

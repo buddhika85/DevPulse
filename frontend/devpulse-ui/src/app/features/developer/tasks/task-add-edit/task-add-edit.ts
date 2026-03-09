@@ -222,6 +222,7 @@ export class TaskAddEdit implements OnInit, OnDestroy {
     this.taskFormDto = {
       id: this.originalTaskToEdit?.id ?? null,
       title: this.originalTaskToEdit?.title ?? '',
+      userId: this.originalTaskToEdit?.userId ?? null,
       description: this.originalTaskToEdit?.description ?? '',
       dueDate: this.originalTaskToEdit?.dueDate
         ? new Date(this.originalTaskToEdit.dueDate)
@@ -240,6 +241,7 @@ export class TaskAddEdit implements OnInit, OnDestroy {
 
     this.taskFormDto = {
       id: null,
+      userId: null,
       title: '',
       description: '',
       dueDate: dueDate,
@@ -272,7 +274,8 @@ export class TaskAddEdit implements OnInit, OnDestroy {
       dueDate: this.fb.control(
         {
           value: this.taskFormDto.dueDate
-            ? this.taskFormDto.dueDate.toISOString().substring(0, 10)
+            ? //this.taskFormDto.dueDate.toISOString().substring(0, 10)
+              this.formatDateForInput(this.taskFormDto.dueDate)
             : null,
           disabled: true,
         },
@@ -281,5 +284,12 @@ export class TaskAddEdit implements OnInit, OnDestroy {
         },
       ),
     });
+  }
+
+  private formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

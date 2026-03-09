@@ -4,6 +4,6 @@ namespace OrchestratorService.Application.Services
 {
     public interface ITaskService
     {
-        Task<IReadOnlyList<TaskItemDto>> GetTasksByTeam(Guid managerId, bool includeDeleted, CancellationToken cancellationToken);
+        Task<IReadOnlyList<TaskItemWithUserDto>> GetTasksByTeam(Guid managerId, bool includeDeleted, CancellationToken cancellationToken);
     }
 }
