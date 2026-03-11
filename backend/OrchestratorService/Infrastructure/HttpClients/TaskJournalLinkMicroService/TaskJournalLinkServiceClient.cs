@@ -20,7 +20,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
 
 
 
-        public async Task<TaskJournalLinkDto[]> LinkNewJournalWithTasks(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
+        public async Task<TaskJournalLinkDocument[]> LinkNewJournalWithTasksAsync(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
                         $"TaskJournalLink API failed with status code {response.StatusCode}");
                 }
 
-                var links = await response.Content.ReadFromJsonAsync<TaskJournalLinkDto[]>(
+                var links = await response.Content.ReadFromJsonAsync<TaskJournalLinkDocument[]>(
                     cancellationToken: cancellationToken);
 
                 if (links is null)
@@ -99,7 +99,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
             }
         }
 
-        public async Task<TaskJournalLinkDto[]> GetLinksByJournalIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<TaskJournalLinkDocument[]> GetLinksByJournalIdAsync(Guid id, CancellationToken cancellationToken)
         {
             try
             {
@@ -117,7 +117,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
 
                 response.EnsureSuccessStatusCode();     // throws exception if its not a success code
 
-                var links = await response.Content.ReadFromJsonAsync<TaskJournalLinkDto[]>(cancellationToken: cancellationToken);
+                var links = await response.Content.ReadFromJsonAsync<TaskJournalLinkDocument[]>(cancellationToken: cancellationToken);
                 if (links == null)
                 {
                     _logger.LogInformation("No Tasks linked to Journal Id: {JournalId}", id);
@@ -143,7 +143,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
             }
         }
 
-        public async Task<bool> RearrangeTaskJournalLinks(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
+        public async Task<bool> RearrangeTaskJournalLinksAsync(Guid journalId, HashSet<Guid> linkedTaskIds, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
             var links = $"[{string.Join(",", linkedTaskIds)}]";
@@ -201,6 +201,56 @@ namespace OrchestratorService.Infrastructure.HttpClients.TaskJournalLinkMicroSer
                     "TaskJournalLink API call was canceled for JournalId={JournalId}",
                     journalId);
 
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<TaskJournalLinkDocument>> GetLinksForJournalIdsAsync(IEnumerable<Guid> journalIds, CancellationToken cancellationToken)
+        {
+            if (journalIds is null || !journalIds.Any())
+            {
+                _logger.LogWarning("Empty journalIds list provided.");
+                return Array.Empty<TaskJournalLinkDocument>();
+            }
+
+            var journalIdsStr = string.Join(",", journalIds);
+
+            _logger.LogInformation(
+                "Fetching TaskJournalLinks for JournalIds: {JournalIds}",
+                journalIdsStr);
+
+            try
+            {
+                var url = $"{TaskJournalLinksRoute}/links-for-journals";
+                _logger.LogDebug("Calling POST {Url}", url);
+
+                var response = await _httpClient.PostAsJsonAsync(url, journalIds, cancellationToken);
+
+                response.EnsureSuccessStatusCode();
+
+                var links = await response.Content.ReadFromJsonAsync<IReadOnlyList<TaskJournalLinkDocument>>(cancellationToken);
+
+                if (links is null)
+                {
+                    _logger.LogInformation("No TaskJournalLinks found for JournalIds: {JournalIds}", journalIdsStr);
+                    return Array.Empty<TaskJournalLinkDocument>();
+                }
+
+                return [.. links];
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching TaskJournalLinks for JournalIds: {JournalIds}", journalIdsStr);
+                throw new ApplicationException($"Failed to fetch TaskJournalLinks for JournalIds: {journalIdsStr}", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for TaskJournalLinks response for JournalIds: {JournalIds}", journalIdsStr);
+                throw new ApplicationException("Failed to deserialize TaskJournalLinks data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("TaskJournalLinks fetching operation was canceled for JournalIds: {JournalIds}", journalIdsStr);
                 throw;
             }
         }

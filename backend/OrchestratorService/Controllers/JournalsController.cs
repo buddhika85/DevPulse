@@ -1,11 +1,16 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.DTOs;
 using OrchestratorService.Application.Services;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Journal;
+using SharedLib.DTOs.Task;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Collections.Generic;
 
 namespace OrchestratorService.Controllers
 {
@@ -35,7 +40,7 @@ namespace OrchestratorService.Controllers
         public async Task<IActionResult> AddJournalWithTaskLinks([FromBody] CreateJournalDto dto, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
-            _logger.LogInformation("Adding a new journal-entry with user Id:{UserId} Title:{Title} and tasks:{TasksList} at {Time}", 
+            _logger.LogInformation("Adding a new journal-entry with user Id:{UserId} Title:{Title} and tasks:{TasksList} at {Time}",
                 dto.AddJournalEntryDto.UserId, dto.AddJournalEntryDto.Title, string.Join(',', dto.LinkedTaskIds), now);
             try
             {
@@ -59,7 +64,7 @@ namespace OrchestratorService.Controllers
             }
         }
 
-       
+
         // GET Jounral By Id - get single journal and tasks linked to it
         // GET /journals/{id}
         [HttpGet("{id:guid}")]
@@ -71,11 +76,11 @@ namespace OrchestratorService.Controllers
         public async Task<IActionResult> GetJounralWithTaskLinksById(Guid id, CancellationToken cancellationToken)
         {
             try
-            {               
+            {
                 var journal = await _journalService.GetJournalByIdAsync(id, cancellationToken);
                 if (journal is null)
                     return NotFound();
-                
+
                 return Ok(journal);
             }
             catch (ArgumentException ex)
@@ -88,7 +93,7 @@ namespace OrchestratorService.Controllers
                 return InternalError(detail: ex.Message);
             }
         }
-           
+
 
         // Patch Jounral - partial update - Pataches jounral info, re-arranges task jounral links
         // PATCH /journals/{id}
@@ -174,6 +179,104 @@ namespace OrchestratorService.Controllers
                 return InternalError($"An error occurred while updating the journal-entry with Id: {id}.");
             }
         }
+
+
+        // User getting own journal information
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [HttpGet("my-journals")]
+        [SwaggerOperation(Summary = "Get my journals with feedback and linked tasks", 
+            Description = "Queries Journal API, Task Journal Link API, and Task API to return hydrated journal entries.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryWithTasksAndFeedbackDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetMyJournals(CancellationToken cancellationToken)
+        {
+            var requestTime = DateTime.UtcNow;
+            var oid = User.GetOid();
+
+            if (string.IsNullOrWhiteSpace(oid))
+            {
+                _logger.LogWarning("Missing user 'oid' claim at {Time}", DateTime.UtcNow);
+                return Unauthorized("Missing user object identifier (oid) claim.");
+            }
+
+            if (!Guid.TryParse(oid, out Guid userId))
+            {
+                _logger.LogWarning("Invalid user 'oid' claim at {Time}", DateTime.UtcNow);
+                return Unauthorized("Invalid user object identifier (oid) claim.");
+            }
+
+            _logger.LogInformation(
+                "Fetching journals with feedback and linked tasks for user {UserOid} at {Time}",
+                oid, requestTime);
+
+            try
+            {
+                var journals = await _journalService.GetMyJournalsAsync(userId, cancellationToken);
+                return Ok(journals);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching journals for user {UserOid} at {Time}",
+                    oid, DateTime.UtcNow);
+
+                return InternalError(detail: "An unexpected error occurred while fetching journals.");
+            }
+        }
+
+
+        // To Do
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
+        [HttpGet("tasks-for-team")]
+        [SwaggerOperation(Summary = "Get journals for team by manager Id", Description = "Returns journals for team by manager Id")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemWithUserDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetJournalsByTeam(CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var managerOidStr = User.GetOid();      // getting azure AD/ entra object ID of user
+
+            if (string.IsNullOrEmpty(managerOidStr))
+            {
+                _logger.LogWarning("Missing manager 'oid' claim in token at {Time}", now);
+                return Unauthorized("Missing manager Id in token.");
+            }
+
+            _logger.LogInformation(
+                "Fetching team journals for manager {ManagerId} at {Time}",
+                managerOidStr, now);
+
+            try
+            {
+                if (Guid.TryParse(managerOidStr, out Guid managerId))
+                {
+                    var journals = await _journalService.GetJournalsByTeamAsync(managerId, cancellationToken);
+                    return OkOrNotFound(journals, "Team journals not found for the requested manager.");
+                }
+
+                _logger.LogError(
+                    "Validation failed at {Time}. ManagerId '{PassedManagerId}' is an invalid Guid",
+                    now, managerOidStr);
+
+                return ValidationProblem(detail: $"ManagerId '{managerOidStr}' is an invalid Guid.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching team journals for manager {ManagerId}  at {Time}",
+                    managerOidStr, now);
+
+                return InternalError(detail: ex.Message);
+            }
+        }
+
+
+
+
 
         // TO DO - does not need for MVP
         // Patch Jounral - soft delete journal - soft deletes jounral, soft deletes task journal links

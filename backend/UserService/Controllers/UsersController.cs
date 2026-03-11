@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Domain.ValueObjects;
+using SharedLib.DTOs.User;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using UserService.Application.Queries;
@@ -23,7 +25,7 @@ namespace UserService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetAllForManager(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
         {
-            var managerOid = User.FindFirst("oid")?.Value ?? User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            var managerOid = User.GetOid();      // getting azure AD/ entra object ID of user
 
             if (string.IsNullOrEmpty(managerOid))
             {
@@ -44,6 +46,42 @@ namespace UserService.Controllers
             {
                 _logger.LogError(ex, "Error fetching all team members for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}", managerOid, includeDeleted, DateTime.UtcNow);
                 return InternalError($"An error occurred while retrieving all team members for manager with include Deleted: {includeDeleted}");
+            }
+        }
+
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [HttpPost("by-ids")]
+        [SwaggerOperation(Summary = "Get users by IDs", Description = "Returns user accounts for the provided list of user IDs.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<UserAccountDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetUsersByIds([FromBody] Guid[] userIds, CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
+        {
+            if (userIds is null || userIds.Length == 0)
+                return ValidationProblem(detail: "Empty userIds list provided.");
+
+            var userIdsStr = $"[{string.Join(",", userIds)}]";
+
+            _logger.LogInformation(
+                "Fetching users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                userIdsStr, includeDeleted, DateTime.UtcNow);
+
+            try
+            {
+                var query = new GetUsersByIdsQuery(userIds, includeDeleted);
+                _logger.LogDebug("Dispatching query: {@Query}", query);
+
+                var users = await _mediator.Send(query, cancellationToken);
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                    userIdsStr, includeDeleted, DateTime.UtcNow);
+
+                return InternalError("An error occurred while retrieving users by IDs.");
             }
         }
     }

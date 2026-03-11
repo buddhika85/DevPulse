@@ -7,5 +7,6 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
         Task<IReadOnlyList<Guid>> GetTeamMembersIdsForManager(Guid managerId, CancellationToken cancellationToken);
         Task<IReadOnlyList<UserAccountDto>> GetTeamMembersForManager(Guid managerId, CancellationToken cancellationToken);
         Task<UserAccountDto> GetUserAsync(string userId, CancellationToken cancellationToken);
+        Task<IReadOnlyList<UserAccountDto>> GetUsersByIds(IEnumerable<Guid> userIds, CancellationToken cancellationToken);
     }
 }

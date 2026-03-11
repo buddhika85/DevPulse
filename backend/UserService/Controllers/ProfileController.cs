@@ -2,14 +2,15 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Application.Exceptions;
+using SharedLib.Application.Models;
 using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.User;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using UserService.Application.Commands;
 using UserService.Application.Common.Enums;
-using SharedLib.Application.Exceptions;
-using SharedLib.Application.Models;
 using UserService.Application.Dtos;
 using UserService.Application.Queries;
 using UserService.Services;
@@ -99,7 +100,7 @@ namespace UserService.Controllers
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetAllForManager(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
         {
-            var managerOid = User.FindFirst("oid")?.Value ?? User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            var managerOid = User.GetOid();      // getting azure AD/ entra object ID of user
 
             if (string.IsNullOrEmpty(managerOid))
             {
@@ -380,7 +381,7 @@ namespace UserService.Controllers
             //}
 
 
-            var objectId = User.FindFirst("oid")?.Value ?? User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            var objectId = User.GetOid();      // getting azure AD/ entra object ID of user
 
             if (string.IsNullOrEmpty(objectId))
             {

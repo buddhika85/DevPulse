@@ -373,5 +373,73 @@ namespace TaskJournalLinkService.Repositories
                 throw;
             }
         }
+
+        /// <summary>
+        /// Retrieves all <see cref="TaskJournalLinkDocument"/> records associated with the
+        /// provided list of Journal IDs. Executes a Cosmos DB query using an IN clause and
+        /// returns all matching Task–Journal link documents.
+        /// </summary>
+        /// <param name="journalIds">
+        /// A list of Journal IDs for which Task–Journal link documents should be retrieved.
+        /// Must contain at least one ID.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A token that can be used to cancel the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A read-only list of <see cref="TaskJournalLinkDocument"/> objects representing
+        /// all task links associated with the specified Journal IDs. Returns an empty list
+        /// if no matching documents are found.
+        /// </returns>
+        public async Task<IReadOnlyList<TaskJournalLinkDocument>> GetLinksByJournalIdAsync(IReadOnlyList<Guid> journalIds, CancellationToken cancellationToken)
+        {
+            if (journalIds == null || journalIds.Count == 0)
+            {
+                _logger.LogWarning("Empty journalIds list provided.");
+                return Array.Empty<TaskJournalLinkDocument>();
+            }
+
+            var journalIdsStr = string.Join(",", journalIds);
+
+            _logger.LogInformation(
+                "Querying TaskJournalLinks for JournalIds {JournalIds}",
+                journalIdsStr);
+
+            try
+            {
+                var query = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.journalId IN @journalIds")
+                    .WithParameter("@journalIds", journalIds);
+
+                _logger.LogDebug("Cosmos DB query: {QueryText}", query.QueryText);
+
+                var iterator = _container.GetItemQueryIterator<TaskJournalLinkDocument>(query);
+
+                var results = new List<TaskJournalLinkDocument>();
+
+                while (iterator.HasMoreResults)
+                {
+                    var response = await iterator.ReadNextAsync(cancellationToken);
+                    _logger.LogDebug("Cosmos DB RU charge: {RU}", response.RequestCharge);      // how many RUs / Request Units consumed
+                    results.AddRange(response.Resource);
+                }
+
+                _logger.LogInformation(
+                    "Retrieved {Count} TaskJournalLinks for JournalIds {JournalIds}",
+                    results.Count,
+                    journalIdsStr);
+
+                return [.. results];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error querying TaskJournalLinks for JournalIds {JournalIds}",
+                    journalIdsStr);
+
+                throw;
+            }
+        }
     }
 }

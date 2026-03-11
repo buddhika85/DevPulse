@@ -1,6 +1,6 @@
 ﻿namespace SharedLib.DTOs.TaskJournalLink
 {
-    public record TaskJournalLinkDto
+    public record TaskJournalLinkDocument
     {
         public required Guid Id { get; init; }
         public required Guid JounrnalId { get; init; }

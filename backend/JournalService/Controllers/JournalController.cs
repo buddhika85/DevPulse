@@ -1,10 +1,13 @@
 ﻿using JournalService.Application.Commands.Journal;
 using JournalService.Application.Queries.Journal;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Application.Exceptions;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Journal;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -24,7 +27,7 @@ namespace JournalService.Controllers
         }
 
         //GetAllJournalEntriesAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
         [SwaggerOperation(Summary = "Get all journal-entries", Description = "Returns all the journal-entries")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryDto>))]
@@ -48,7 +51,7 @@ namespace JournalService.Controllers
         }
 
         //GetJournalEntryByIdAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get journal-entry by ID", Description = "Returns a single journal-entry by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(JournalEntryDto))]
@@ -84,7 +87,7 @@ namespace JournalService.Controllers
         }
 
         //GetJournalEntriesByUserIdAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("by-user/{userId:guid}")]
         [SwaggerOperation(Summary = "Get all journal-entries by user ID", Description = "Returns all journal-entries by user Id.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryDto>))]
@@ -114,9 +117,92 @@ namespace JournalService.Controllers
             }
         }
 
+        //GetJournalEntriesForLoggedInUser
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [HttpGet("my-journals")]
+        [SwaggerOperation(Summary = "Get all journal-entries with feedback by user ID", Description = "Returns all journal-entries with feedback by user Id.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryWithFeedbackDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetMyJournals(CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var userIdStr = User.GetOid();      // getting azure AD/ entra object ID of user
+
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                _logger.LogWarning("Missing user 'oid' claim in token at {Time}", now);
+                return Unauthorized("Missing user Id in token.");
+            }
+
+            if (!Guid.TryParse(userIdStr, out Guid userId))
+            {
+                _logger.LogWarning("Invalid user 'oid' claim in token at {Time}", now);
+                return Unauthorized("Invalid user Id in token.");
+            }
+
+
+            _logger.LogInformation("Fetching journal-entries by user ID: {UserId} at {Time}", userId, DateTime.UtcNow);
+            try
+            {
+                var query = new GetJournalsWithFeedbacksByUserIdQuery(userId);
+                var dtos = await _mediator.Send(query, cancellationToken);
+
+
+                _logger.LogInformation("Found {Count} journal-entries found for user ID: {Id}", dtos.Count, userId);
+                return Ok(dtos);
+            }
+            catch (RequestValidationException rex)
+            {
+                _logger.LogError(rex, "Validation failed while fetching journal-entries by user ID: {UserId} at {Time}", userId, DateTime.UtcNow);
+                return ValidationProblemList(rex.Failures);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching journal-entries by user ID: {UserId} at {Time}", userId, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving all journal-entries with Id: {userId}");
+            }
+        }
+
+        //GetJournalEntriesForTeam
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
+        [HttpPost("team-journals")]
+        [SwaggerOperation(Summary = "Get all journal-entries for team", Description = "Returns all journal-entries for a team.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryDto>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetTeamJournals([FromBody] Guid[] teamMembers, CancellationToken cancellationToken)
+        {
+            var now = DateTime.UtcNow;
+            var teamCsv = string.Join(",", teamMembers);
+
+            _logger.LogInformation(
+                "Fetching journals for team members {TeamMembers} at {Time}",
+                teamCsv, now);
+
+            try
+            {
+                var journals = await _mediator.Send(
+                    new GetJournalsByTeamQuery(teamMembers),
+                    cancellationToken);
+
+                return Ok(journals);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error fetching tasks for team members {TeamMembers} at {Time}",
+                    teamCsv, now);
+
+                return InternalError($"An error occurred while retrieving tasks for team members: {teamCsv}.");
+            }
+        }
+
+
         // checking before insert
         //IsJournalEntryExistsByIdAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("is-exists/{journalId:guid}")]
         [SwaggerOperation(Summary = "Before inserting a journal feedback, checks if a journal-entry exists by journal ID",
             Description = "Returns a true if a journal-entry already exists by journal ID.")]
@@ -154,7 +240,7 @@ namespace JournalService.Controllers
         }
 
         //AddJournalEntryAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPost]
         [SwaggerOperation(Summary = "Adds a new journal-entry", Description = "Adds a new journal and returns its location.")]
         [SwaggerResponse(StatusCodes.Status201Created, "Journal added")]
@@ -193,7 +279,7 @@ namespace JournalService.Controllers
         }
 
         //UpdateJournalEntryAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("update/{id:guid}")]
         [SwaggerOperation(Summary = "Update an existing journal-entry", Description = "Updates a journal-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry updated")]
@@ -232,7 +318,7 @@ namespace JournalService.Controllers
 
 
         //DeleteAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("soft-delete/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
         [SwaggerOperation(Summary = "Soft deleting an existing user journal-entry", Description = "Soft Deleting an existing journal-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry soft deleted")]
@@ -269,7 +355,7 @@ namespace JournalService.Controllers
         }
 
         //RestoreAsync
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("restore/{id:guid}")]             // [HTTPDelete] as it is soft-delete not a permanent removal
         [SwaggerOperation(Summary = "Restoring an existing user journal-entry", Description = "Restoring an existing user journal-entry by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Journal-entry restored")]

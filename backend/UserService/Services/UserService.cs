@@ -1,12 +1,13 @@
-﻿using SharedLib.DTOs.User;
+﻿using Microsoft.Extensions.Logging;
+using SharedLib.Application.Models;
+using SharedLib.Domain.ValueObjects;
+using SharedLib.DTOs.User;
 using UserService.Application.Commands;
+using UserService.Application.Common.Mappers;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
-using SharedLib.Domain.ValueObjects;
 using UserService.Infrastructure.Identity;
 using UserService.Repositories;
-using SharedLib.Application.Models;
-using UserService.Application.Common.Mappers;
 
 namespace UserService.Services
 {
@@ -447,6 +448,63 @@ namespace UserService.Services
             {
                 _logger.LogError(ex, "Exception occurred while retrieving team member guids for a manager:{ManagerId} with include Deleted: {IncludeDeleted} at {Time}",
                     query.ManagerId, query.IncludeDeleted, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<UserAccountDto>> GetUsersByIdsAsync(GetUsersByIdsQuery query, CancellationToken cancellationToken)
+        {
+            var userIdsStr = $"[{string.Join(",", query.UserIds)}]";
+
+            _logger.LogInformation(
+                "Attempting to retrieve users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                userIdsStr, query.IncludeDeleted, DateTime.UtcNow);
+
+            try
+            {
+                var users = await _userRepository.GetUsersByIdsAsync(
+                    query.UserIds,
+                    query.IncludeDeleted,
+                    cancellationToken);
+
+                _logger.LogInformation(
+                    "Retrieved {UserCount} users for IDs: {UserIds} at {Time}",
+                    users?.Count ?? 0, userIdsStr, DateTime.UtcNow);
+
+                if (users is null || users.Count == 0)
+                {
+                    _logger.LogInformation(
+                        "No users found for IDs: {UserIds} at {Time}",
+                        userIdsStr, DateTime.UtcNow);
+
+                    return Array.Empty<UserAccountDto>();
+                }
+
+                var userDtos = UserAccountMapper.ToDtosList(users);
+
+                if (userDtos is null || !userDtos.Any())
+                {
+                    _logger.LogError(
+                        "Failed to map {UserCount} users to DTOs at {Time}",
+                        users.Count, DateTime.UtcNow);
+
+                    throw new ApplicationException(
+                        $"Failed to map {users.Count} user accounts to DTOs for IDs: {userIdsStr}");
+                }
+
+                _logger.LogInformation(
+                    "Successfully mapped {DtoCount} users for IDs: {UserIds} at {Time}",
+                    userDtos.Count(), userIdsStr, DateTime.UtcNow);
+
+                return [.. userDtos];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Exception occurred while retrieving users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                    userIdsStr, query.IncludeDeleted, DateTime.UtcNow);
+
                 throw;
             }
         }

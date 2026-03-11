@@ -3,6 +3,7 @@ using JournalService.Infrastructure.Common.Extensions;
 using JournalService.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JournalService.Repositories
 {
@@ -264,6 +265,26 @@ namespace JournalService.Repositories
                 _logger.LogError(ex, "Error occurred during SaveChangesAsync or domain event dispatch.");
                 throw;
             }
-        }       
+        }
+
+        public async Task<IEnumerable<JournalEntry>> GetJournalsByTeamAsync(Guid[] teamMemberIds, CancellationToken cancellationToken)
+        {
+            var teamCsv = string.Join(",", teamMemberIds);
+
+            try
+            {
+                _logger.LogInformation("Attempting to retrieve all journal-entries by team members: {TeamMembers} at {Time}", teamCsv, DateTime.UtcNow);
+
+                var journals = await _dbContext.JournalEntries.Where(x => teamMemberIds.Contains(x.UserId)).ToListAsync(cancellationToken);
+                _logger.LogInformation("Retrieved {JournalEntries} journal-entries at {Time}", journals.Count(), DateTime.UtcNow);
+
+                return journals;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all journal-entries by Team members: {TeamMembers} at {Time}", teamCsv, DateTime.UtcNow);
+                throw;
+            }
+        }
     }
 }

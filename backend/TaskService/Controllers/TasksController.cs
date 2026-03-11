@@ -32,7 +32,7 @@ namespace TaskService.Controllers
 
 
 
-        
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
         [SwaggerOperation(Summary = "Get all tasks", Description = "Returns all task items.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
@@ -74,7 +74,7 @@ namespace TaskService.Controllers
         }
 
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get task by ID", Description = "Returns a single task item by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskItemDto))]
@@ -109,7 +109,7 @@ namespace TaskService.Controllers
 
 
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("filter")]
         [SwaggerOperation(Summary = "Filter and paginate tasks", Description = "Returns a paginated list of tasks based on filter criteria.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(PaginatedResult<TaskItemDto>))]
@@ -151,7 +151,7 @@ namespace TaskService.Controllers
             }
         }
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPost("filterByIds")]
         [SwaggerOperation(Summary = "Get all tasks by Ids", Description = "Returns all task items by Ids.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
@@ -187,6 +187,7 @@ namespace TaskService.Controllers
         //   ↑
         //Response to Controller
 
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPost]
         [SwaggerOperation(Summary = "Create a new task", Description = "Creates a new task and returns its location.")]
         [SwaggerResponse(StatusCodes.Status201Created, "Task created")]
@@ -226,7 +227,7 @@ namespace TaskService.Controllers
         }
 
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPatch("{id:guid}")]            // Partial update - so patch is used, for full updates [HTTPPut] needs to be used
         [SwaggerOperation(Summary = "Update an existing task", Description = "Updates a task by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Task updated")]
@@ -268,7 +269,7 @@ namespace TaskService.Controllers
             }
         }
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPatch("soft-delete/{id:guid}")]
         [SwaggerOperation(Summary = "Soft Deletes a task", Description = "Soft Deletes a task by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Task soft deleted")]
@@ -303,7 +304,7 @@ namespace TaskService.Controllers
             }
         }
 
-
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpPatch("restore/{id:guid}")]
         [SwaggerOperation(Summary = "Restores a deleted task", Description = "Restores a deleted task by ID.")]
         [SwaggerResponse(StatusCodes.Status204NoContent, "Task soft restored")]

@@ -5,24 +5,25 @@ using SharedLib.DTOs.Journal;
 
 namespace JournalService.Application.Handlers.QueryHandlers.Journal
 {
-    public class GetJournalEntriesByUserIdQueryHandler : IRequestHandler<GetJournalEntriesByUserIdQuery, IReadOnlyList<JournalEntryDto>>
+    // GetJournalsWithFeedbacksByUserIdQuery
+    public class GetJournalsWithFeedbacksByUserIdQueryHandler : IRequestHandler<GetJournalsWithFeedbacksByUserIdQuery, IReadOnlyList<JournalEntryWithFeedbackDto>>
     {
-        private readonly ILogger<GetJournalEntriesByUserIdQueryHandler> _logger;
+        private readonly ILogger<GetJournalsWithFeedbacksByUserIdQueryHandler> _logger;
         private readonly IJournalService _journalService;
 
-        public GetJournalEntriesByUserIdQueryHandler(ILogger<GetJournalEntriesByUserIdQueryHandler> logger, IJournalService journalService)
+        public GetJournalsWithFeedbacksByUserIdQueryHandler(ILogger<GetJournalsWithFeedbacksByUserIdQueryHandler> logger, IJournalService journalService)
         {
             _logger = logger;
             _journalService = journalService;
         }
 
-        public async Task<IReadOnlyList<JournalEntryDto>> Handle(GetJournalEntriesByUserIdQuery query, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> Handle(GetJournalsWithFeedbacksByUserIdQuery query, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
             try
             {
                 _logger.LogInformation("Handling GetJournalEntriesByUserIdQuery at:{Now}", now);
-                return await _journalService.GetJournalEntriesByUserIdAsync(query, cancellationToken);
+                return await _journalService.GetJournalEntriesWithFeedbackByUserIdAsync(query, cancellationToken);
             }
             catch (Exception ex)
             {

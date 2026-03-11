@@ -154,6 +154,57 @@ namespace OrchestratorService.Infrastructure.HttpClients.UserMicroService
             }
         }
 
-    }
+        public async Task<IReadOnlyList<UserAccountDto>> GetUsersByIds(IEnumerable<Guid> userIds, CancellationToken cancellationToken)
+        {
+            var ids = userIds?.ToArray() ?? Array.Empty<Guid>();
 
+            if (ids.Length == 0)
+                throw new ArgumentException("UserIds list cannot be empty.", nameof(userIds));
+
+            var userIdsStr = $"[{string.Join(",", ids)}]";
+            var now = DateTime.UtcNow;
+
+            _logger.LogInformation(
+                "Fetching users by IDs: {UserIds} at {Time}",
+                userIdsStr, now);
+
+            try
+            {
+                var url = $"{routeToUserController}/by-ids?includeDeleted=true";
+                _logger.LogDebug("Calling POST {Url} for user IDs: {UserIds}", url, userIdsStr);
+
+                var response = await _httpClient.PostAsJsonAsync(url, ids, cancellationToken);
+                response.EnsureSuccessStatusCode();
+
+                var users = await response.Content.ReadFromJsonAsync<IReadOnlyList<UserAccountDto>>(cancellationToken);
+
+                if (users is null)
+                {
+                    _logger.LogWarning("User API returned null for user IDs: {UserIds}", userIdsStr);
+                    throw new ApplicationException($"User API returned null for user IDs: {userIdsStr}");
+                }
+
+                _logger.LogInformation(
+                    "Successfully retrieved {Count} users for IDs: {UserIds} at {Time}",
+                    users.Count, userIdsStr, now);
+
+                return [.. users];
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "HTTP request failed while fetching users by IDs: {UserIds}", userIdsStr);
+                throw new ApplicationException("Failed to fetch users from User API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Deserialization failed for users by IDs: {UserIds}", userIdsStr);
+                throw new ApplicationException("Failed to deserialize user data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("Users fetch operation was canceled for IDs: {UserIds}", userIdsStr);
+                throw;
+            }
+        }
+    }
 }

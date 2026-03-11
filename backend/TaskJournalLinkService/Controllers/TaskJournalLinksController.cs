@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Journal;
 using SharedLib.DTOs.TaskJournalLink;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
+using System.Threading;
 using TaskJournalLinkService.Services;
 
 
@@ -29,10 +32,10 @@ namespace TaskJournalLinkService.Controllers
         }
 
 
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpGet("{journalId:guid}")]
         [SwaggerOperation(Summary = "Get Task Journal Links for JournalId", Description = "Returns Task Journal Links by JournalId.")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskJournalLinkDto[]))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(TaskJournalLinkDocument[]))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "Not found", typeof(NotFound))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
@@ -62,7 +65,7 @@ namespace TaskJournalLinkService.Controllers
         }
 
 
-        //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         // /TaskJournalLink
         [HttpPost]
         [SwaggerOperation(Summary = "Links journal with Task Id/s", Description = "After creating a new jounrnal it is linked with an array of task Ids")]
@@ -100,6 +103,7 @@ namespace TaskJournalLinkService.Controllers
 
 
         // rearrange request
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPut("rearrange-links/{journalId:guid}")]
         [SwaggerOperation(Summary = "Rearranges task journal links for a given journal Id",
                   Description = "Rearranges task journal links for a given journal Id.")]
@@ -153,6 +157,40 @@ namespace TaskJournalLinkService.Controllers
                     journalId, links, DateTime.UtcNow);
 
                 return InternalError($"Unexpected error while rearranging task journal links for journal-entry {journalId}.");
+            }
+        }
+
+        // task journal links, list for journals list
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [HttpPost("links-for-journals")]
+        [SwaggerOperation(Summary = "Gets links for journal ID list",
+                  Description = "Returns task journal links, list, for journal Ids.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskJournalLinkDocument>))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetLinksForJournalIdsAsync([FromBody]IReadOnlyList<Guid> journalIds, CancellationToken cancellationToken)
+        {
+            if (journalIds == null || journalIds.Count == 0)
+            {
+                return ValidationProblem(detail:"JournalIds list cannot be empty.");
+            }
+
+
+            var journalIdsStr = string.Join(",", journalIds);
+            _logger.LogInformation("Attempting to find all Task Journal Links for JournalIds: {JournalIdsStr} at {Time}",
+                journalIdsStr, DateTime.UtcNow);
+            try
+            {
+                var links = await _service.GetLinksForJournalIdsAsync(journalIds, cancellationToken);
+                _logger.LogInformation("Found {TaskJournalLinkCount} Task Journal Links for journalIds: {JournalIdsStr} at {Time}", 
+                    links.Count, journalIdsStr, DateTime.UtcNow);
+                return Ok(links);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error - Finding Task Journal Links for journalIds: {JournalIdsStr} at {Time}",
+                            journalIdsStr, DateTime.UtcNow);
+                return InternalError($"Failed to find Task Journal Links for journalIds: {journalIdsStr}");
             }
         }
     }

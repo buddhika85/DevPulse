@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.OutputCaching;
 using OrchestratorService.Application.Services;
 using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Task;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -28,7 +29,7 @@ namespace OrchestratorService.Controllers
         }
 
 
-        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
         [HttpGet("tasks-for-team")]
         [SwaggerOperation(Summary = "Get tasks for team by manager Id", Description = "Returns tasks for team by manager Id")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemWithUserDto>))]      
@@ -37,8 +38,7 @@ namespace OrchestratorService.Controllers
         public async Task<IActionResult> GetTasksByTeam(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
         {
             var now = DateTime.UtcNow;
-            var managerOidStr = User.FindFirst("oid")?.Value ??
-                                User.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+            var managerOidStr = User.GetOid();      // getting azure AD/ entra object ID of user
 
             if (string.IsNullOrEmpty(managerOidStr))
             {

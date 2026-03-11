@@ -4,6 +4,7 @@ using JournalService.Application.Queries.Journal;
 using JournalService.Domain.Entities;
 using JournalService.Repositories;
 using SharedLib.DTOs.Journal;
+using System.Linq;
 
 namespace JournalService.Services
 {
@@ -46,7 +47,7 @@ namespace JournalService.Services
                 _logger.LogInformation("Attempting to retrieve all journal-entries by user: {UserId} at {Time}", query.UserId, DateTime.UtcNow);
 
                 var entities = await _journalRepository.GetJournalEntriesByUserIdAsync(query.UserId, cancellationToken);
-                _logger.LogInformation("Retrieved {MoodEntriesCount} journal-entries at {Time}", entities.Count, DateTime.UtcNow);
+                _logger.LogInformation("Retrieved {JournalEntries} journal-entries at {Time}", entities.Count, DateTime.UtcNow);
 
                 var dtos = JournalMapper.ToDtosList(entities);
                 _logger.LogInformation("Mapped {JournalEntriesCount} journal-entries for user: {UserId} at {Time}", dtos.Count(), query.UserId, DateTime.UtcNow);
@@ -201,7 +202,7 @@ namespace JournalService.Services
         {
             try
             {
-                _logger.LogInformation("Attempting to soft-delete a journal-entry with Id:{MoodEntryId} at {Time}", command.JournalEntryId, DateTime.UtcNow);
+                _logger.LogInformation("Attempting to soft-delete a journal-entry with Id:{JournalEntryId} at {Time}", command.JournalEntryId, DateTime.UtcNow);
 
                 var journalEntry = await _journalRepository.GetByIdAsync(command.JournalEntryId, cancellationToken);
                 if (journalEntry is null)
@@ -233,7 +234,7 @@ namespace JournalService.Services
         {
             try
             {
-                _logger.LogInformation("Attempting to restore a journal-entry with Id:{MoodEntryId} at {Time}", command.JournalEntryId, DateTime.UtcNow);
+                _logger.LogInformation("Attempting to restore a journal-entry with Id:{JournalEntryId} at {Time}", command.JournalEntryId, DateTime.UtcNow);
 
                 var journalEntry = await _journalRepository.GetByIdAsync(command.JournalEntryId, cancellationToken);
                 if (journalEntry is null)
@@ -257,6 +258,50 @@ namespace JournalService.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while restoring a journal with ID: {JournalEntryId} at {Time}", command.JournalEntryId, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<JournalEntryDto>> GetJournalsByTeamAsync(GetJournalsByTeamQuery query, CancellationToken cancellationToken)
+        {
+            var teamCsv = string.Join(",", query.TeamMemberIds);
+
+            try
+            {                
+                _logger.LogInformation("Attempting to retrieve all journal-entries by team members: {TeamMembers} at {Time}", teamCsv, DateTime.UtcNow);
+
+                var entities = await _journalRepository.GetJournalsByTeamAsync(query.TeamMemberIds, cancellationToken);
+                _logger.LogInformation("Retrieved {JournalEntries} journal-entries at {Time}", entities.Count(), DateTime.UtcNow);
+
+                var dtos = JournalMapper.ToDtosList(entities);
+                _logger.LogInformation("Mapped {JournalEntriesCount} journal-entries for Team members: {TeamMembers} at {Time}", dtos.Count(), teamCsv, DateTime.UtcNow);
+
+                return [.. dtos];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all journal-entries by Team members: {TeamMembers} at {Time}", teamCsv, DateTime.UtcNow);
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalEntriesWithFeedbackByUserIdAsync(GetJournalsWithFeedbacksByUserIdQuery query, CancellationToken cancellationToken)
+        {
+            try
+            {
+                _logger.LogInformation("Attempting to retrieve all journal-entries with feedback by user: {UserId} at {Time}", query.UserId, DateTime.UtcNow);
+
+                var entities = await _journalRepository.GetJournalEntriesByUserIdAsync(query.UserId, cancellationToken);
+                _logger.LogInformation("Retrieved {JournalEntries} journal-entries with feedback at {Time}", entities.Count, DateTime.UtcNow);
+
+                var dtos = JournalMapper.ToDtosListWithFeedback(entities);
+                _logger.LogInformation("Mapped {JournalEntriesCount} journal-entries with feedback for user: {UserId} at {Time}", dtos.Count(), query.UserId, DateTime.UtcNow);
+
+                return [.. dtos];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception occurred while retrieving all journal-entries with feedback by user: {UserId} at {Time}", query.UserId, DateTime.UtcNow);
                 throw;
             }
         }

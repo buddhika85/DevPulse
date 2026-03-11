@@ -19,7 +19,7 @@ namespace TaskJournalLinkService.Services
         }
 
 
-        public async Task<TaskJournalLinkDto[]> GetLinksByJournalIdAsync(Guid journalId, CancellationToken cancellationToken)
+        public async Task<SharedLib.DTOs.TaskJournalLink.TaskJournalLinkDocument[]> GetLinksByJournalIdAsync(Guid journalId, CancellationToken cancellationToken)
         {
             _logger.LogInformation(
                 "Retrieving TaskJournalLinks for JournalId {JournalId}",
@@ -60,8 +60,52 @@ namespace TaskJournalLinkService.Services
             }
         }
 
+        public async Task<IReadOnlyList<SharedLib.DTOs.TaskJournalLink.TaskJournalLinkDocument>> GetLinksForJournalIdsAsync(IReadOnlyList<Guid> journalIds, CancellationToken cancellationToken)
+        {
+            if (journalIds == null || journalIds.Count == 0)
+            {
+                _logger.LogWarning("Empty journalIds list provided.");
+                return Array.Empty<SharedLib.DTOs.TaskJournalLink.TaskJournalLinkDocument>();
+            }
 
-        public async Task<TaskJournalLinkDto[]> LinkNewJournalWithTasksAsync(LinkTasksToJournalDto dto, CancellationToken cancellationToken)
+            var journalIdsStr = string.Join(",", journalIds);
+
+            _logger.LogInformation(
+                "Retrieving TaskJournalLinks for JournalIds {JournalIds}",
+                journalIdsStr);
+
+            try
+            {
+                var entities = (await _repository.GetLinksByJournalIdAsync(journalIds, cancellationToken))
+                               .ToList();
+
+                _logger.LogInformation(
+                    "Retrieved {Count} TaskJournalLink documents for JournalIds {JournalIds}",
+                    entities.Count,
+                    journalIdsStr);
+
+                var dtos = TaskJournalLinkMapper.ToDtos(entities).ToList();
+
+                _logger.LogInformation(
+                    "Mapped {Count} TaskJournalLink DTOs for JournalIds {JournalIds}",
+                    dtos.Count,
+                    journalIdsStr);
+
+                return dtos;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Error retrieving TaskJournalLinks for JournalIds {JournalIds}",
+                    journalIdsStr);
+
+                throw;
+            }
+
+        }
+
+        public async Task<SharedLib.DTOs.TaskJournalLink.TaskJournalLinkDocument[]> LinkNewJournalWithTasksAsync(LinkTasksToJournalDto dto, CancellationToken cancellationToken)
         {
             _logger.LogInformation(
                 "Linking Journal {JournalId} with {TaskCount} TaskIds",
@@ -149,7 +193,7 @@ namespace TaskJournalLinkService.Services
                 var keepSet = existingLinks.Where(x => tasksToLink.Contains(x.TaskId)).ToList();
                 var removeSet = existingLinks.Where(x => !tasksToLink.Contains(x.TaskId)).ToList();
                 var addSet = tasksToLink.Where(x => !keepSet.Any(curr => curr.TaskId == x))
-                    .Select(taskId => new TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), DateTime.UtcNow))
+                    .Select(taskId => new Domain.Models.TaskJournalLinkDocument(Guid.NewGuid(), taskId, journalId.ToString(), DateTime.UtcNow))
                     .ToList();
 
                 _logger.LogInformation(

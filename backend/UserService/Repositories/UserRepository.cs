@@ -2,12 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using SharedLib.Application.Models;
 using SharedLib.Domain.ValueObjects;
+using System;
 using System.Data;
 using TaskService.Infrastructure.Common.Extensions;
 using UserService.Application.Common.Enums;
 using UserService.Application.Queries;
 using UserService.Domain.Entities;
 using UserService.Infrastructure.Persistence;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace UserService.Repositories
 {
@@ -445,6 +447,49 @@ namespace UserService.Repositories
                         managerId, includeDeleted, DateTime.UtcNow);
                 throw;
             }
+        }
+
+        public async Task<IReadOnlyList<UserAccount>> GetUsersByIdsAsync(Guid[] userIds, bool includeDeleted, CancellationToken cancellationToken)
+        {
+            if (userIds == null || userIds.Length == 0)
+            {
+                _logger.LogWarning("Empty userIds list provided.");
+                return Array.Empty<UserAccount>();
+            }
+
+            var userIdsStr = $"[{string.Join(",", userIds)}]";
+            var now = DateTime.UtcNow;
+
+            _logger.LogInformation(
+                "Attempting to retrieve users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                userIdsStr, includeDeleted, now);
+
+            try
+            {
+                var query = _dbContext.UserAccounts
+                    .AsNoTracking()
+                    .Where(x => userIds.Contains(x.Id));
+
+                if (!includeDeleted)
+                    query = query.Where(x => !x.IsDeleted);
+
+                var users = await query.ToListAsync(cancellationToken);
+
+                _logger.LogInformation(
+                    "Retrieved {UsersCount} users for IDs: {UserIds} at {Time}",
+                    users.Count, userIdsStr, DateTime.UtcNow);
+
+                return users;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Exception occurred while retrieving users by IDs: {UserIds} (IncludeDeleted: {IncludeDeleted}) at {Time}",
+                    userIdsStr, includeDeleted, DateTime.UtcNow);
+                throw;
+            }
+
         }
     }
 }

@@ -20,6 +20,7 @@ namespace UserService.Repositories
         Task<bool> IsUserExistsAsync(Guid managerId, UserRole manager, CancellationToken cancellationToken);
         Task<IReadOnlyList<UserAccount>> GetTeamMembersForManagerAsync(Guid managerId, bool includeDeleted, CancellationToken cancellationToken);
         Task<IReadOnlyList<Guid>> GetTeamMemberGuidsForManagerAsync(Guid managerId, bool includeDeleted, CancellationToken cancellationToken);
+        Task<IReadOnlyList<UserAccount>> GetUsersByIdsAsync(Guid[] userIds, bool includeDeleted, CancellationToken cancellationToken);
 
         // Filter by role or tenant (future)
         //GetByRoleIdAsync();

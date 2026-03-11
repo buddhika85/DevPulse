@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace TaskJournalLinkService.Domain.Models
+﻿namespace TaskJournalLinkService.Domain.Models
 {
     // cosmos document model
     // covention - Use lowercase JSON property names in Cosmos DB

@@ -1,5 +1,4 @@
-﻿using OrchestratorService.Application.DTOs;
-using SharedLib.DTOs.Journal;
+﻿using SharedLib.DTOs.Journal;
 using System.Net;
 using System.Text.Json;
 
@@ -155,6 +154,136 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Updating journal with ID={JournalId} at {Time} was Unsuccessful", dto.JournalEntryId, now);
+                throw;
+            }
+        }
+
+        public async Task<IReadOnlyList<JournalEntryDto>> GetJournalsByTeamAsync(Guid[] teamMemberIds, CancellationToken cancellationToken)
+        {           
+            var teamMemberIdsStr = string.Join(",", teamMemberIds);
+            _logger.LogInformation(
+                "Fetching journals for team members {TeamMemberIds} at {RequestTime}",
+                teamMemberIdsStr,
+                DateTime.UtcNow);
+
+            try
+            {
+                var url = $"{RouteToJournalController}team-journals";
+
+                var response = await _httpClient.PostAsJsonAsync(url, teamMemberIds, cancellationToken);
+
+                response.EnsureSuccessStatusCode();
+
+                var journals = await response.Content.ReadFromJsonAsync<IReadOnlyList<JournalEntryDto>>(
+                    cancellationToken: cancellationToken);
+
+                if (journals is null || journals.Count == 0)
+                {
+                    _logger.LogInformation(
+                        "No journals found for team members {TeamMemberIds} at {Time}",
+                        teamMemberIdsStr,
+                        DateTime.UtcNow);
+
+                    return Array.Empty<JournalEntryDto>();
+                }
+
+                _logger.LogInformation(
+                    "Retrieved {JournalCount} journals for team members {TeamMemberIds} at {Time}",
+                    journals.Count,
+                    teamMemberIdsStr,
+                    DateTime.UtcNow);
+
+                return journals;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "HTTP request failed while fetching journals for team members {TeamMemberIds}",
+                    teamMemberIdsStr);
+
+                throw new ApplicationException("Failed to fetch journals from journal API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to deserialize journal data for team members {TeamMemberIds}",
+                    teamMemberIdsStr);
+
+                throw new ApplicationException("Failed to deserialize journal data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "Journal fetching operation was canceled for team members {TeamMemberIds}",
+                    teamMemberIdsStr);
+
+                throw;
+            }
+
+        }
+
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsWithFeedback(Guid requestingUserId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation(
+                "Fetching journals with feedbacks for user: {UserId} at {RequestTime}",
+                requestingUserId,
+                DateTime.UtcNow);
+
+            try
+            {
+                var url = $"{RouteToJournalController}my-journals";
+
+                var response = await _httpClient.GetAsync(url, cancellationToken);
+
+                response.EnsureSuccessStatusCode();
+
+                var journals = await response.Content.ReadFromJsonAsync<IReadOnlyList<JournalEntryWithFeedbackDto>>(
+                    cancellationToken: cancellationToken);
+
+                if (journals is null || journals.Count == 0)
+                {
+                    _logger.LogInformation(
+                        "No journals found for user: {UserId} at {Time}",
+                        requestingUserId,
+                        DateTime.UtcNow);
+
+                    return Array.Empty<JournalEntryWithFeedbackDto>();
+                }
+
+                _logger.LogInformation(
+                    "Retrieved {JournalCount} journals for user: {UserId} at {Time}",
+                    journals.Count,
+                    requestingUserId,
+                    DateTime.UtcNow);
+
+                return journals;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "HTTP request failed while fetching journals for user: {UserId}",
+                    requestingUserId);
+
+                throw new ApplicationException("Failed to fetch journals from journal API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to deserialize journal data for user: {UserId}",
+                    requestingUserId);
+
+                throw new ApplicationException("Failed to deserialize journal data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "Journal fetching operation was canceled for user: {UserId}",
+                    requestingUserId);
+
                 throw;
             }
         }
