@@ -1,0 +1,17 @@
+/* GLOBAL DIALOG OVERRIDES */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 12px !important;
+  padding: 0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.mat-mdc-dialog-content {
+  padding: 24px !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 16px 24px !important;
+  border-top: 1px solid #e5e5e5;
+}

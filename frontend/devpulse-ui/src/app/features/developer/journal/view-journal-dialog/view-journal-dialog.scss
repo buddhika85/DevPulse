@@ -1,0 +1,92 @@
+/* JOURNAL DIALOG SPECIFIC STYLES */
+.journal-dialog-header {
+  padding: 24px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.journal-dialog-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0078d4; /* Azure blue */
+}
+
+.journal-dialog-content {
+  background: #ffffff;
+  font-family: "Segoe UI", sans-serif;
+  color: #1a1a1a;
+}
+
+.journal-section {
+  margin-top: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0078d4;
+  margin-bottom: 12px;
+}
+
+.journal-field {
+  margin-bottom: 6px;
+}
+
+.journal-content-box {
+  background: #f3f3f3;
+  padding: 16px;
+  border-radius: 8px;
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.task-table th {
+  text-align: left;
+  padding: 8px;
+  background: #f3f3f3;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.task-table td {
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.feedback-box {
+  background: #eef6ff;
+  border-left: 4px solid #0078d4;
+  padding: 16px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.journal-dialog-content {
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.task-table {
+  font-size: 13px;
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Reduce top padding inside the dialog */
+.journal-dialog-content {
+  padding-top: 12px !important;
+}
+
+/* Remove top margin from the first section only */
+.journal-section:first-of-type {
+  margin-top: 8px !important;
+}

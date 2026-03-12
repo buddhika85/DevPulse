@@ -13,6 +13,8 @@ import { SnackbarService } from '../../../../core/shared/services/snackbar.servi
 import { TableColumn } from '../../../../core/models/table-column';
 import { TableAction } from '../../../../core/models/table-action';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
+import { MatDialog } from '@angular/material/dialog';
+import { ViewJournalDialog } from '../view-journal-dialog/view-journal-dialog';
 
 @Component({
   selector: 'app-journal-list',
@@ -36,18 +38,11 @@ export class JournalList implements OnInit, OnDestroy {
 
   readonly actions: TableAction[] = [
     {
-      label: '',
+      label: 'View',
       color: '#e4e2e2',
       icon: 'summarize',
-      action: 'viewContent',
-      tooltip: 'View Content',
-    },
-    {
-      label: '',
-      color: '#e4e2e2',
-      icon: 'receipt',
-      action: 'viewFeedback',
-      tooltip: 'View Manager Feedback',
+      action: 'viewJournalWithFeedback',
+      tooltip: 'Journal & Feedback',
     },
     {
       label: '',
@@ -63,6 +58,7 @@ export class JournalList implements OnInit, OnDestroy {
   private userId!: string;
 
   private readonly router: Router = inject(Router);
+  private readonly dialog: MatDialog = inject(MatDialog);
   private readonly orchestratorApi = inject(OrchestratorApiService);
   private readonly userStoreService = inject(UserStoreService);
   private readonly loadingService = inject(LoadingService);
@@ -89,10 +85,8 @@ export class JournalList implements OnInit, OnDestroy {
     action: string;
     row: JournalEntryWithTasksAndFeedbackDto;
   }) {
-    if (event.action === 'viewFeedback') {
-      this.viewFeedback(event.row);
-    } else if (event.action === 'viewContent') {
-      this.viewContent(event.row);
+    if (event.action === 'viewJournalWithFeedback') {
+      this.viewJournalWithFeedback(event.row);
     } else if (event.action === 'activateOrDeactivate') {
       this.restoreOrSoftDelete(event.row);
     }
@@ -142,9 +136,28 @@ export class JournalList implements OnInit, OnDestroy {
     this.compositeSubscription.add(sub);
   }
 
-  private viewFeedback(journal: JournalEntryWithTasksAndFeedbackDto): void {}
+  private viewJournalWithFeedback(
+    journal: JournalEntryWithTasksAndFeedbackDto,
+  ): void {
+    // alert('viewJournalWithFeedback - ' + journal.id);
 
-  private viewContent(journal: JournalEntryWithTasksAndFeedbackDto): void {}
+    (document.activeElement as HTMLElement)?.blur();
+
+    // ref - https://github.com/buddhika85/LibraryManagementSystem_2025/blob/main/client/src/app/features/book-list/book-list.component.ts
+    const dialogRef = this.dialog
+      .open(ViewJournalDialog, {
+        width: '650px',
+        maxHeight: '900px',
+        panelClass: 'journal-dialog-container',
+        data: journal,
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          // nothing to do here as it is just a read only dialog
+        }
+      });
+  }
 
   private restoreOrSoftDelete(
     journal: JournalEntryWithTasksAndFeedbackDto,

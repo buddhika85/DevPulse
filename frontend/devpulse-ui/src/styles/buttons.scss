@@ -7,7 +7,9 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 120ms ease, transform 80ms ease;
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
 }
 
 .azure-btn:hover {
@@ -22,4 +24,19 @@
 .azure-btn:focus {
   outline: 2px solid #005a9e;
   outline-offset: 2px;
+}
+
+// ----
+
+.azure-btn-secondary {
+  background-color: #f3f2f1 !important;
+  color: #323130 !important;
+  border-radius: 4px !important;
+  padding: 6px 14px !important;
+  font-size: 14px !important;
+  font-weight: 500;
+}
+
+.azure-btn-secondary:hover {
+  background-color: #e1dfdd !important;
 }
