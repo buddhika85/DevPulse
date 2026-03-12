@@ -291,7 +291,11 @@ namespace JournalService.Services
             {
                 _logger.LogInformation("Attempting to retrieve all journal-entries with feedback by user: {UserId} at {Time}", query.UserId, DateTime.UtcNow);
 
-                var entities = await _journalRepository.GetJournalEntriesByUserIdAsync(query.UserId, cancellationToken);
+                var entities = await _journalRepository.GetJournalEntriesByUserIdAsync(
+                    query.UserId, 
+                    cancellationToken, 
+                    query.IncludeDeleted, 
+                    includeFeedbacks: true);
                 _logger.LogInformation("Retrieved {JournalEntries} journal-entries with feedback at {Time}", entities.Count, DateTime.UtcNow);
 
                 var dtos = JournalMapper.ToDtosListWithFeedback(entities);

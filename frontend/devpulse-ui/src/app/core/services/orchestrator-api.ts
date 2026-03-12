@@ -8,6 +8,10 @@ import {
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ManagerDashboard } from '../../features/manager/manager-dashboard/manager-dashboard';
 import { TaskItemWithUserDto } from '../models/task-item.dto';
+import {
+  CreateJournalDto,
+  JournalEntryWithTasksAndFeedbackDto,
+} from '../models/journal-entry-with-tasks-and-feedback.dto';
 
 // dedicated for Orchestrator Micro Service Calls
 
@@ -17,26 +21,27 @@ import { TaskItemWithUserDto } from '../models/task-item.dto';
 export class OrchestratorApiService {
   // orchestratorApi micro service URL
   private apiUrl = environment.msal.protectedResources.orchestratorApi.url;
-  private dashbaordControllerUrl = `${this.apiUrl}api/dashboard/`;
-  private tasksControllerUrl = `${this.apiUrl}api/tasks/`;
+  private dashbaordControllerUrl = `${this.apiUrl}api/dashboard`;
+  private tasksControllerUrl = `${this.apiUrl}api/tasks`;
+  private orchestratorJournalsControllerUrl = `${this.apiUrl}api/journals`;
 
   constructor(private http: HttpClient) {}
 
   getAdminDashBaord(userId: string): Observable<AdminDashboardDto> {
     return this.http.get<AdminDashboardDto>(
-      `${this.dashbaordControllerUrl}${userId}`,
+      `${this.dashbaordControllerUrl}/${userId}`,
     );
   }
 
   getManagerDashBaord(userId: string): Observable<ManagerDashboard> {
     return this.http.get<ManagerDashboard>(
-      `${this.dashbaordControllerUrl}${userId}`,
+      `${this.dashbaordControllerUrl}/${userId}`,
     );
   }
 
   getDeveloperDashBaord(userId: string): Observable<UserDashboardDto> {
     return this.http.get<UserDashboardDto>(
-      `${this.dashbaordControllerUrl}${userId}`,
+      `${this.dashbaordControllerUrl}/${userId}`,
     );
   }
 
@@ -44,10 +49,30 @@ export class OrchestratorApiService {
     var queryString = new HttpParams().set('includeDeleted', includeDeleted);
 
     return this.http.get<TaskItemWithUserDto[]>(
-      `${this.tasksControllerUrl}tasks-for-team`,
+      `${this.tasksControllerUrl}/tasks-for-team`,
       {
         params: queryString,
       },
+    );
+  }
+
+  getMyJournals(
+    includeDeleted: boolean,
+  ): Observable<JournalEntryWithTasksAndFeedbackDto[]> {
+    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    return this.http.get<JournalEntryWithTasksAndFeedbackDto[]>(
+      `${this.orchestratorJournalsControllerUrl}/my-journals`,
+      {
+        params: queryString,
+      },
+    );
+  }
+
+  addJournalWithTaskLinks(dto: CreateJournalDto): Observable<void> {
+    return this.http.post<void>(
+      `${this.orchestratorJournalsControllerUrl}`,
+      dto,
     );
   }
 }

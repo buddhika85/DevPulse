@@ -10,7 +10,6 @@ using SharedLib.DTOs.Task;
 using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Collections.Generic;
 
 namespace OrchestratorService.Controllers
 {

@@ -407,9 +407,8 @@ namespace TaskJournalLinkService.Repositories
 
             try
             {
-                var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.journalId IN @journalIds")
-                    .WithParameter("@journalIds", journalIds);
+                var query = new QueryDefinition("SELECT * FROM c WHERE ARRAY_CONTAINS(@journalIds, c.journalId)")
+                                                    .WithParameter("@journalIds", journalIds);
 
                 _logger.LogDebug("Cosmos DB query: {QueryText}", query.QueryText);
 

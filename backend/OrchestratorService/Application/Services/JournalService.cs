@@ -396,10 +396,10 @@ namespace OrchestratorService.Application.Services
             var result = journalsWithFeedbacks
                                         .Select(journal =>
                                         {
-                                            // Find manager for current journal
+                                            // Find manager given journal feedback
                                             var managerName =
                                                 managers.FirstOrDefault(m =>
-                                                    m.ManagerId == journal.feedback?.FeedbackManagerId
+                                                    m.Id == journal.feedback?.FeedbackManagerId
                                                 )?.DisplayName;
 
                                             // Find linked task Ids for current journal

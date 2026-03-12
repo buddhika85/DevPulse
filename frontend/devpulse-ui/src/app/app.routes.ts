@@ -86,8 +86,8 @@ export const routes: Routes = [
       {
         path: 'journal',
         loadComponent: () =>
-          import('./features/developer/journal/journal-entry/journal-entry').then(
-            (m) => m.JournalEntry,
+          import('./features/developer/journal/journal-list/journal-list').then(
+            (m) => m.JournalList,
           ),
         data: { roles: ['User'] },
         canActivate: [roleguardGuard],
