@@ -9,6 +9,7 @@ using SharedLib.DTOs.Task;
 using SharedLib.DTOs.TaskJournalLink;
 using SharedLib.DTOs.User;
 using System.Collections.Generic;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OrchestratorService.Application.Services
 {
@@ -20,7 +21,7 @@ namespace OrchestratorService.Application.Services
         private readonly IUserServiceClient _userServiceClient;
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<JournalService> _logger;
-        private const byte CachedTimeInMins = 5;                // Cache time in minutes
+        private const byte CachedTimeInMins = 1;                // Cache time in minutes
 
         public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, ITaskServiceClient taskServiceClient, IUserServiceClient userServiceClient,
             IMemoryCache inMemoryCache, ILogger<JournalService> logger)
@@ -96,6 +97,9 @@ namespace OrchestratorService.Application.Services
                     journalId,
                     createJournalDto.LinkedTaskIds.Count,
                     createJournalDto.AddJournalEntryDto.UserId);
+
+                // Invalidate / Evict Cache
+                _inMemoryCache.Remove($"HydratedJournalsForUserId:{createJournalDto.AddJournalEntryDto.UserId}");
 
                 return journalId;
             }
@@ -427,6 +431,7 @@ namespace OrchestratorService.Application.Services
                                                 linkedTasks
                                             );
                                         })
+                                        .OrderByDescending(x => x.CreatedAt)
                                         .ToList();
             return result;
         }

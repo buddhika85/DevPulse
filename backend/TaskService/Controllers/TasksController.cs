@@ -6,6 +6,7 @@ using SharedLib.Application.Exceptions;
 using SharedLib.Application.Models;
 using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Task;
+using SharedLib.Extensions;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
 using TaskService.Application.Commands;
@@ -70,6 +71,41 @@ namespace TaskService.Controllers
             {
                 _logger.LogError(ex, "Error fetching all tasks by user Id {UserId} includeDeleted {IncludeDeleted} at {Time}", id, includeDeleted, DateTime.UtcNow);
                 return InternalError($"An error occurred while retrieving tasks by user Id {id}.");                           // RFC 7807 Error Format - from BaseApiController
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [HttpGet("my-tasks")]
+        [SwaggerOperation(Summary = "Get task by user Id", Description = "Returns all tasks by user Id.")]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemDto>))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetMyTasks(CancellationToken cancellationToken, [FromQuery] bool includeDeleted = false)
+        {
+            var requestTime = DateTime.UtcNow;
+            var oid = User.GetOid();
+
+            if (string.IsNullOrWhiteSpace(oid))
+            {
+                _logger.LogWarning("Missing user 'oid' claim at {Time}", requestTime);
+                return Unauthorized("Missing user object identifier (oid) claim.");
+            }
+
+            if (!Guid.TryParse(oid, out Guid userId))
+            {
+                _logger.LogWarning("Invalid user 'oid' claim at {Time}", requestTime);
+                return Unauthorized("Invalid user object identifier (oid) claim.");
+            }
+           
+            _logger.LogInformation("Fetching all tasks by user Id {UserId} Is Deleted: {IncludeDeleted} at {Time}", userId, includeDeleted, requestTime);
+            try
+            {
+                var tasks = await _mediator.Send(new GetTasksByUserIdQuery(userId, includeDeleted), cancellationToken);
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all tasks by user Id {UserId} includeDeleted {IncludeDeleted} at {Time}", userId, includeDeleted, DateTime.UtcNow);
+                return InternalError($"An error occurred while retrieving tasks by user Id {userId}.");                           // RFC 7807 Error Format - from BaseApiController
             }
         }
 

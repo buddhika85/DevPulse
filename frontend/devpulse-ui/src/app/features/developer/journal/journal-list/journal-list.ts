@@ -15,6 +15,9 @@ import { TableAction } from '../../../../core/models/table-action';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ViewJournalDialog } from '../view-journal-dialog/view-journal-dialog';
+import { AddEditJournalDialog } from '../add-edit-journal-dialog/add-edit-journal-dialog';
+import { TaskItemDto } from '../../../../core/models/task-item.dto';
+import { TaskApiService } from '../../../../core/services/task-api';
 
 @Component({
   selector: 'app-journal-list',
@@ -44,13 +47,13 @@ export class JournalList implements OnInit, OnDestroy {
       action: 'viewJournalWithFeedback',
       tooltip: 'Journal & Feedback',
     },
-    {
-      label: '',
-      color: '#bdb6b6',
-      icon: 'transform',
-      action: 'activateOrDeactivate',
-      tooltip: 'activate / deactivate',
-    },
+    // {
+    //   label: '',
+    //   color: '#bdb6b6',
+    //   icon: 'transform',
+    //   action: 'activateOrDeactivate',
+    //   tooltip: 'activate / deactivate',
+    // },
   ];
 
   readonly pageSizeOptions: number[] = [10, 20, 30, 40, 50, 100];
@@ -61,6 +64,7 @@ export class JournalList implements OnInit, OnDestroy {
   private readonly dialog: MatDialog = inject(MatDialog);
   private readonly orchestratorApi = inject(OrchestratorApiService);
   private readonly userStoreService = inject(UserStoreService);
+  private readonly taskApiService: TaskApiService = inject(TaskApiService);
   private readonly loadingService = inject(LoadingService);
   private readonly compositeSubscription: Subscription = new Subscription();
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
@@ -93,46 +97,67 @@ export class JournalList implements OnInit, OnDestroy {
   }
 
   writeJournal(): void {
-    // To Do: open popup
+    this.openJournalDialog(null); // nothing to edit, so null passed
+  }
 
-    // example
-    const testJournalNum = this.journalsOfUser.length + 1;
-    const addJournalEntryDto: AddJournalEntryDto = {
-      userId: this.userId,
-      title: `Journal: ${testJournalNum} created from code`,
-      content: `Content --- Journal: ${testJournalNum}`,
-    };
-    const createJournalDto: CreateJournalDto = {
-      linkedTaskIds: [
-        // '6f130967-0166-47f1-c809-08de112c99d4', // Design dashboard
-        // '04691f48-b1a4-4585-c80a-08de112c99d4', // Write API tests
+  // To Do: Phase 2
+  editJournal(): void {}
 
-        'c96331ab-d853-4e65-df35-08de1ce25178', // Test Linked Task 1
-        'eb86cc38-bad1-4653-df36-08de1ce25178', // Test Linked Task 2
-      ],
-      addJournalEntryDto: addJournalEntryDto,
-    };
-
-    // add API call
-    console.log(`Test Journal To Create: ${testJournalNum}`, createJournalDto);
+  private openJournalDialog(
+    journal: JournalEntryWithTasksAndFeedbackDto | null,
+  ): void {
+    let tasksOfUser: TaskItemDto[] = [];
+    let tasksToSelect: DropDownListItem[] = [];
     this.loadingService.show();
-    const sub = this.orchestratorApi
-      .addJournalWithTaskLinks(createJournalDto)
-      .subscribe({
-        next: () => {
-          this.snackbarService.success(
-            `New journal with title: ${createJournalDto.addJournalEntryDto.title} created successfuly!`,
+    const sub = this.taskApiService.getMyTasks(true).subscribe({
+      next: (value: TaskItemDto[]) => {
+        tasksOfUser = value;
+
+        tasksToSelect = tasksOfUser.map((task) => ({
+          value: task.id,
+          label: task.title,
+        }));
+
+        this.loadingService.hide();
+
+        if (tasksToSelect.length === 0) {
+          this.snackbarService.info(
+            'You dont have any task assigned to write journals on. Please Discuss with your manager',
+            'Close',
           );
-          this.fetchAllUserJournals();
-          this.loadingService.hide();
-        },
-        error: (err: any) => {
-          this.snackbarService.error(
-            `Error - New journal with title: ${createJournalDto.addJournalEntryDto.title} creation failed !!`,
-          );
-          this.loadingService.hide();
-        },
-      });
+          return;
+        }
+
+        (document.activeElement as HTMLElement)?.blur();
+
+        const dialogRef = this.dialog
+          .open(AddEditJournalDialog, {
+            width: '720px',
+            height: '720px',
+            maxHeight: '90vh',
+            panelClass: 'journal-dialog-panel',
+
+            data: {
+              journalToEdit: journal,
+              tasksToSelect: tasksToSelect,
+            },
+          })
+          .afterClosed()
+          .subscribe((result) => {
+            if (result) {
+              // refresh table
+              this.fetchAllUserJournals();
+            }
+          });
+      },
+      error: (err: any) => {
+        console.error('Failed to fetch tasks list Of User', err);
+        this.snackbarService.error(
+          'Failed to fetch all user tasks for the logged in user !',
+        );
+        this.loadingService.hide();
+      },
+    });
     this.compositeSubscription.add(sub);
   }
 
@@ -224,6 +249,48 @@ export class JournalList implements OnInit, OnDestroy {
         this.loadingService.hide();
       },
     });
+    this.compositeSubscription.add(sub);
+  }
+
+  private addTestJournalWithTaskLinks(): void {
+    // example
+    const testJournalNum = this.journalsOfUser.length + 1;
+    const addJournalEntryDto: AddJournalEntryDto = {
+      userId: this.userId,
+      title: `Journal: ${testJournalNum} created from code`,
+      content: `Content --- Journal: ${testJournalNum}`,
+    };
+    const createJournalDto: CreateJournalDto = {
+      linkedTaskIds: [
+        // '6f130967-0166-47f1-c809-08de112c99d4', // Design dashboard
+        // '04691f48-b1a4-4585-c80a-08de112c99d4', // Write API tests
+
+        'c96331ab-d853-4e65-df35-08de1ce25178', // Test Linked Task 1
+        'eb86cc38-bad1-4653-df36-08de1ce25178', // Test Linked Task 2
+      ],
+      addJournalEntryDto: addJournalEntryDto,
+    };
+
+    // API call
+    console.log(`Test Journal To Create: ${testJournalNum}`, createJournalDto);
+    this.loadingService.show();
+    const sub = this.orchestratorApi
+      .addJournalWithTaskLinks(createJournalDto)
+      .subscribe({
+        next: () => {
+          this.snackbarService.success(
+            `New journal with title: ${createJournalDto.addJournalEntryDto.title} created successfuly!`,
+          );
+          this.fetchAllUserJournals();
+          this.loadingService.hide();
+        },
+        error: (err: any) => {
+          this.snackbarService.error(
+            `Error - New journal with title: ${createJournalDto.addJournalEntryDto.title} creation failed !!`,
+          );
+          this.loadingService.hide();
+        },
+      });
     this.compositeSubscription.add(sub);
   }
 }

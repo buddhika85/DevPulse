@@ -15,3 +15,32 @@
   padding: 16px 24px !important;
   border-top: 1px solid #e5e5e5;
 }
+
+/* Remove forced scrollbars inside Angular Material dialogs */
+.journal-dialog-panel .mat-mdc-dialog-content {
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.journal-dialog-panel .mdc-dialog__surface {
+  max-height: 90vh !important;
+  overflow: visible !important;
+}
+
+/* Prevent dialog from resizing when errors appear */
+.journal-dialog-panel .mdc-dialog__surface {
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+/* Allow content to scroll internally without pushing footer */
+.journal-dialog-panel .mat-mdc-dialog-content {
+  max-height: calc(90vh - 160px) !important; /* header + footer space */
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+.journal-dialog-panel .mat-mdc-dialog-content {
+  scroll-behavior: smooth;
+  padding-right: 8px; /* avoids scrollbar overlap */
+}

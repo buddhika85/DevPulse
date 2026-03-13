@@ -21,6 +21,6 @@ export class ViewJournalDialog {
   ) {}
 
   onClose(): void {
-    this.dialogRef.close(false);
+    this.dialogRef.close(true);
   }
 }

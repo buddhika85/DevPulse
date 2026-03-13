@@ -1,0 +1,123 @@
+<div class="journal-dialog-header">
+  <div class="journal-dialog-title">{{ mainHeading }}</div>
+</div>
+
+<mat-dialog-content class="journal-dialog-content">
+  <!-- Form -->
+  @if (journalFormGroup) {
+    <form [formGroup]="journalFormGroup" (ngSubmit)="onSubmit()" class="form">
+      <!-- <form (ngSubmit)="onSubmit()" class="form"> -->
+      <!-- Journal ID -->
+      @if (!isAddMode) {
+        <div class="form-row">
+          <label for="id">ID</label>
+          <input id="id" type="text" formControlName="id" readonly />
+          <span class="helper"></span>
+        </div>
+      }
+      <!-- title -->
+      <div class="form-row">
+        <label for="title">Title</label>
+        <input id="title" type="text" formControlName="title" />
+      </div>
+
+      <div class="form-row-no-cols">
+        @let titleCtrl = journalFormGroup.get("title");
+
+        <span class="error">
+          @if (titleCtrl?.invalid && (titleCtrl?.touched || titleCtrl?.dirty)) {
+            <!-- invalid rouched or dirty-->
+            @if (titleCtrl?.hasError("required")) {
+              <span>Title is required</span>
+            }
+            @if (titleCtrl?.hasError("minlength")) {
+              <span>Minimum 5 characters</span>
+            } @else {
+              <span></span>
+            }
+          }
+        </span>
+      </div>
+
+      <!-- description -->
+      <div class="form-row">
+        <label for="content">Content</label>
+        <textarea
+          id="content"
+          type="text"
+          formControlName="content"
+          rows="4"
+          class="textarea"
+        ></textarea>
+      </div>
+
+      <div class="form-row-no-cols">
+        @let contentCtrl = journalFormGroup.get("content");
+
+        <span class="error">
+          @if (
+            contentCtrl?.invalid && (contentCtrl?.touched || contentCtrl?.dirty)
+          ) {
+            <!-- invalid rouched or dirty-->
+            @if (contentCtrl?.hasError("required")) {
+              <span>Journal content is required</span>
+            }
+            @if (contentCtrl?.hasError("minlength")) {
+              <span>Minimum 10 characters</span>
+            } @else {
+              <span></span>
+            }
+          }
+        </span>
+      </div>
+
+      <!-- Linked Tasks -->
+      <div class="form-row">
+        <label for="linkedTasks">Tasks to Link</label>
+        <select
+          id="linkedTasks"
+          formControlName="linkedTasks"
+          multiple
+          style="height: 200px"
+        >
+          @for (task of tasksToSelect; track $index) {
+            <option [value]="task.value">{{ task.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-row-no-cols">
+        <span class="error">
+          @if (journalFormGroup.get("linkedTasks")?.hasError("required")) {
+            <span>Atlest 1 task should be selected</span>
+          } @else {
+            <span></span>
+          }
+        </span>
+      </div>
+    </form>
+  }
+</mat-dialog-content>
+
+<div class="azure-divider"></div>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-button
+    class="azure-btn"
+    (click)="onSubmit()"
+    [disabled]="journalFormGroup.invalid"
+    style="margin-right: 2%"
+  >
+    Save Journal
+  </button>
+
+  <button
+    mat-button
+    mat-dialog-close
+    class="azure-btn-secondary"
+    (click)="onClose()"
+  >
+    Close
+  </button>
+</mat-dialog-actions>
