@@ -13,6 +13,7 @@ import { SnackbarService } from '../../../../core/shared/services/snackbar.servi
 import { ViewJournalDialog } from '../../../developer/journal/view-journal-dialog/view-journal-dialog';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
 import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
+import { AddEditJournalFeedbackDialog } from '../add-edit-journal-feedback-dialog/add-edit-journal-feedback-dialog';
 
 @Component({
   selector: 'app-feedback',
@@ -100,7 +101,23 @@ export class Feedback {
   private writeJournalFeedback(
     journal: TeamJournalEntryWithTasksAndFeedbackDto,
   ) {
-    alert('To Do');
+    (document.activeElement as HTMLElement)?.blur();
+
+    // ref - https://github.com/buddhika85/LibraryManagementSystem_2025/blob/main/client/src/app/features/book-list/book-list.component.ts
+    const dialogRef = this.dialog
+      .open(AddEditJournalFeedbackDialog, {
+        width: '650px',
+        maxHeight: '900px',
+        panelClass: 'journal-dialog-container',
+        data: journal,
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          // nothing to do here as it is just a read only dialog
+          this.fetchAllTeamJournals();
+        }
+      });
   }
 
   private viewJournalWithFeedback(

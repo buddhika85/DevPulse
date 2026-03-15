@@ -1,0 +1,80 @@
+<div class="journal-dialog-header">
+  <div class="journal-dialog-title">Provide Feedback</div>
+</div>
+
+<mat-dialog-content class="journal-dialog-content">
+  <!-- Journal Section -->
+  <div class="journal-section">
+    <div class="section-title">Journal</div>
+
+    <div class="journal-field">
+      <strong>Writer:</strong> {{ journal.userDisplayName }}
+    </div>
+    <div class="journal-field"><strong>Title:</strong> {{ journal.title }}</div>
+    <div class="journal-field">
+      <strong>Created Date:</strong> {{ journal.createdAtStr }}
+    </div>
+
+    <div class="journal-content-box">
+      {{ journal.content }}
+    </div>
+  </div>
+
+  <div class="azure-divider"></div>
+
+  <!-- Linked Tasks Section -->
+  <div class="journal-section">
+    <div class="section-title">Linked Tasks</div>
+
+    <table class="task-table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Created</th>
+          <th>Due</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (task of journal.linkedTasks; track task.id) {
+          <tr>
+            <td>{{ task.title }}</td>
+            <td>{{ task.status }}</td>
+            <td>{{ task.priority }}</td>
+            <td>{{ task.createdAtStr }}</td>
+            <td>{{ task.dueDateStr }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="azure-divider"></div>
+
+  <!-- Feedback Section -->
+  <div class="journal-section">
+    <div class="section-title">Feedback</div>
+
+    @if (journal.feedbackManager) {
+      <div class="feedback-box">
+        <div><strong>Manager:</strong> {{ journal.feedbackManager }}</div>
+        <div><strong>Comment:</strong> {{ journal.feedback?.comment }}</div>
+        <div>
+          <strong>Feedback Date:</strong> {{ journal.feedback?.createdAtStr }}
+        </div>
+      </div>
+    } @else {
+      <p>No feedback yet</p>
+    }
+  </div>
+</mat-dialog-content>
+
+<div class="azure-divider"></div>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close class="azure-btn" (click)="onClose()">
+    Close
+  </button>
+</mat-dialog-actions>

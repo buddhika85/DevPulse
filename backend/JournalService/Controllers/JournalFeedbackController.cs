@@ -3,9 +3,11 @@ using JournalService.Application.Commands.JournalFeedback;
 using JournalService.Application.Dtos;
 using JournalService.Application.Queries.JournalFeedback;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Application.Exceptions;
+using SharedLib.Domain.ValueObjects;
 using SharedLib.DTOs.Journal;
 using SharedLib.Presentation.Controllers;
 using Swashbuckle.AspNetCore.Annotations;
@@ -29,6 +31,7 @@ namespace JournalService.Controllers
 
         //Task<IReadOnlyList<JournalFeedbackDto>> GetJournalFeedbacksAsync(CancellationToken cancellationToken);        
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
         [SwaggerOperation(Summary = "Get all journal-feedback-entries", Description = "Returns all the journal-feedback-entries")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalFeedbackDto>))]
@@ -55,6 +58,7 @@ namespace JournalService.Controllers
 
         //Task<JournalFeedbackDto?> GetJournalFeedbackByIdAsync(GetJournalFeedbackByIdQuery query, CancellationToken cancellationToken);        
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("{id:guid}")]
         [SwaggerOperation(Summary = "Get journal-feedback-entry by ID", Description = "Returns a single journal-feedback-entry by its unique identifier.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(JournalFeedbackDto))]
@@ -92,6 +96,7 @@ namespace JournalService.Controllers
 
         //Task<IReadOnlyList<JournalFeedbackDto>> GetJournalFeedbacksByManagerIdAsync(GetJournalFeedbacksByManagerIdQuery query, CancellationToken cancellationToken);        
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)},{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
         [HttpGet("by-manager/{managerId:guid}")]
         [SwaggerOperation(Summary = "Get all journal-feedback-entries by manager ID", Description = "Returns all journal-entries by manager Id.")]
         [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalFeedbackDto>))]
@@ -124,6 +129,7 @@ namespace JournalService.Controllers
         //// business rule - journal entry can have exctly one feedback
         //Task<bool> IsFeedbackGiven(IsFeedbackGivenQuery query, CancellationToken cancellationToken);
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)},{nameof(UserRole.User)}")]
         [HttpGet("is-feedback-already-given/{journalId:guid}")]
         [SwaggerOperation(Summary = "Before inserting a journal feedback, checks if a journal-feedback already exists for a journal ID",
             Description = "Returns a true if a journal-feedback already exists for this journal ID.")]
@@ -163,6 +169,7 @@ namespace JournalService.Controllers
         //// business rule - journal entry can have exctly one feedback
         //Task<Guid?> AddJournalFeedbackAsync(AddJournalFeedbackCommand command, CancellationToken cancellationToken);
         //[Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
         [HttpPost]
         [SwaggerOperation(Summary = "Adds a new journal-feedback", Description = "Adds a new journal and returns its location. " +
             "   Before calling this check if a jounral feedback arelady exists for journal by calling - is-feedback-already-given/{journalId:guid}")]
@@ -201,6 +208,8 @@ namespace JournalService.Controllers
             }
         }
 
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
         [HttpPatch("mark-as-seened/{id:guid}")]
         [SwaggerOperation(Summary = "Mark an existing journal feedback as seened by user.", 
             Description = "Mark an existing journal feedback with a know Id as seened by user. Before calling this check for existence of feedback by feedback Id.")]

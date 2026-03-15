@@ -19,6 +19,7 @@ import { AddEditJournalDialog } from '../add-edit-journal-dialog/add-edit-journa
 import { TaskItemDto } from '../../../../core/models/task-item.dto';
 import { TaskApiService } from '../../../../core/services/task-api';
 import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
+import { JournalApiService } from '../../../../core/services/journal-api';
 
 @Component({
   selector: 'app-journal-list',
@@ -66,6 +67,7 @@ export class JournalList implements OnInit, OnDestroy {
   private readonly orchestratorApi = inject(OrchestratorApiService);
   private readonly userStoreService = inject(UserStoreService);
   private readonly taskApiService: TaskApiService = inject(TaskApiService);
+  private readonly journalApiService = inject(JournalApiService);
   private readonly loadingService = inject(LoadingService);
   private readonly compositeSubscription: Subscription = new Subscription();
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
@@ -179,10 +181,26 @@ export class JournalList implements OnInit, OnDestroy {
       })
       .afterClosed()
       .subscribe((result) => {
-        if (result) {
-          // nothing to do here as it is just a read only dialog
+        if (result && journal.feedback?.id) {
+          this.markJournalAsSeened(journal.feedback?.id);
         }
       });
+  }
+
+  private markJournalAsSeened(journalId: string): void {
+    const sub = this.journalApiService
+      .markJournalAsSeened(journalId)
+      .subscribe({
+        next: () => {
+          this.loadingService.hide();
+        },
+        error: (err: any) => {
+          console.error('Failed to mark journal as seened', err);
+          this.snackbarService.error('Failed to to mark journal as seened !');
+          this.loadingService.hide();
+        },
+      });
+    this.compositeSubscription.add(sub);
   }
 
   private restoreOrSoftDelete(
