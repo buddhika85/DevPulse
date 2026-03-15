@@ -9,6 +9,7 @@ import { MoodEntryDto } from '../../../../core/models/mood-entry.dto';
 import { TableColumn } from '../../../../core/models/table-column';
 import { TableAction } from '../../../../core/models/table-action';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-mood-list',
@@ -34,18 +35,18 @@ export class MoodList implements OnInit {
 
   readonly actions: TableAction[] = [
     {
-      label: '',
-      color: '#e4e2e2',
+      label: 'Edit',
+      class: GridButtonStyle.AzureGridNeutralBtn,
       icon: 'edit',
       action: 'edit',
-      tooltip: 'edit',
+      tooltip: '',
     },
     {
-      label: '',
-      color: '#bdb6b6',
+      label: 'Remove',
+      class: GridButtonStyle.AzureGridDangerBtn,
       icon: 'delete',
       action: 'delete',
-      tooltip: 'remove',
+      tooltip: '',
     },
   ];
 
@@ -97,7 +98,7 @@ export class MoodList implements OnInit {
   private delete(mood: MoodEntryDto): void {
     this.snackbarService
       .confirm(
-        `Delete mood for : ${mood.dayStr} for session : ${mood.moodTime} with mood level: ${mood.moodLevel} ?`
+        `Delete mood for : ${mood.dayStr} for session : ${mood.moodTime} with mood level: ${mood.moodLevel} ?`,
       )
       .subscribe((confirmed) => {
         if (confirmed) {
@@ -134,7 +135,7 @@ export class MoodList implements OnInit {
       error: (err: any) => {
         console.error('Failed to fetch user moods list', err);
         this.snackbarService.error(
-          'Failed to fetch all user moods for the logged in user !'
+          'Failed to fetch all user moods for the logged in user !',
         );
         this.loadingService.hide();
       },

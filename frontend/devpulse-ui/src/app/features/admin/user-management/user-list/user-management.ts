@@ -8,6 +8,7 @@ import { LoadingService } from '../../../../core/services/loading-service';
 import { Subscription } from 'rxjs';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
 import { Router } from '@angular/router';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-user-management',
@@ -29,18 +30,18 @@ export class UserManagement implements OnInit, OnDestroy {
 
   readonly actions: TableAction[] = [
     {
-      label: '',
-      color: '#e4e2e2',
+      label: 'Edit',
+      color: GridButtonStyle.AzureGridNeutralBtn,
       icon: 'edit',
       action: 'edit',
-      tooltip: 'edit',
+      tooltip: '',
     },
     {
-      label: '',
-      color: '#bdb6b6',
+      label: 'De / Activate',
+      class: GridButtonStyle.AzureGridDangerBtn,
       icon: 'transform',
       action: 'activateOrDeactivate',
-      tooltip: 'activate / deactivate',
+      tooltip: '',
     },
   ];
 

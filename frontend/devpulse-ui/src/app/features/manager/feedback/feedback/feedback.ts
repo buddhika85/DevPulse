@@ -12,6 +12,7 @@ import { UserStoreService } from '../../../../core/services/user-store.service';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
 import { ViewJournalDialog } from '../../../developer/journal/view-journal-dialog/view-journal-dialog';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-feedback',
@@ -37,15 +38,13 @@ export class Feedback {
   readonly actions: TableAction[] = [
     {
       label: 'Feedback',
-      color: '#106EBE',
-      icon: '',
+      class: GridButtonStyle.AzureGridBtn,
       action: 'writeFeedback',
       tooltip: '',
     },
     {
       label: 'View',
-      color: '#323130',
-      icon: '',
+      color: GridButtonStyle.AzureGridTextBtn,
       action: 'viewJournalWithFeedback',
       tooltip: '',
     },

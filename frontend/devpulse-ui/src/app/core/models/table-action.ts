@@ -5,4 +5,5 @@ export interface TableAction {
   icon?: string; // optional Material icon name (e.g., 'edit', 'delete')
   action: string; // action identifier emitted to parent
   tooltip: string;
+  class?: string; // optional scss class parameter
 }

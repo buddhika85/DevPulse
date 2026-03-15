@@ -13,6 +13,7 @@ import { UserStoreService } from '../../../../core/services/user-store.service';
 import { SnackbarService } from '../../../../core/shared/services/snackbar.service';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
 import { OrchestratorApiService } from '../../../../core/services/orchestrator-api';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-task-list',
@@ -46,8 +47,9 @@ export class TaskList {
     //   tooltip: 'edit',
     // },
     {
-      label: '',
-      color: '#bdb6b6',
+      label: 'De / Activate',
+      // color: '#bdb6b6',
+      class: GridButtonStyle.AzureGridDangerBtn,
       icon: 'transform',
       action: 'activateOrDeactivate',
       tooltip: 'activate / deactivate',

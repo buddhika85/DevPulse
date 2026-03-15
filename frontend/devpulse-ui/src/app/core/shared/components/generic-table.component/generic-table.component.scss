@@ -262,3 +262,127 @@
   font-size: 13px;
   padding: 0 12px;
 }
+
+/* --------------------------
+   Buttons -grid
+   -------------------------- */
+
+// 🔵 1 Primary Button
+.azure-grid-btn {
+  background-color: #0078d4 !important; /* Primary blue */
+  color: #ffffff !important;
+  border: none !important;
+  padding: 4px 12px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition:
+    background-color 120ms ease,
+    transform 80ms ease;
+}
+
+.azure-grid-btn:hover {
+  background-color: #106ebe !important; /* Hover */
+}
+
+.azure-grid-btn:active {
+  background-color: #005a9e !important; /* Pressed */
+  transform: scale(0.97);
+}
+
+.azure-grid-btn:disabled {
+  background-color: #a6a6a6 !important; /* Fluent disabled grey */
+  color: #ffffff !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
+// Small version - compact
+.azure-grid-btn-sm {
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+}
+
+// ⚫ 2 Tertiary Text Button
+.azure-grid-text-btn {
+  background: none !important;
+  border: none !important;
+  color: #323130 !important; /* Neutral dark grey */
+  font-size: 13px !important;
+  cursor: pointer !important;
+  padding: 2px 4px !important;
+  text-decoration: none !important;
+  transition: color 120ms ease;
+}
+
+.azure-grid-text-btn:hover {
+  color: #201f1e !important; /* Slightly darker */
+  text-decoration: underline !important;
+}
+
+.azure-grid-text-btn:active {
+  color: #000000 !important;
+}
+
+.azure-grid-text-btn:disabled {
+  color: #a19f9d !important; /* Fluent disabled grey */
+  cursor: not-allowed !important;
+  text-decoration: none !important;
+}
+
+// 🟦 3 Neutral Button (Cancel / Close)
+.azure-grid-neutral-btn {
+  background-color: #f3f2f1 !important;
+  border: 1px solid #8a8886 !important;
+  color: #323130 !important;
+  padding: 4px 12px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: background-color 120ms ease;
+}
+
+.azure-grid-neutral-btn:hover {
+  background-color: #e1dfdd !important;
+}
+
+.azure-grid-neutral-btn:active {
+  background-color: #c8c6c4 !important;
+}
+
+.azure-grid-neutral-btn:disabled {
+  background-color: #f3f2f1 !important;
+  color: #a19f9d !important;
+  border-color: #c8c6c4 !important;
+  cursor: not-allowed !important;
+}
+
+// ❤️ 4 Danger Button (Delete)
+.azure-grid-danger-btn {
+  background-color: #d13438 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 4px 12px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  transition: background-color 120ms ease;
+}
+
+.azure-grid-danger-btn:hover {
+  background-color: #a4262c !important;
+}
+
+.azure-grid-danger-btn:active {
+  background-color: #8e1c24 !important;
+}
+
+.azure-grid-danger-btn:disabled {
+  background-color: #e5a3a5 !important;
+  cursor: not-allowed !important;
+}
+
+/* --------------------------
+   End Buttons -grid
+   -------------------------- */

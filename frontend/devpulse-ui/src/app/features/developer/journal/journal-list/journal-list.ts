@@ -18,6 +18,7 @@ import { ViewJournalDialog } from '../view-journal-dialog/view-journal-dialog';
 import { AddEditJournalDialog } from '../add-edit-journal-dialog/add-edit-journal-dialog';
 import { TaskItemDto } from '../../../../core/models/task-item.dto';
 import { TaskApiService } from '../../../../core/services/task-api';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-journal-list',
@@ -41,8 +42,8 @@ export class JournalList implements OnInit, OnDestroy {
 
   readonly actions: TableAction[] = [
     {
-      label: 'View',
-      color: '#e4e2e2',
+      label: 'View Journal',
+      class: GridButtonStyle.AzureGridNeutralBtn,
       icon: 'summarize',
       action: 'viewJournalWithFeedback',
       tooltip: 'Journal & Feedback',

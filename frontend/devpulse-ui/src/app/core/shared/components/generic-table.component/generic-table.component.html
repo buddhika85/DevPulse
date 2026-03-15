@@ -8,10 +8,10 @@
 <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
   <!-- Dynamic columns -->
   @for (col of columns; track col.key) {
-  <ng-container [matColumnDef]="col.key">
-    <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ col.label }}</th>
-    <td mat-cell *matCellDef="let row">{{ row[col.key] }}</td>
-  </ng-container>
+    <ng-container [matColumnDef]="col.key">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ col.label }}</th>
+      <td mat-cell *matCellDef="let row">{{ row[col.key] }}</td>
+    </ng-container>
   }
 
   <!--Table empty -->
@@ -22,29 +22,30 @@
 
   <!-- Actions column (only if actions exist) -->
   @if (actions.length > 0) {
-  <ng-container matColumnDef="actions">
-    <th mat-header-cell *matHeaderCellDef>Actions</th>
-    <td mat-cell *matCellDef="let row">
-      @for (act of actions; track act.action) {
-      <button
-        mat-button
-        [style.background-color]="act.color"
-        (click)="onAction(act.action, row)"
-        [matTooltip]="act.tooltip"
-        matTooltipPosition="above"
-        matTooltipClass="tooltip-minimal"
-        style="margin-right: 3px"
-      >
-        @if(act.icon) {
-        <mat-icon class="action-icon">{{ act.icon }}</mat-icon>
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let row">
+        @for (act of actions; track act.action) {
+          <button
+            mat-button
+            [ngClass]="act.class"
+            (click)="onAction(act.action, row)"
+            [matTooltip]="act.tooltip"
+            matTooltipPosition="above"
+            matTooltipClass="tooltip-minimal"
+            style="margin-right: 3px"
+          >
+            <!-- 
+           [style.background-color]="act.color"
+            @if (act.icon) {
+              <mat-icon class="action-icon">{{ act.icon }}</mat-icon>
+            } -->
+
+            {{ act.label }}
+          </button>
         }
-
-        {{ act.label }}
-      </button>
-
-      }
-    </td>
-  </ng-container>
+      </td>
+    </ng-container>
   }
 
   <!-- Header and row definitions -->

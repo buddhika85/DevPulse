@@ -9,6 +9,7 @@ import { SnackbarService } from '../../../../core/shared/services/snackbar.servi
 import { TableColumn } from '../../../../core/models/table-column';
 import { TableAction } from '../../../../core/models/table-action';
 import { GenericTableComponent } from '../../../../core/shared/components/generic-table.component/generic-table.component';
+import { GridButtonStyle } from '../../../../shared/enums/grid-button-style.enum';
 
 @Component({
   selector: 'app-task-list',
@@ -31,11 +32,11 @@ export class TaskList implements OnInit, OnDestroy {
 
   readonly actions: TableAction[] = [
     {
-      label: '',
-      color: '#e4e2e2',
+      label: 'Edit',
+      class: GridButtonStyle.AzureGridBtn,
       icon: 'edit',
       action: 'edit',
-      tooltip: 'edit',
+      tooltip: '',
     },
     // {
     //   label: '',
