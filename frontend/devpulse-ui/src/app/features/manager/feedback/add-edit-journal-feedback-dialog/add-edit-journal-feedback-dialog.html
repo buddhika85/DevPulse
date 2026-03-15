@@ -57,16 +57,44 @@
   <div class="journal-section">
     <div class="section-title">Feedback</div>
 
-    @if (journal.feedbackManager) {
-      <div class="feedback-box">
-        <div><strong>Manager:</strong> {{ journal.feedbackManager }}</div>
-        <div><strong>Comment:</strong> {{ journal.feedback?.comment }}</div>
-        <div>
-          <strong>Feedback Date:</strong> {{ journal.feedback?.createdAtStr }}
+    @if (feedbackFormGroup) {
+      <form
+        [formGroup]="feedbackFormGroup"
+        (ngSubmit)="onSubmit()"
+        class="form"
+      >
+        <div class="form-row">
+          <label for="content">Content</label>
+          <textarea
+            id="content"
+            type="text"
+            formControlName="content"
+            rows="4"
+            class="textarea"
+          ></textarea>
         </div>
-      </div>
-    } @else {
-      <p>No feedback yet</p>
+
+        <div class="form-row-no-cols">
+          @let contentCtrl = feedbackFormGroup.get("content");
+
+          <span class="error">
+            @if (
+              contentCtrl?.invalid &&
+              (contentCtrl?.touched || contentCtrl?.dirty)
+            ) {
+              <!-- invalid rouched or dirty-->
+              @if (contentCtrl?.hasError("required")) {
+                <span>Feedback cannot be empty !</span>
+              }
+              @if (contentCtrl?.hasError("minlength")) {
+                <span>Minimum 10 characters</span>
+              } @else {
+                <span></span>
+              }
+            }
+          </span>
+        </div>
+      </form>
     }
   </div>
 </mat-dialog-content>
@@ -74,7 +102,22 @@
 <div class="azure-divider"></div>
 
 <mat-dialog-actions align="end">
-  <button mat-button mat-dialog-close class="azure-btn" (click)="onClose()">
+  <button
+    mat-button
+    [ngClass]="'azure-btn'"
+    (click)="onSubmit()"
+    [disabled]="feedbackFormGroup.invalid"
+    style="margin-right: 2%"
+  >
+    Save Feedback
+  </button>
+
+  <button
+    mat-button
+    mat-dialog-close
+    class="azure-btn-secondary"
+    (click)="onClose()"
+  >
     Close
   </button>
 </mat-dialog-actions>

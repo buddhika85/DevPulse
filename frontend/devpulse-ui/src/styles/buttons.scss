@@ -12,6 +12,13 @@
     transform 80ms ease;
 }
 
+.azure-btn:disabled {
+  background-color: #a6a6a6 !important;
+  color: #ffffff !important;
+  cursor: not-allowed !important;
+  opacity: 0.7 !important;
+}
+
 .azure-btn:hover {
   background-color: #106ebe; /* slightly darker */
 }

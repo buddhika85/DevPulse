@@ -109,7 +109,10 @@ export class Feedback {
         width: '650px',
         maxHeight: '900px',
         panelClass: 'journal-dialog-container',
-        data: journal,
+        data: {
+          journal: journal,
+          managerId: this.userId,
+        },
       })
       .afterClosed()
       .subscribe((result) => {

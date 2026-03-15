@@ -90,3 +90,28 @@
 .journal-section:first-of-type {
   margin-top: 8px !important;
 }
+
+textarea {
+  min-height: 160px;
+  max-height: 160px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 2px;
+  align-items: start;
+}
+
+.form-row-no-cols {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 1%;
+}
+
+.error {
+  margin-left: 110px;
+  font-size: 0.8rem;
+  color: #d32f2f;
+}

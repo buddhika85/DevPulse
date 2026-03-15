@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { AddJournalFeedbackDto } from '../models/add-journal-feedback.dto';
 
 // dedicated for Journal Micro Service Calls
 
@@ -20,5 +21,9 @@ export class JournalApiService {
       `${this.feebackControllerUrl}/mark-as-seened/${journalId}`,
       {},
     );
+  }
+
+  addJournalFeedback(feedback: AddJournalFeedbackDto): Observable<void> {
+    return this.http.post<void>(`${this.feebackControllerUrl}`, feedback);
   }
 }

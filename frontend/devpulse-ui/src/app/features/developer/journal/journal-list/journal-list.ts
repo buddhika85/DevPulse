@@ -135,8 +135,8 @@ export class JournalList implements OnInit, OnDestroy {
 
         const dialogRef = this.dialog
           .open(AddEditJournalDialog, {
-            width: '720px',
-            height: '720px',
+            width: '750px',
+            minHeight: '750px',
             maxHeight: '90vh',
             panelClass: 'journal-dialog-panel',
 
