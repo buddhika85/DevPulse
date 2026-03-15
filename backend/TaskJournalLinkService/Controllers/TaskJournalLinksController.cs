@@ -161,7 +161,7 @@ namespace TaskJournalLinkService.Controllers
         }
 
         // task journal links, list for journals list
-        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)},{nameof(UserRole.Manager)}")]
         [HttpPost("links-for-journals")]
         [SwaggerOperation(Summary = "Gets links for journal ID list",
                   Description = "Returns task journal links, list, for journal Ids.")]

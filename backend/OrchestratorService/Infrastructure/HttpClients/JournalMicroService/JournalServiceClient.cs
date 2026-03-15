@@ -287,5 +287,72 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
                 throw;
             }
         }
+
+
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsForTeamFeedback(IReadOnlyList<Guid> teamIds, CancellationToken cancellationToken)
+        {
+            var teamMembersCsv = string.Join(",", teamIds);
+
+            _logger.LogInformation(
+                "Fetching journals with feedbacks for team members:{TeamMembersCsv} at {RequestTime}",
+                teamMembersCsv,
+                DateTime.UtcNow);
+
+            try
+            {
+                var url = $"{RouteToJournalController}team-journals";
+
+                var response = await _httpClient.PostAsJsonAsync(url, teamIds, cancellationToken);
+
+                response.EnsureSuccessStatusCode();
+
+                var journals = await response.Content.ReadFromJsonAsync<IReadOnlyList<JournalEntryWithFeedbackDto>>(
+                    cancellationToken: cancellationToken);
+
+                if (journals is null || journals.Count == 0)
+                {
+                    _logger.LogInformation(
+                        "No journals found for team members:{TeamMembersCsv} at {Time}",
+                        teamMembersCsv,
+                        DateTime.UtcNow);
+
+                    return Array.Empty<JournalEntryWithFeedbackDto>();
+                }
+
+                _logger.LogInformation(
+                    "Retrieved {JournalCount} journals for team members:{TeamMembersCsv} at {Time}",
+                    journals.Count,
+                    teamMembersCsv,
+                    DateTime.UtcNow);
+
+                return journals;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "HTTP request failed while fetching journals for team members:{TeamMembersCsv}",
+                    teamMembersCsv);
+
+                throw new ApplicationException("Failed to fetch journals from journal API", ex);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to deserialize journal data for team members:{TeamMembersCsv}",
+                    teamMembersCsv);
+
+                throw new ApplicationException("Failed to deserialize journal data", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning(
+                    "Journal fetching operation was canceled for team members:{TeamMembersCsv}",
+                    teamMembersCsv);
+
+                throw;
+            }
+        }
     }
 }

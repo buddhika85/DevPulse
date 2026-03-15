@@ -24,7 +24,7 @@ namespace JournalService.Services
         Task<bool> DeleteAsync(DeleteJournalEntryCommand command, CancellationToken cancellationToken);
 
         Task<bool> RestoreAsync(RestoreJournalEntryCommand command, CancellationToken cancellationToken);
-        Task<IReadOnlyList<JournalEntryDto>> GetJournalsByTeamAsync(GetJournalsByTeamQuery query, CancellationToken cancellationToken);
+        Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsByTeamAsync(GetJournalsByTeamQuery query, CancellationToken cancellationToken);
         Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalEntriesWithFeedbackByUserIdAsync(GetJournalsWithFeedbacksByUserIdQuery query, CancellationToken cancellationToken);
     }
 }

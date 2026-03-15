@@ -7,7 +7,7 @@ namespace OrchestratorService.Application.Services
     {
         Task<Guid?> AddJournalEntryWithTaskLinksAsync(CreateJournalDto dto, CancellationToken cancellationToken);
         Task<JournalWithTasksDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken);
-        Task<IReadOnlyList<JournalWithTasksDto>> GetJournalsByTeamAsync(Guid managerId, CancellationToken cancellationToken);
+        Task<IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto>> GetJournalsByTeamAsync(Guid managerId, CancellationToken cancellationToken);
         Task<IReadOnlyList<JournalEntryWithTasksAndFeedbackDto>> GetMyJournalsAsync(Guid userId, CancellationToken cancellationToken);
         Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<bool> TryUpdateJournalAndLinksAsync(UpdateJournalDto dto, CancellationToken cancellationToken);

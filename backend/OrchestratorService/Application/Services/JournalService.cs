@@ -8,8 +8,6 @@ using SharedLib.DTOs.Journal;
 using SharedLib.DTOs.Task;
 using SharedLib.DTOs.TaskJournalLink;
 using SharedLib.DTOs.User;
-using System.Collections.Generic;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace OrchestratorService.Application.Services
 {
@@ -206,61 +204,99 @@ namespace OrchestratorService.Application.Services
             }
         }
 
-        public async Task<IReadOnlyList<JournalWithTasksDto>> GetJournalsByTeamAsync(Guid managerId, CancellationToken cancellationToken)
+        /// <summary>
+        /// Retrieves all journal entries written by the developers who report to the specified manager,
+        /// and returns them in a fully hydrated form. This includes each journal record, its feedback
+        /// (if available), the feedback manager's details, and all tasks linked to each journal entry.
+        /// </summary>
+        /// <param name="managerId">
+        /// The unique identifier of the manager whose team's journals should be retrieved and hydrated.
+        /// </param>
+        /// <param name="cancellationToken">
+        /// A token used to observe cancellation requests for the asynchronous operation.
+        /// </param>
+        /// <returns>
+        /// A read-only list of <see cref="JournalEntryWithTasksAndFeedbackDto"/> objects, where each
+        /// journal entry is enriched with its linked tasks, feedback information, and the feedback
+        /// manager's display name. Returns an empty list if the manager's team has no journal entries.
+        /// </returns>
+        public async Task<IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto>> GetJournalsByTeamAsync(Guid managerId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Finding journals for team by manager {ManagerId} at {Time}", managerId, DateTime.UtcNow);
-
-            var cacheKey = $"TeamMembersForManagerId:{managerId}";
-
+            _logger.LogInformation("Finding fully hydarted journals for team of manager ID {ManagerId} at {Time}", managerId, DateTime.UtcNow);
+            var cacheKey = $"HydratedTeamJournalsForManagerId:{managerId}";
             try
             {
-                _logger.LogInformation("Step 1 - retrieving team members for manager {ManagerId}", managerId);
-
-                if (!_inMemoryCache.TryGetValue(cacheKey, out IReadOnlyList<UserAccountDto>? teamMembers) || teamMembers is null)
-                {
-                    _logger.LogInformation("Cache miss for manager {ManagerId}. Requesting from User Microservice.", managerId);
-                    teamMembers = await _userServiceClient.GetTeamMembersForManager(managerId, cancellationToken);
-
-                    if (teamMembers is not null)
-                    {
-                        _logger.LogInformation("Caching {TeamMemberCount} team members for manager {ManagerId}", teamMembers.Count, managerId);
-                        _inMemoryCache.Set(cacheKey, teamMembers, TimeSpan.FromMinutes(CachedTimeInMins));
-                    }
-                }
-                else
+                // step 0 - try to find data from cache
+                if (_inMemoryCache.TryGetValue(cacheKey, out IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto>? cached) && cached is not null)
                 {
                     _logger.LogInformation("Cache hit for manager {ManagerId}", managerId);
+                    return cached;
                 }
 
-                if (teamMembers is null || !teamMembers.Any())
+                _logger.LogInformation("Cache miss for manager {ManagerId}", managerId);
+
+                // step 1 - get all team member Ids for manager Id = from User Micro Service
+                _logger.LogInformation("Step 2 - get all team members for manager Id {ManagerId}, from User Micro Service at {Time}", managerId, DateTime.UtcNow);
+                IReadOnlyList<UserAccountDto> teamMembers = await _userServiceClient.GetTeamMembersForManager(managerId, cancellationToken);
+                if (!teamMembers.Any())
                 {
-                    _logger.LogInformation("No team members found for manager {ManagerId}", managerId);
+                    _logger.LogInformation("No team members in the team of manager ID {ManagerId}", managerId);
                     return [];
                 }
 
+                IReadOnlyList<Guid> teamMemberIds = [.. teamMembers.Select(x => x.Id)];
+                _logger.LogDebug("{Count} Team members of Manager ID: {ManagerId} include: {TeamMmeberIDs}", teamMembers.Count, managerId, string.Join(",", teamMemberIds));
 
-                var teamMemberIds = teamMembers.Select(x => x.Id);
-                var teamMemberIdsStr = string.Join(",", teamMemberIds);
-                _logger.LogInformation("Step 2 - retrieving journals for team members: {TeamMembers}", teamMemberIdsStr);
-
-                var journals = await _journalServiceClient.GetJournalsByTeamAsync([.. teamMemberIds], cancellationToken);
-
-                if (journals is null || !journals.Any())
+                // step 2 - get all journals by userId, with feedbacks for user = from Journal Micro Service
+                _logger.LogInformation("Step 2 - get all journals by team of manager ID {ManagerId}, with feedbacks for user, from Journal Micro Service at {Time}", managerId, DateTime.UtcNow);
+                IReadOnlyList<JournalEntryWithFeedbackDto> journalsWithFeedbacks = await _journalServiceClient.GetJournalsForTeamFeedback(teamMemberIds, cancellationToken);
+                if (!journalsWithFeedbacks.Any())
                 {
-                    _logger.LogInformation("No journals retrived for team members: {TeamMembers}", teamMemberIdsStr);
+                    _logger.LogInformation("No journals written by team of manager ID {ManagerId}", managerId);
                     return [];
                 }
 
+                // step 3 - get task journal links for all user journals = from task journal link Micro Service
+                var journalIds = journalsWithFeedbacks.Select(x => x.journal.Id);
+                IReadOnlyList<TaskJournalLinkDocument> taskJournalLinks = [];
+                if (journalIds is not null && journalIds.Any())
+                {
+                    _logger.LogInformation("Step 3 - get task journal links for manager: {ManagerId} journals from task journal link Micro Service at {Time}", managerId, DateTime.UtcNow);
+                    taskJournalLinks = await _taskJournalLinkServiceClient.GetLinksForJournalIdsAsync(journalIds, cancellationToken);
+                }
 
-                _logger.LogInformation("Step 3 - Hydrating journals with Task Ids");
+                // step 4 - get tasks for all task journal links = from task Micro Service
+                var taskIds = taskJournalLinks.Select(x => x.TaskId).Distinct();
+                IReadOnlyList<TaskItemDto> tasks = [];
+                if (taskIds is not null && taskIds.Any())
+                {
+                    _logger.LogInformation("Step 4 - get tasks for all task journal links of manager: {ManagerId} from task Micro Service at {Time}", managerId, DateTime.UtcNow);
+                    tasks = await _taskServiceClient.GetTasksAsync(taskIds, cancellationToken) ?? [];
+                }
 
-                _logger.LogInformation("Step 4 - Hydrating journals jounral feedbacks");
+                // step 5 - get feedback manager details, if feedback available = from user Micro Service
+                IEnumerable<Guid> managerIds = journalsWithFeedbacks
+                                                .Select(x => x.feedback?.FeedbackManagerId)
+                                                .Where(id => id.HasValue)
+                                                .Select(id => id!.Value)
+                                                .Distinct();
+                IReadOnlyList<UserAccountDto> managers = [];
+                if (managerIds is not null && managerIds.Any())
+                {
+                    _logger.LogInformation("Step 5 - get feedback manager details for manager: {ManagerId}, if feedback available = from user Micro Service at {Time}", managerId, DateTime.UtcNow);
+                    managers = await _userServiceClient.GetUsersByIds(managerIds, cancellationToken);
+                }
 
-                return [];
+                // step 6 - hydrate the DTO from all above data coming from different micro services
+                _logger.LogInformation("Step 6 - Getting fully hydarted journals for manager {ManagerId} at {Time}", managerId, DateTime.UtcNow);
+                IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto> dtos = HydrateTeamJournalsWithFeedbacks(
+                                                        journalsWithFeedbacks, taskJournalLinks, tasks, managers, teamMembers);
+                _inMemoryCache.Set(cacheKey, dtos, TimeSpan.FromMinutes(CachedTimeInMins));
+                return dtos;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to retrieve team tasks for manager {ManagerId}", managerId);
+                _logger.LogError(ex, "Failed to find fully hydarted journals for manager {ManagerId} at {Time}", managerId, DateTime.UtcNow);
                 throw;
             }
         }
@@ -429,6 +465,59 @@ namespace OrchestratorService.Application.Services
                                                 journal.feedback,
                                                 managerName,
                                                 linkedTasks
+                                            );
+                                        })
+                                        .OrderByDescending(x => x.CreatedAt)
+                                        .ToList();
+            return result;
+        }
+
+
+
+        private IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto> HydrateTeamJournalsWithFeedbacks(
+            IReadOnlyList<JournalEntryWithFeedbackDto> journalsWithFeedbacks,
+            IReadOnlyList<TaskJournalLinkDocument> taskJournalLinks,
+            IReadOnlyList<TaskItemDto> tasks,
+            IReadOnlyList<UserAccountDto> managers,
+            IReadOnlyList<UserAccountDto> teamMembers)
+        {            
+            var result = journalsWithFeedbacks
+                                        .Select(journalEntry =>
+                                        {
+                                            // Find user who wrote the journal
+                                            var user =
+                                                teamMembers.Single(x => x.Id == journalEntry.journal.UserId);
+
+                                            // Find manager given journal feedback
+                                            var managerName =
+                                                managers.FirstOrDefault(m =>
+                                                    m.Id == journalEntry.feedback?.FeedbackManagerId
+                                                )?.DisplayName;
+
+                                            // Find linked task Ids for current journal
+                                            var linkedTaskIds =
+                                                taskJournalLinks
+                                                    .Where(l => l.JounrnalId == journalEntry.journal.Id)
+                                                    .Select(l => l.TaskId)
+                                                    .ToList();
+
+                                            // Find tasks for linked task Ids of current journal
+                                            var linkedTasks =
+                                                tasks
+                                                    .Where(t => linkedTaskIds.Contains(t.Id))
+                                                    .ToList();
+
+                                            return new TeamJournalEntryWithTasksAndFeedbackDto(
+                                                journalEntry.journal.Id,
+                                                journalEntry.journal.UserId,
+                                                journalEntry.journal.CreatedAt,
+                                                journalEntry.journal.Title,
+                                                journalEntry.journal.Content,
+                                                journalEntry.journal.IsDeleted,
+                                                journalEntry.feedback,
+                                                managerName,
+                                                linkedTasks,
+                                                user
                                             );
                                         })
                                         .OrderByDescending(x => x.CreatedAt)

@@ -226,11 +226,11 @@ namespace OrchestratorService.Controllers
         }
 
 
-        // To Do
+       
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
-        [HttpGet("tasks-for-team")]
+        [HttpGet("team-journals")]
         [SwaggerOperation(Summary = "Get journals for team by manager Id", Description = "Returns journals for team by manager Id")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TaskItemWithUserDto>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetJournalsByTeam(CancellationToken cancellationToken)
@@ -267,7 +267,7 @@ namespace OrchestratorService.Controllers
                 _logger.LogError(
                     ex,
                     "Error fetching team journals for manager {ManagerId}  at {Time}",
-                    managerOidStr, now);
+                    managerOidStr, DateTime.UtcNow);
 
                 return InternalError(detail: ex.Message);
             }

@@ -11,6 +11,7 @@ import { TaskItemWithUserDto } from '../models/task-item.dto';
 import {
   CreateJournalDto,
   JournalEntryWithTasksAndFeedbackDto,
+  TeamJournalEntryWithTasksAndFeedbackDto,
 } from '../models/journal-entry-with-tasks-and-feedback.dto';
 
 // dedicated for Orchestrator Micro Service Calls
@@ -63,6 +64,19 @@ export class OrchestratorApiService {
 
     return this.http.get<JournalEntryWithTasksAndFeedbackDto[]>(
       `${this.orchestratorJournalsControllerUrl}/my-journals`,
+      {
+        params: queryString,
+      },
+    );
+  }
+
+  getTeamJournals(
+    includeDeleted: boolean,
+  ): Observable<TeamJournalEntryWithTasksAndFeedbackDto[]> {
+    var queryString = new HttpParams().set('includeDeleted', includeDeleted);
+
+    return this.http.get<TeamJournalEntryWithTasksAndFeedbackDto[]>(
+      `${this.orchestratorJournalsControllerUrl}/team-journals`,
       {
         params: queryString,
       },

@@ -275,7 +275,10 @@ namespace JournalService.Repositories
             {
                 _logger.LogInformation("Attempting to retrieve all journal-entries by team members: {TeamMembers} at {Time}", teamCsv, DateTime.UtcNow);
 
-                var journals = await _dbContext.JournalEntries.Where(x => teamMemberIds.Contains(x.UserId)).ToListAsync(cancellationToken);
+                var journals = await _dbContext.JournalEntries.AsNoTracking()
+                    .Where(x => teamMemberIds.Contains(x.UserId))
+                    .Include(x => x.JournalFeedback)
+                    .ToListAsync(cancellationToken);
                 _logger.LogInformation("Retrieved {JournalEntries} journal-entries at {Time}", journals.Count(), DateTime.UtcNow);
 
                 return journals;

@@ -1,5 +1,6 @@
 import { BaseDto } from './base.dto';
 import { TaskItemDto } from './task-item.dto';
+import { UserAccountDto } from './user-account.dto';
 
 export interface JournalEntryWithTasksAndFeedbackDto extends BaseDto {
   //id: string; // Guid coming from BaseDto
@@ -24,6 +25,13 @@ export interface JournalEntryWithTasksAndFeedbackDto extends BaseDto {
   linkedTaskTitles: string[];
   linkedTaskTitlesCsv: string;
   contentSnippet: string;
+}
+
+export interface TeamJournalEntryWithTasksAndFeedbackDto extends JournalEntryWithTasksAndFeedbackDto {
+  user: UserAccountDto;
+
+  // Computed fields (sent from backend)
+  userDisplayName: string;
 }
 
 export interface JournalFeedbackDto extends BaseDto {

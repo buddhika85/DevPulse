@@ -1,5 +1,4 @@
-﻿using OrchestratorService.Application.DTOs;
-using SharedLib.DTOs.Journal;
+﻿using SharedLib.DTOs.Journal;
 
 namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
 {
@@ -9,6 +8,7 @@ namespace OrchestratorService.Infrastructure.HttpClients.JournalMicroService
         Task DeleteJournalEntryAsync(Guid? jounralId, CancellationToken cancellationToken);
         Task<JournalEntryDto?> GetJournalByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<IReadOnlyList<JournalEntryDto>> GetJournalsByTeamAsync(Guid[] teamMemberIds, CancellationToken cancellationToken);
+        Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsForTeamFeedback(IReadOnlyList<Guid> teamIds, CancellationToken cancellationToken);
         Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsWithFeedback(Guid requestingUserId, CancellationToken cancellationToken);
         Task<bool> IsJournalEntryExistsByIdAsync(Guid id, CancellationToken cancellationToken);
         Task<bool> UpdateJournalEntryAsync(UpdateJournalEntryDto dto, CancellationToken cancellationToken);

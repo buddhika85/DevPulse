@@ -168,7 +168,7 @@ namespace JournalService.Controllers
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
         [HttpPost("team-journals")]
         [SwaggerOperation(Summary = "Get all journal-entries for team", Description = "Returns all journal-entries for a team.")]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryDto>))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(IReadOnlyList<JournalEntryWithFeedbackDto>))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Validation error", typeof(BadRequest))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Internal error", typeof(ProblemDetails))]
         public async Task<IActionResult> GetTeamJournals([FromBody] Guid[] teamMembers, CancellationToken cancellationToken)
@@ -186,6 +186,7 @@ namespace JournalService.Controllers
                     new GetJournalsByTeamQuery(teamMembers),
                     cancellationToken);
 
+                _logger.LogInformation("Found {Count} journal-entries found for for team members {TeamMembers}", journals.Count, teamCsv);
                 return Ok(journals);
             }
             catch (Exception ex)

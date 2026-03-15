@@ -262,7 +262,7 @@ namespace JournalService.Services
             }
         }
 
-        public async Task<IReadOnlyList<JournalEntryDto>> GetJournalsByTeamAsync(GetJournalsByTeamQuery query, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> GetJournalsByTeamAsync(GetJournalsByTeamQuery query, CancellationToken cancellationToken)
         {
             var teamCsv = string.Join(",", query.TeamMemberIds);
 
@@ -273,7 +273,7 @@ namespace JournalService.Services
                 var entities = await _journalRepository.GetJournalsByTeamAsync(query.TeamMemberIds, cancellationToken);
                 _logger.LogInformation("Retrieved {JournalEntries} journal-entries at {Time}", entities.Count(), DateTime.UtcNow);
 
-                var dtos = JournalMapper.ToDtosList(entities);
+                var dtos = JournalMapper.ToDtosListWithFeedback(entities);
                 _logger.LogInformation("Mapped {JournalEntriesCount} journal-entries for Team members: {TeamMembers} at {Time}", dtos.Count(), teamCsv, DateTime.UtcNow);
 
                 return [.. dtos];

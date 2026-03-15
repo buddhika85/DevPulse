@@ -6,7 +6,7 @@ using SharedLib.DTOs.Journal;
 namespace JournalService.Application.Handlers.QueryHandlers.Journal
 {
     // GetJournalsByTeamQueryHandler
-    public class GetJournalsByTeamQueryHandler : IRequestHandler<GetJournalsByTeamQuery, IReadOnlyList<JournalEntryDto>>
+    public class GetJournalsByTeamQueryHandler : IRequestHandler<GetJournalsByTeamQuery, IReadOnlyList<JournalEntryWithFeedbackDto>>
     {
         private readonly ILogger<GetJournalsByTeamQueryHandler> _logger;
         private readonly IJournalService _journalService;
@@ -17,7 +17,7 @@ namespace JournalService.Application.Handlers.QueryHandlers.Journal
             _journalService = journalService;
         }
 
-        public async Task<IReadOnlyList<JournalEntryDto>> Handle(GetJournalsByTeamQuery query, CancellationToken cancellationToken)
+        public async Task<IReadOnlyList<JournalEntryWithFeedbackDto>> Handle(GetJournalsByTeamQuery query, CancellationToken cancellationToken)
         {
             var now = DateTime.UtcNow;
             try
