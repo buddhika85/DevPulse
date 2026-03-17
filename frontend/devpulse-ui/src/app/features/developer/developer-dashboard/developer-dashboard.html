@@ -1,12 +1,114 @@
-@if (userDashBoard) {
-<p>
-  <span style="color: rgb(115, 91, 180); font-weight: bold">{{
-    userDashBoard.dashBoardType
-  }}</span>
-  for
-  <span style="color: rgb(180, 91, 91); font-weight: bold">{{
-    userDashBoard.user.displayName
-  }}</span>
-</p>
+@if (developerDashboardDto) {
+  <h2 class="page-title">
+    Developer Dashboard
+    <span class="last-updated">Last updated: {{ lastUpdated }}</span>
+  </h2>
 
+  <!-- SUMMARY CARDS -->
+  @if (summary$ | async; as s) {
+    <div class="summary-row">
+      <div class="summary-card high">
+        <div class="icon">🔥</div>
+        <div class="content">
+          <span class="label">High Priority</span>
+          <span class="value">{{ s.highPriority }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card new">
+        <div class="icon">🆕</div>
+        <div class="content">
+          <span class="label">New Tasks</span>
+          <span class="value">{{ s.newTasks }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card progress">
+        <div class="icon">🔄</div>
+        <div class="content">
+          <span class="label">In Progress</span>
+          <span class="value">{{ s.inProgress }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card urgent">
+        <div class="icon">⏰</div>
+        <div class="content">
+          <span class="label">Urgent</span>
+          <span class="value">{{ s.urgent }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card feedback">
+        <div class="icon">💬</div>
+        <div class="content">
+          <span class="label">New Feedback</span>
+          <span class="value">{{ s.newFeedback }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- CHART GRID -->
+  <div class="chart-grid">
+    <!-- Line Chart -->
+    <div class="chart-card fade-in">
+      <h3>Journals Written Over Time</h3>
+      <div class="divider"></div>
+
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          [series]="journalsLineChart.series"
+          [chart]="journalsLineChart.chart"
+          [xaxis]="journalsLineChart.xaxis"
+          [yaxis]="journalsLineChart.yaxis"
+          [stroke]="journalsLineChart.stroke"
+        ></apx-chart>
+      }
+    </div>
+
+    <!-- Donut Chart -->
+    <div class="chart-card fade-in">
+      <h3>Tasks Completed vs Pending</h3>
+      <div class="divider"></div>
+
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          class="scale-in"
+          [series]="tasksDonutChart.series"
+          [chart]="tasksDonutChart.chart"
+          [labels]="tasksDonutChart.labels"
+          [colors]="tasksDonutChart.colors"
+        ></apx-chart>
+
+        <div class="task-counts">
+          <p>Total: <strong>10</strong></p>
+          <p>Completed: <strong>5</strong></p>
+          <p>In Progress: <strong>3</strong></p>
+          <p>Not Started: <strong>2</strong></p>
+        </div>
+      }
+    </div>
+
+    <!-- Bar Chart -->
+    <div class="chart-card fade-in">
+      <h3>Feedback Received</h3>
+      <div class="divider"></div>
+
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          [series]="feedbackBarChart.series"
+          [chart]="feedbackBarChart.chart"
+          [xaxis]="feedbackBarChart.xaxis"
+          [colors]="feedbackBarChart.colors"
+        ></apx-chart>
+      }
+    </div>
+  </div>
 }

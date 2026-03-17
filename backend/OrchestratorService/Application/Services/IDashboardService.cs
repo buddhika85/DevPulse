@@ -6,6 +6,7 @@ namespace OrchestratorService.Application.Services
     {
         // GetDashboardAsync is legacy will be removed soon
         Task<DashboardDto> GetDashboardAsync(string userId, CancellationToken cancellationToken);
+        Task<DeveloperDashboardDto> GetDeveloperDashboardAsync(Guid userId, CancellationToken cancellationToken);
 
         // GetDashboardAsync new version
         Task<BaseDashboardDto> GetUserDashboardAsync(string userId, CancellationToken cancellationToken);

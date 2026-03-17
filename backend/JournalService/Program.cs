@@ -97,14 +97,23 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 app.UseHttpsRedirection();                                                  // Enforces HTTPS
 
-app.UseRouting();
+
+// UseRouting - It simply *adds the routing middleware* to the pipeline.
+// matches endpoints at REQUEST TIME (check app.Run() line), not now. Looks at HTTP requests Path and HTTP method and selects which EndPoint to use at run time.
+// For this routing table produced by MapControllers middleware is a pre-requisit.  
+app.UseRouting();                                                           
+
+
 
 app.UseConfiguredCors();                                                    // using CORS configurations with CORS middleware
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();                                                       // Maps controller endpoints
+
+// MapControllers - defines endpoints/routing table by scanning thought entire application at START UP, before any request arrive, not request time.
+// Use Routing middleware needs this endpoints table at REQUEST TIME.
+app.MapControllers();                                                      
 
 
 
@@ -124,6 +133,8 @@ using (var scope = app.Services.CreateScope())
 // starting application
 try
 {
+    // app.Run will use Routing middleware added using useRouting(), matches endpoints at REQUEST TIME. Looks at HTTP requests Path and HTTP method and selects which EndPoint to use at run time.
+    // For this routing table produced by MapControllers middleware is a pre-requisit.  
     app.Run();
 }
 catch (Exception ex)

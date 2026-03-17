@@ -152,5 +152,41 @@ namespace OrchestratorService.Controllers
             }
         }
 
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.User)}")]
+        [HttpGet("developer/{userId}")]
+        [OutputCache(Duration = 60, Tags = ["dashboard-{userId}"])] // Cache full response for 1 minute
+        [SwaggerOperation(
+            Summary = "Get dashboard for a developer",
+            Description = "Returns a hydrated dashboard view including task stats and journal stats"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(BaseDashboardDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid user ID", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetDeveloperDashboard(Guid userId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to fetch developer dashboard information for user ID: {Id} at {Time}", userId, DateTime.UtcNow);
+            try
+            {
+                var result = await _dashboardService.GetDeveloperDashboardAsync(userId, cancellationToken);
+                return OkOrNotFound(result, "Dashboard not found for the given user");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Validation failed while fetching developer dashboard by user by ID: {Id} at {Time}", userId, DateTime.UtcNow);
+                return ValidationProblem(detail: ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("Developer not found for ID: {Id}", userId);
+                return NotFoundProblem(detail: ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching dashboard by developer ID: {Id} at {Time}", userId, DateTime.UtcNow);
+                return InternalError(detail: ex.Message);
+            }
+        }
     }
 }

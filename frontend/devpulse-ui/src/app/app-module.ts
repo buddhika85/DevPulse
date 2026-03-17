@@ -28,6 +28,8 @@ import { ApimSubscriptionInterceptor } from './core/interceptors/apim-subscripti
 import { ErrorInterceptor } from './core/interceptors/error-interceptor';
 import { MatSortModule } from '@angular/material/sort';
 
+import { NgxApexchartsModule } from 'ngx-apexcharts';
+
 @NgModule({
   declarations: [
     App, // ✅ Declare the root component here
@@ -99,8 +101,10 @@ import { MatSortModule } from '@angular/material/sort';
             environment.msal.protectedResources.taskJournalListApi.scopes,
           ],
         ]),
-      }
+      },
     ),
+
+    NgxApexchartsModule,
   ],
 
   // ✅ Provide MSAL services and modern HttpClient setup

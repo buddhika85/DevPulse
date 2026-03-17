@@ -30,6 +30,8 @@
     "@angular/router": "^20.1.0",
     "@azure/msal-angular": "^4.0.21",
     "@azure/msal-browser": "^4.26.0",
+    "apexcharts": "^5.10.4",
+    "ngx-apexcharts": "^0.9.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"

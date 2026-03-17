@@ -1,8 +1,12 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using OrchestratorService.Application.DTOs;
+using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
 using OrchestratorService.Infrastructure.HttpClients.UserMicroService;
+using SharedLib.DTOs.Journal;
+using SharedLib.DTOs.Task;
 using SharedLib.DTOs.User;
+using System.Globalization;
 
 namespace OrchestratorService.Application.Services
 {
@@ -10,15 +14,17 @@ namespace OrchestratorService.Application.Services
     {
         private readonly IUserServiceClient _userClient;
         private readonly ITaskServiceClient _taskClient;
+        private readonly IJournalServiceClient _journalClient;
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<DashboardService> _logger;
-        private const byte CachedTimeInMins = 5;                // Cache time in minutes
+        private const byte CachedTimeInMins = 1;                // Cache time in minutes
 
 
-        public DashboardService(IUserServiceClient userClient, ITaskServiceClient taskClient, IMemoryCache cache, ILogger<DashboardService> logger)
+        public DashboardService(IUserServiceClient userClient, ITaskServiceClient taskClient, IJournalServiceClient journalClient, IMemoryCache cache, ILogger<DashboardService> logger)
         {
             _userClient = userClient;
             _taskClient = taskClient;
+            _journalClient = journalClient;
             _inMemoryCache = cache;
             _logger = logger;
         }
@@ -179,6 +185,155 @@ namespace OrchestratorService.Application.Services
 
         }
 
-        
+        /// <summary>
+        /// Builds the developer dashboard by aggregating data from Tasks, Journals, Feedback,
+        /// and User APIs. Results are cached per user to improve performance.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the developer whose dashboard is requested.</param>
+        /// <param name="cancellationToken">Token to observe while waiting for the operation to complete.</param>
+        /// <returns>
+        /// A <see cref="DeveloperDashboardDto"/> containing summary cards, chart data,
+        /// feedback counts, and user display information.
+        /// </returns>
+        /// <remarks>
+        /// This method performs the following steps:
+        /// 1. Attempts to retrieve the dashboard from in-memory cache.
+        /// 2. If not found, queries downstream services to build the dashboard.
+        /// 3. Caches the result for subsequent requests.
+        /// </remarks>
+        public async Task<DeveloperDashboardDto> GetDeveloperDashboardAsync(Guid userId, CancellationToken cancellationToken)
+        {
+            var cacheKey = $"DeveloperDashboardForUserId:{userId}";
+
+            _logger.LogInformation("Developer dashboard request started for user {UserId}", userId);
+
+            try
+            {
+                // STEP 0 — Try cache
+                if (_inMemoryCache.TryGetValue(cacheKey, out DeveloperDashboardDto? cached) && cached is not null)
+                {
+                    _logger.LogInformation("Cache hit for user {UserId}", userId);
+                    return cached;
+                }
+
+                _logger.LogInformation("Cache miss for user {UserId}", userId);
+
+                // STEP 1 — Fetch data from downstream APIs
+                _logger.LogInformation("Fetching tasks for user {UserId}", userId);
+                var tasks = await _taskClient.GetTasksAsync(userId.ToString(), cancellationToken);
+
+                _logger.LogInformation("Fetching journals with feedback for user {UserId}", userId);
+                var journalsWithFeedback = await _journalClient.GetJournalsWithFeedback(userId, cancellationToken);
+
+                _logger.LogInformation("Fetching user profile for user {UserId}", userId);
+                var user = await _userClient.GetUserAsync(userId.ToString(), cancellationToken);
+
+                // STEP 2 — Build DTO
+                _logger.LogInformation("Building dashboard DTO for user {UserId}", userId);
+
+                var dto = new DeveloperDashboardDto(
+                    SummaryCardsDto: BuildSummary(
+                        tasks,
+                        journalsWithFeedback.Select(x => x.feedback).OfType<JournalFeedbackDto>()
+                    ),
+                    JournalsOverTimeLineChartDto: BuildJournalTimeSeries(
+                        journalsWithFeedback.Select(x => x.journal)
+                    ),
+                    TaskStatusesDonutChartDto: BuildTaskStatuses(tasks),
+                    JournalFeedbackCountsBarChartDto: BuildFeedbackCounts(journalsWithFeedback),
+                    LastUpdated: DateTime.Now.ToString("hh:mm tt"),
+                    UserId: userId,
+                    UserDisplayName: user.DisplayName
+                );
+
+                // STEP 3 — Cache result
+                _logger.LogInformation("Caching dashboard for user {UserId} for {Minutes} minutes",
+                    userId, CachedTimeInMins);
+
+                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromMinutes(CachedTimeInMins));
+
+                _logger.LogInformation("Developer dashboard successfully built for user {UserId}", userId);
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to build developer dashboard for user {UserId}", userId);
+                throw; // preserve stack trace
+            }
+        }
+
+        private JournalFeedbackCountsDto BuildFeedbackCounts(IReadOnlyList<JournalEntryWithFeedbackDto> journals)
+        {
+            return new JournalFeedbackCountsDto(
+                WithFeedBackJournalCount: journals.Count(x => x.feedback is not null),
+                WithoutFeedBackJournalCount: journals.Count(x => x.feedback is null),
+                TotalJounralCount: journals.Count
+            );
+        }
+
+        private TaskStatusesCountsDto BuildTaskStatuses(IReadOnlyList<TaskItemDto> tasks)
+        {
+            return new TaskStatusesCountsDto(
+                NotStartedTaskCount: tasks.Count(x => x.Status.Equals("NotStarted", StringComparison.OrdinalIgnoreCase)),
+                InProgressTaskCount: tasks.Count(x => x.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)),
+                CompletedTaskCount: tasks.Count(x => x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase))
+            );
+        }
+
+        private List<TimeSeriesPointDto> BuildJournalTimeSeries(IEnumerable<JournalEntryDto> journals)
+        {
+            //return [.. journals
+            //    .GroupBy(j => new { j.CreatedAt.Year, j.CreatedAt.Month })
+            //    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+            //    .Select(g =>
+            //    {
+            //        string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(g.Key.Month);
+            //        string label = $"{g.Key.Year} - {monthName}";
+            //        return new TimeSeriesPointDto(label, g.Count());
+            //    })];
+
+            // 1. Build a lookup of counts per (Year, Month)
+            var journalCounts = journals
+                .GroupBy(j => new { j.CreatedAt.Year, j.CreatedAt.Month })
+                .ToDictionary(
+                    g => (g.Key.Year, g.Key.Month),
+                    g => g.Count()
+                );
+
+            // 2. Generate the last 12 months (including current month)
+            var results = new List<TimeSeriesPointDto>();
+            var now = DateTime.UtcNow;
+
+            for (int i = 11; i >= 0; i--)
+            {
+                var date = now.AddMonths(-i);
+                int year = date.Year;
+                int month = date.Month;
+
+                // 3. Get count or default to 0
+                int count = journalCounts.TryGetValue((year, month), out int c) ? c : 0;
+
+                string monthName = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(month);
+                string label = $"{year} - {monthName}";
+
+                results.Add(new TimeSeriesPointDto(label, count));
+            }
+
+            return results;
+        }
+
+
+        private SummaryCardsDto BuildSummary(IReadOnlyList<TaskItemDto> tasks, IEnumerable<JournalFeedbackDto> feedbacks)
+        {
+            return new SummaryCardsDto(
+                HighPriorityCount: tasks.Count(x => x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
+                NewTasksCount: tasks.Count(x => x.Status.Equals("NotStarted", StringComparison.OrdinalIgnoreCase)),
+                InProgressTasksCount: tasks.Count(x => x.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)),
+                UrgentTasksCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) 
+                                                        && x.DueDate != null && (x.DueDate - DateTime.Today) <= TimeSpan.FromDays(7)),
+                NewFeedbacksCount: feedbacks.Count(x => !x.SeenByUser)
+            );
+        }
     }
 }

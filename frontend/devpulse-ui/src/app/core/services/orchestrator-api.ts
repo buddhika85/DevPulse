@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import {
   AdminDashboardDto,
   UserDashboardDto,
@@ -13,6 +13,7 @@ import {
   JournalEntryWithTasksAndFeedbackDto,
   TeamJournalEntryWithTasksAndFeedbackDto,
 } from '../models/journal-entry-with-tasks-and-feedback.dto';
+import { DeveloperDashboardDto } from '../models/developer-dashboard-dto';
 
 // dedicated for Orchestrator Micro Service Calls
 
