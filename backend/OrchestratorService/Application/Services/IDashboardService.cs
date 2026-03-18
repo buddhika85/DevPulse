@@ -1,4 +1,5 @@
 ﻿using OrchestratorService.Application.DTOs;
+using ManagerDashboardDto = SharedLib.DTOs.ManagerDashboard.ManagerDashboardDto;
 
 namespace OrchestratorService.Application.Services
 {
@@ -7,6 +8,7 @@ namespace OrchestratorService.Application.Services
         // GetDashboardAsync is legacy will be removed soon
         Task<DashboardDto> GetDashboardAsync(string userId, CancellationToken cancellationToken);
         Task<DeveloperDashboardDto> GetDeveloperDashboardAsync(Guid userId, CancellationToken cancellationToken);
+        Task<ManagerDashboardDto> GetManagerDashboardAsync(Guid managerId, CancellationToken cancellationToken);
 
         // GetDashboardAsync new version
         Task<BaseDashboardDto> GetUserDashboardAsync(string userId, CancellationToken cancellationToken);

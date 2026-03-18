@@ -83,8 +83,8 @@ export class DeveloperDashboard implements OnInit, OnDestroy {
     this.loading = true;
     this.fetchDeveloperDashboardData();
 
-    // Auto-refresh every 30 seconds
-    this.refreshSub = interval(30000).subscribe(() => {
+    // Auto-refresh every 60 seconds
+    this.refreshSub = interval(60000).subscribe(() => {
       if (!this.loading) {
         this.fetchDeveloperDashboardData();
       }

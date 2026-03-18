@@ -160,7 +160,7 @@ namespace OrchestratorService.Controllers
             Summary = "Get dashboard for a developer",
             Description = "Returns a hydrated dashboard view including task stats and journal stats"
         )]
-        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(BaseDashboardDto))]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(DeveloperDashboardDto))]
         [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid user ID", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(ProblemDetails))]
         [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
@@ -185,6 +185,43 @@ namespace OrchestratorService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error fetching dashboard by developer ID: {Id} at {Time}", userId, DateTime.UtcNow);
+                return InternalError(detail: ex.Message);
+            }
+        }
+
+
+        [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Manager)}")]
+        [HttpGet("manager/{managerId}")]
+        [OutputCache(Duration = 60, Tags = ["dashboard-{managerId}"])] // Cache full response for 1 minute
+        [SwaggerOperation(
+            Summary = "Get dashboard for a manager",
+            Description = "Returns a hydrated dashboard view including task stats and journal stats"
+        )]
+        [SwaggerResponse(StatusCodes.Status200OK, "Success", typeof(ManagerDashboardDto))]
+        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid user ID", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status404NotFound, "User not found", typeof(ProblemDetails))]
+        [SwaggerResponse(StatusCodes.Status500InternalServerError, "Unexpected error", typeof(ProblemDetails))]
+        public async Task<IActionResult> GetManagerDashboard(Guid managerId, CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Attempting to fetch manager dashboard information for user ID: {Id} at {Time}", managerId, DateTime.UtcNow);
+            try
+            {
+                var result = await _dashboardService.GetManagerDashboardAsync(managerId, cancellationToken);
+                return OkOrNotFound(result, "Dashboard not found for the given user");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Validation failed while fetching manager dashboard by user by ID: {Id} at {Time}", managerId, DateTime.UtcNow);
+                return ValidationProblem(detail: ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning("Manager not found for ID: {Id}", managerId);
+                return NotFoundProblem(detail: ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching dashboard by manager ID: {Id} at {Time}", managerId, DateTime.UtcNow);
                 return InternalError(detail: ex.Message);
             }
         }

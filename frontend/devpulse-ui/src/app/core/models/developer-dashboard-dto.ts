@@ -19,9 +19,14 @@ export interface DeveloperDashboardDto {
   userDisplayName: string;
 }
 
-export interface TimeSeriesPointDto {
+export interface LabelNumberDto {
   label: string;
   value: number;
+}
+
+export interface TimeSeriesPointDto extends LabelNumberDto {
+  // label: string;
+  // value: number;
 }
 
 export interface SummaryCardsDto {

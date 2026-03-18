@@ -1,4 +1,6 @@
-﻿public record DeveloperDashboardDto(
+﻿using SharedLib.DTOs.ManagerDashboard;
+
+public record DeveloperDashboardDto(
     SummaryCardsDto SummaryCardsDto,
     List<TimeSeriesPointDto> JournalsOverTimeLineChartDto,
     TaskStatusesCountsDto TaskStatusesDonutChartDto,
@@ -11,7 +13,7 @@
 public record TimeSeriesPointDto(
     string Label,
     int Value
-);
+): LabelNumberDto(Label, Value);
 
 public record SummaryCardsDto(
     int HighPriorityCount,

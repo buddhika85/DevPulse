@@ -1,0 +1,167 @@
+/* Spacing scale */
+$space-1: 8px;
+$space-2: 16px;
+$space-3: 24px;
+
+.dashboard {
+  background: #f5f7fa;
+  min-height: 100vh;
+  padding: $space-3;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: $space-2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.last-updated {
+  font-size: 13px;
+  color: #666;
+}
+
+/* SUMMARY CARDS */
+.summary-row {
+  display: flex;
+  gap: $space-2;
+  margin-bottom: $space-3;
+}
+
+.summary-card {
+  flex: 1;
+  background: #ffffff;
+  padding: $space-2;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  display: flex;
+  align-items: center;
+  gap: $space-1;
+  transition: 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card .icon {
+  font-size: 22px;
+}
+
+.summary-card .label {
+  font-size: 13px;
+  color: #666;
+}
+
+.summary-card .value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Color accents */
+.high {
+  border-left: 4px solid #d9534f;
+}
+.new {
+  border-left: 4px solid #0078d4;
+}
+.progress {
+  border-left: 4px solid #ffaa44;
+}
+.urgent {
+  background: #ffecec;
+  border-left: 4px solid #d9534f;
+}
+.feedback {
+  border-left: 4px solid #6a5acd;
+}
+
+/* CHART GRID */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $space-3;
+}
+
+/* CHART CARDS */
+.chart-card {
+  background: #ffffff;
+  padding: $space-3;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.chart-card h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e5e5;
+  margin: $space-1 0 $space-2;
+}
+
+/* Micro-interactions */
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+.scale-in {
+  animation: scaleIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Skeleton loaders */
+.skeleton {
+  background: linear-gradient(90deg, #eaeaea, #f5f5f5, #eaeaea);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeleton-chart {
+  height: 240px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

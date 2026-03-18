@@ -4,9 +4,11 @@ using OrchestratorService.Infrastructure.HttpClients.JournalMicroService;
 using OrchestratorService.Infrastructure.HttpClients.TaskMicroService;
 using OrchestratorService.Infrastructure.HttpClients.UserMicroService;
 using SharedLib.DTOs.Journal;
+using SharedLib.DTOs.ManagerDashboard;
 using SharedLib.DTOs.Task;
 using SharedLib.DTOs.User;
 using System.Globalization;
+using ManagerDashboardDto = SharedLib.DTOs.ManagerDashboard.ManagerDashboardDto;
 
 namespace OrchestratorService.Application.Services
 {
@@ -142,7 +144,7 @@ namespace OrchestratorService.Application.Services
                         // ..
 
 
-                        return new ManagerDashboardDto(user);
+                        return new OrchestratorService.Application.DTOs.ManagerDashboardDto(user);
                     }
                 default:
                     throw new ApplicationException($"Invalid user role for user {userGuid}");
@@ -335,5 +337,106 @@ namespace OrchestratorService.Application.Services
                 NewFeedbacksCount: feedbacks.Count(x => !x.SeenByUser)
             );
         }
+
+        public async Task<ManagerDashboardDto> GetManagerDashboardAsync(Guid managerId, CancellationToken cancellationToken)
+        {
+            var cacheKey = $"ManagerDashboardForUserId:{managerId}";
+
+            _logger.LogInformation("Manager dashboard request started for user {ManagerId}", managerId);
+
+            try
+            {
+                // STEP 0 — Try cache
+                if (_inMemoryCache.TryGetValue(cacheKey, out ManagerDashboardDto? cached) && cached is not null)
+                {
+                    _logger.LogInformation("Cache hit for user {ManagerId}", managerId);
+                    return cached;
+                }
+
+                _logger.LogInformation("Cache miss for user {ManagerId}", managerId);
+
+                // STEP 1 — Fetch data from downstream APIs
+                _logger.LogInformation("Fetching tasks for user {ManagerId}", managerId);
+                IReadOnlyList<UserAccountDto> teamMembers = await _userClient.GetTeamMembersForManager(managerId, cancellationToken);
+
+                IReadOnlyList<Guid> teamMemberIds = [.. teamMembers.Select(x => x.Id)];
+                IReadOnlyList<TaskItemDto> tasks = await _taskClient.GetTasksForTeamMembers(teamMemberIds, false, cancellationToken);
+
+                _logger.LogInformation("Fetching journals with feedback for manager {ManagerId}", managerId);                
+                IReadOnlyList<JournalEntryWithFeedbackDto> journalsWithFeedbacks = await _journalClient.GetJournalsForTeamFeedback(teamMemberIds, cancellationToken);
+
+                _logger.LogInformation("Fetching user profile for manager {ManagerId}", managerId);
+                var user = await _userClient.GetUserAsync(managerId.ToString(), cancellationToken);
+
+                // STEP 2 — Build DTO
+                _logger.LogInformation("Building dashboard DTO for manager {ManagerId}", managerId);                
+                var dto = new ManagerDashboardDto(
+                    SummaryCardsDto: BuildManagerSummary(
+                        tasks,
+                        journalsWithFeedbacks.Select(x => x.journal).OfType<JournalEntryDto>()
+                    ),
+
+                    TeamJournalsPerDeveloperBarChartDto: BuidTeamJounalsCounts(journalsWithFeedbacks.Select(x => x.journal).OfType<JournalEntryDto>(), teamMembers),
+                    FeedbackDonutChartDto: BuildFeedbackFeedbackDonutChart(journalsWithFeedbacks),
+                    TasksWithStatus: BuildTasksWithStatus(tasks),
+
+                    LastUpdated: DateTime.Now.ToString("hh:mm tt"),
+                    ManagerId: managerId,
+                    ManagerDisplayName: user.DisplayName
+                );
+
+                // STEP 3 — Cache result
+                _logger.LogInformation("Caching dashboard for manager {ManagerId} for {Minutes} minutes",
+                    managerId, CachedTimeInMins);
+
+                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromMinutes(CachedTimeInMins));
+
+                _logger.LogInformation("Manager dashboard successfully built for manager {ManagerId}", managerId);
+
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to build manager dashboard for manager {ManagerId}", managerId);
+                throw; // preserve stack trace
+            }
+        }
+
+        private List<LabelNumberDto> BuildTasksWithStatus(IReadOnlyList<TaskItemDto> tasks)
+        {
+            return [.. from t in tasks 
+                       group t by t.Status into statusGroup
+                       select new LabelNumberDto(statusGroup.Key, statusGroup.Count())];
+        }
+
+        private FeedbackDonutChartDto BuildFeedbackFeedbackDonutChart(IReadOnlyList<JournalEntryWithFeedbackDto> journalsWithFeedbacks)
+        {
+            var feedbackCompleted = journalsWithFeedbacks.Count(x => x.journal.IsFeedbackGiven);
+            return new FeedbackDonutChartDto(
+                    FeedbackCompleted: feedbackCompleted,
+                    FeedbackPending: journalsWithFeedbacks.Select(x => x.journal).Count() - feedbackCompleted
+                );
+        }
+
+        private List<LabelNumberDto> BuidTeamJounalsCounts(IEnumerable<JournalEntryDto> journals, IReadOnlyList<UserAccountDto> teamMembers)
+        {
+            return [..from journal in journals
+                   group journal by journal.UserId into userGroup
+                   let userDisplayName = teamMembers.FirstOrDefault(x => x.Id == userGroup.Key)?.DisplayName ?? "-"
+                   select new LabelNumberDto(userDisplayName, userGroup.Count())];
+        }
+
+        private ManagerSummaryCardsDto BuildManagerSummary(IReadOnlyList<TaskItemDto> tasks, IEnumerable<JournalEntryDto> journals)
+        {
+            return new ManagerSummaryCardsDto(
+                HighPriorityCount: tasks.Count(x => x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
+                NewTasksCount: tasks.Count(x => x.Status.Equals("NotStarted", StringComparison.OrdinalIgnoreCase)),
+                InProgressTasksCount: tasks.Count(x => x.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)),
+                UrgentTasksCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                                                        && x.DueDate != null && (x.DueDate - DateTime.Today) <= TimeSpan.FromDays(7)),
+                NewJournalsNeedingFeedback: journals.Count(x => !x.IsFeedbackGiven)
+            );
+        }
+
     }
 }

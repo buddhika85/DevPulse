@@ -1,12 +1,106 @@
-@if (managerDashBoard) {
-<p>
-  <span style="color: rgb(115, 91, 180); font-weight: bold">{{
-    managerDashBoard.dashBoardType
-  }}</span>
-  for
-  <span style="color: rgb(180, 91, 91); font-weight: bold">{{
-    managerDashBoard.user.displayName
-  }}</span>
-</p>
+<div class="dashboard fade-in">
+  <!-- PAGE TITLE -->
+  <div class="page-title">
+    <span>Manager Dashboard</span>
+    <span class="last-updated">Last updated: {{ lastUpdated }}</span>
+  </div>
 
-}
+  <!-- SUMMARY CARDS -->
+  @if (summary$ | async; as summary) {
+    <div class="summary-row">
+      <div class="summary-card high scale-in">
+        <div class="icon">🔥</div>
+        <div class="content">
+          <span class="label">High Priority</span>
+          <span class="value">{{ summary.highPriority }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card new scale-in">
+        <div class="icon">🆕</div>
+        <div class="content">
+          <span class="label">New Tasks</span>
+          <span class="value">{{ summary.newTasks }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card progress scale-in">
+        <div class="icon">🚧</div>
+        <div class="content">
+          <span class="label">In Progress</span>
+          <span class="value">{{ summary.inProgress }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card urgent scale-in">
+        <div class="icon">⏰</div>
+        <div class="content">
+          <span class="label">Urgent</span>
+          <span class="value">{{ summary.urgent }}</span>
+        </div>
+      </div>
+
+      <div class="summary-card feedback scale-in">
+        <div class="icon">📬</div>
+        <div class="content">
+          <span class="label">New Journals Needing Feedback</span>
+          <span class="value">{{ summary.newJournalsNeedingFeedback }}</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- CHART GRID -->
+  <div class="chart-grid">
+    <!-- Team Journals Per Developer -->
+    <div class="chart-card fade-in">
+      <h3>Team Journals Written Per Developer</h3>
+      <div class="divider"></div>
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          [series]="teamJournalsBarChart.series"
+          [chart]="teamJournalsBarChart.chart"
+          [xaxis]="teamJournalsBarChart.xaxis"
+          [colors]="teamJournalsBarChart.colors"
+        >
+        </apx-chart>
+      }
+    </div>
+
+    <!-- Feedback Given vs Pending -->
+    <div class="chart-card fade-in">
+      <h3>Feedback Given vs Pending</h3>
+      <div class="divider"></div>
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          [series]="feedbackDonutChart.series"
+          [chart]="feedbackDonutChart.chart"
+          [labels]="feedbackDonutChart.labels"
+          [colors]="feedbackDonutChart.colors"
+        >
+        </apx-chart>
+      }
+    </div>
+
+    <!-- Tasks Assigned vs Completed -->
+    <div class="chart-card fade-in" style="grid-column: span 2">
+      <h3>Tasks Assigned vs Completed</h3>
+      <div class="divider"></div>
+      @if (loading) {
+        <div class="skeleton skeleton-chart"></div>
+      } @else {
+        <apx-chart
+          [series]="teamTasksStackedBarChart.series"
+          [chart]="teamTasksStackedBarChart.chart"
+          [xaxis]="teamTasksStackedBarChart.xaxis"
+          [colors]="teamTasksStackedBarChart.colors"
+        >
+        </apx-chart>
+      }
+    </div>
+  </div>
+</div>
