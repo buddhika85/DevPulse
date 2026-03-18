@@ -31,13 +31,12 @@ export const environment: { production: boolean; msal: MsalConfig } = {
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
 
-      // future APIs
       journalApi: {
-        url: '',
+        url: 'https://devpulse-apim-consumption.azure-api.net/journal/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
       taskJournalListApi: {
-        url: '',
+        url: 'https://devpulse-apim-consumption.azure-api.net/task-journal-link/',
         scopes: ['api://91761975-cb30-43bd-9b13-32cd76d65aad/access_as_user'],
       },
     },
