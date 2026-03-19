@@ -71,6 +71,10 @@ export class DeveloperDashboard implements OnInit, OnDestroy {
     colors: ['#0078d4', '#ffaa44', '#d9534f'],
   };
 
+  completedTaskCount: number = 0;
+  inProgressTaskCount: number = 0;
+  notStartedTaskCount: number = 0;
+
   feedbackBarChart: ChartOptionsBar = {
     series: [{ name: 'Feedback', data: [0, 0, 0] }],
     chart: { type: 'bar', height: 300 },
@@ -168,6 +172,10 @@ export class DeveloperDashboard implements OnInit, OnDestroy {
         dto.notStartedTaskCount,
       ],
     };
+
+    this.completedTaskCount = dto.completedTaskCount;
+    this.inProgressTaskCount = dto.inProgressTaskCount;
+    this.notStartedTaskCount = dto.notStartedTaskCount;
   }
 
   // Bar chart (Feedback counts)

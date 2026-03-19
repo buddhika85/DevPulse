@@ -122,7 +122,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<JournalDbContext>();
     db.Database.Migrate();                                                  // ✅ Apply pending migrations before seeding
-    DbInitializer.Seed(db);
+    //DbInitializer.Seed(db);
 }
 
 

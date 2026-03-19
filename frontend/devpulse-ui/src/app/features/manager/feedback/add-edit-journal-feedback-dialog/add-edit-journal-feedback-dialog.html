@@ -106,7 +106,7 @@
     mat-button
     [ngClass]="'azure-btn'"
     (click)="onSubmit()"
-    [disabled]="feedbackFormGroup.invalid"
+    [disabled]="feedbackFormGroup.invalid || loadingService.isLoading()"
     style="margin-right: 2%"
   >
     Save Feedback

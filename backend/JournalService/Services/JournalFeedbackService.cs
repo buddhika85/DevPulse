@@ -116,8 +116,8 @@ namespace JournalService.Services
 
             try
             {
-                var isJournalExists = await _journalRepository.IsJournalEntryExistsByIdAsync(command.JounralEntryId, cancellationToken);
-                if (!isJournalExists)
+                var journal = await _journalRepository.GetByIdAsync(command.JounralEntryId, cancellationToken);
+                if (journal is null)
                 {
                     _logger.LogError("Adding journal-feedback aborted !! as Journal does not exist with journal Id:{JournalId} at {Time}", command.JounralEntryId, now);
                     return null;
@@ -130,13 +130,18 @@ namespace JournalService.Services
                     return null;
                 }
 
-                var entity = JournalFeedback.Create(command.JounralEntryId, command.FeedbackManagerId, command.Comment);
-                entity = await _journalFeedbackRepository.AddAsync(entity, cancellationToken);
-                if (entity is not null)
+                var feedback = JournalFeedback.Create(command.JounralEntryId, command.FeedbackManagerId, command.Comment);
+                feedback = await _journalFeedbackRepository.AddAsync(feedback, cancellationToken);
+                if (feedback is not null)
                 {
-                    _logger.LogInformation("Added Journal Feedback with Id:{JournalFeedbackId} for journal Id:{JournalId} is successful at {Time}", entity.Id, command.JounralEntryId, now);
-                    return entity.Id;
+                    journal.AttachJournalFeedback(feedback);
+                    await _journalRepository.UpdateAsync(journal.Id, journal, cancellationToken);
+
+                    _logger.LogInformation("Added Journal Feedback with Id:{JournalFeedbackId} for journal Id:{JournalId} is successful at {Time}", feedback.Id, command.JounralEntryId, now);
+                    return feedback.Id;
                 }
+
+               
 
                 _logger.LogError("An error occured while saving a journal feedback for journal Id:{JournalId} at {Time}", command.JounralEntryId, now);
                 return null;

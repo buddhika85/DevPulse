@@ -1,58 +1,76 @@
+# Trigger the pipeline when code is pushed to the 'main' branch
 trigger:
   branches:
     include:
       - main
 
-pool:
-  vmImage: 'ubuntu-latest'
-
+# Define reusable variables for ACR, ACA, and deployment settings
 variables:
-  - group: DevPulse-Backend-Secrets
+  acrName: devpulseacr
+  acrLoginServer: devpulseacr-cta8h8feeua4cchz.azurecr.io
+
+  imageName: task-api
+  resourceGroup: DevPulseRG
+  containerAppName: task-api
+  location: australiaeast
+
+  # IMPORTANT:
+  # Keep tag simple here. Timestamp will be generated inside the script.
+  tag: $(Build.BuildId)
+
+pool:
+  vmImage: ubuntu-latest
 
 steps:
-  # Install .NET SDK
-  - task: UseDotNet@2
+  - task: AzureCLI@2
+    displayName: 'Build Docker Image and Deploy to ACA'
     inputs:
-      packageType: 'sdk'
-      version: '8.0.x'
-    displayName: 'Install .NET SDK'
+      azureSubscription: 'DevPulse-SP-AzContainerReg-ACA'
+      scriptType: bash
+      scriptLocation: inlineScript
+      failOnStderr: true
+      inlineScript: |
+        echo "Generating timestamp-based tag..."
 
-  # Restore TaskService dependencies
-  - script: dotnet restore backend/TaskService/TaskService.csproj
-    displayName: 'Restore TaskService dependencies'
+        # Generate timestamp safely inside Bash
+        timestamp=$(date +'%Y%m%d-%H%M%S')
 
-  # Build TaskService
-  - script: dotnet build backend/TaskService/TaskService.csproj --configuration Release
-    displayName: 'Build TaskService'
+        # Combine timestamp + BuildId
+        fulltag="${timestamp}-$(tag)"
 
-  # Run TaskService tests
-  - script: dotnet test backend/TaskService.Tests/TaskService.Tests.csproj --configuration Release
-    displayName: 'Run TaskService tests'
+        echo "Using image tag: $fulltag"
+        echo "Full image path: $(acrLoginServer)/$(imageName):$fulltag"
 
-  # Publish TaskService
-  - script: dotnet publish backend/TaskService/TaskService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/taskservice
-    displayName: 'Publish TaskService'
-    # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.
+        echo "Building and pushing image to ACR..."
 
-  # Deploy TaskService to Azure App Service
-  - task: AzureWebApp@1
-    inputs:
-      azureSubscription: 'DevPulse-Azure-Connection'  # Azure service connection name configured in Azure DevOps to Azure subscription
-      appType: 'webApp'                               # Specifies App Service type
-      appName: 'devpulse-task-api'                    # Targets the specific App Service
-      package: '$(Build.ArtifactStagingDirectory)/taskservice'  # Points to the published output
-    displayName: 'Deploy TaskService'
+        az acr build \
+          --registry $(acrName) \
+          --image $(imageName):$fulltag \
+          --file backend/TaskService/Dockerfile \
+          .
 
-  # Warm up the App Service to avoid cold start latency - Retries up to 10 times with a 5-second delay, Checks for HTTP 200 to confirm readiness, - Avoids false positives from cold-start 503s or timeouts
+        echo "Deploying to Azure Container Apps..."
+
+        # Force ACA to pull the new image by using a unique revision suffix
+        az containerapp update \
+          --name $(containerAppName) \
+          --resource-group $(resourceGroup) \
+          --image $(acrLoginServer)/$(imageName):$fulltag \
+          --revision-suffix $fulltag
+
+
+  # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  # This ensures the service is responsive immediately after deployment.
   - script: |
-      echo "Warming up TaskService..."          
-      for i in {1..10}; do                                      
-        response=$(curl -s -o /dev/null -w "%{http_code}" https://devpulse-task-api-aefqa6gagfdfawew.australiasoutheast-01.azurewebsites.net/api/Health)
+      echo "Warming up TaskService..."
+      for i in {1..10}; do
+        response=$(curl -X HEAD -s -o /dev/null -w "%{http_code}" https://task-api.yellowcoast-35d1851f.australiasoutheast.azurecontainerapps.io/api/Health)
         echo "Attempt $i: HTTP $response"
         if [ "$response" -eq 200 ]; then
-          echo "Success - Service is warm."
+          echo "Success - Task Service is warm."
           break
         fi
         sleep 5
       done
     displayName: 'Warm up TaskService after deploy'
+    condition: succeeded()  # Only run this step if the previous deployment succeeded

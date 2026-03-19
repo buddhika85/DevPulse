@@ -34,7 +34,6 @@ import { JournalApiService } from '../../../../core/services/journal-api';
 export class AddEditJournalFeedbackDialog implements OnDestroy {
   private readonly fb: FormBuilder = inject(FormBuilder);
   private readonly compositeSubscription: Subscription = new Subscription();
-  private readonly loadingService: LoadingService = inject(LoadingService);
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
   private readonly journalApiService: JournalApiService =
     inject(JournalApiService);
@@ -48,6 +47,7 @@ export class AddEditJournalFeedbackDialog implements OnDestroy {
   public readonly journal!: TeamJournalEntryWithTasksAndFeedbackDto;
   public readonly managerId!: string;
 
+  readonly loadingService: LoadingService = inject(LoadingService);
   constructor(
     private dialogRef: MatDialogRef<AddEditJournalFeedbackDialog>,
     @Inject(MAT_DIALOG_DATA)
@@ -77,6 +77,8 @@ export class AddEditJournalFeedbackDialog implements OnDestroy {
         feedbackManagerId: this.managerId,
       };
 
+      // Disable form to prevent edits or double submit
+      this.feedbackFormGroup.disable();
       this.loadingService.show();
       const sub = this.journalApiService
         .addJournalFeedback(addJournalFeedbackDto)
@@ -94,6 +96,9 @@ export class AddEditJournalFeedbackDialog implements OnDestroy {
             this.snackbarService.error(
               `Error - Feedback creation for journal with title: ${this.journal.title} failed !!`,
             );
+            // Re-enable form so user can retry
+            this.feedbackFormGroup.enable();
+
             this.loadingService.hide();
           },
         });

@@ -106,7 +106,7 @@
     mat-button
     class="azure-btn"
     (click)="onSubmit()"
-    [disabled]="journalFormGroup.invalid"
+    [disabled]="journalFormGroup.invalid || loadingService.isLoading()"
     style="margin-right: 2%"
   >
     Save Journal

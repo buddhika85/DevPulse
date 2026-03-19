@@ -32,7 +32,7 @@ import { OrchestratorApiService } from '../../../../core/services/orchestrator-a
   styleUrl: './add-edit-journal-dialog.scss',
 })
 export class AddEditJournalDialog implements OnInit, OnDestroy {
-  private readonly loadingService: LoadingService = inject(LoadingService);
+  readonly loadingService: LoadingService = inject(LoadingService);
   private readonly snackbarService: SnackbarService = inject(SnackbarService);
   private readonly userStoreService = inject(UserStoreService);
   private readonly orchestratorApi = inject(OrchestratorApiService);
@@ -174,7 +174,10 @@ export class AddEditJournalDialog implements OnInit, OnDestroy {
 
     console.log('Create Journal: ', createJournalDto);
 
+    // Disable form to prevent edits or double submit
+    this.journalFormGroup.disable();
     this.loadingService.show();
+
     const sub = this.orchestratorApi
       .addJournalWithTaskLinks(createJournalDto)
       .subscribe({
@@ -191,6 +194,10 @@ export class AddEditJournalDialog implements OnInit, OnDestroy {
           this.snackbarService.error(
             `Error - New journal with title: ${createJournalDto.addJournalEntryDto.title} creation failed !!`,
           );
+
+          // Re-enable form so user can retry
+          this.journalFormGroup.enable();
+
           this.loadingService.hide();
         },
       });

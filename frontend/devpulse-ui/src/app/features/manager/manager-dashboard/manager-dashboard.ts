@@ -112,7 +112,7 @@ export class ManagerDashboard implements OnInit, OnDestroy {
       .subscribe({
         next: (value: ManagerDashboardDto) => {
           this.managerDashboardDto = value;
-          //console.log('ManagerDashboardDto', this.managerDashboardDto);
+          console.log('ManagerDashboardDto', this.managerDashboardDto);
           this.setUpSummaryCardData();
           this.setUpTeamJournalsPerDeveloperBarChart();
           this.setUpFeedbackDonutChart();

@@ -20,7 +20,7 @@ namespace OrchestratorService.Application.Services
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<JournalService> _logger;
         private const byte CachedTimeInMins = 1;                // Cache time in minutes
-        private const byte CachedTimeInSeconds = 10;                // Cache time in seconds
+        private const byte CachedTimeInSeconds = 5;                // Cache time in seconds
 
         public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, ITaskServiceClient taskServiceClient, IUserServiceClient userServiceClient,
             IMemoryCache inMemoryCache, ILogger<JournalService> logger)

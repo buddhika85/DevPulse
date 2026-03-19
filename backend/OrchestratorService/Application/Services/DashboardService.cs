@@ -20,7 +20,7 @@ namespace OrchestratorService.Application.Services
         private readonly IJournalServiceClient _journalClient;
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<DashboardService> _logger;
-        private const byte CachedTimeInMins = 1;                // Cache time in minutes
+        private const byte CachedTimeInSeconds = 10;                // Cache time in minutes
 
 
         public DashboardService(IUserServiceClient userClient, ITaskServiceClient taskClient, IJournalServiceClient journalClient, IMemoryCache cache, ILogger<DashboardService> logger)
@@ -68,8 +68,8 @@ namespace OrchestratorService.Application.Services
                 var dashboard = new DashboardDto(user, tasks);
 
                 // Cache the composed result for n minutes
-                _inMemoryCache.Set(cacheKey, dashboard, TimeSpan.FromMinutes(CachedTimeInMins));
-                _logger.LogInformation("Dashboard cached for user {UserId} with expiration of {CacheDuration} minutes", userGuid, CachedTimeInMins);
+                _inMemoryCache.Set(cacheKey, dashboard, TimeSpan.FromSeconds(CachedTimeInSeconds));
+                _logger.LogInformation("Dashboard cached for user {UserId} with expiration of {CacheDuration} seconds", userGuid, CachedTimeInSeconds);
 
 
                 return dashboard;
@@ -250,10 +250,10 @@ namespace OrchestratorService.Application.Services
                 );
 
                 // STEP 3 — Cache result
-                _logger.LogInformation("Caching dashboard for user {UserId} for {Minutes} minutes",
-                    userId, CachedTimeInMins);
+                _logger.LogInformation("Caching dashboard for user {UserId} for {Seconds} seconds",
+                    userId, CachedTimeInSeconds);
 
-                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromMinutes(CachedTimeInMins));
+                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromSeconds(CachedTimeInSeconds));
 
                 _logger.LogInformation("Developer dashboard successfully built for user {UserId}", userId);
 
@@ -330,7 +330,8 @@ namespace OrchestratorService.Application.Services
         private SummaryCardsDto BuildSummary(IReadOnlyList<TaskItemDto> tasks, IEnumerable<JournalFeedbackDto> feedbacks)
         {
             return new SummaryCardsDto(
-                HighPriorityCount: tasks.Count(x => x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
+                HighPriorityCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                                                        && x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
                 NewTasksCount: tasks.Count(x => x.Status.Equals("NotStarted", StringComparison.OrdinalIgnoreCase)),
                 InProgressTasksCount: tasks.Count(x => x.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)),
                 UrgentTasksCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase) 
@@ -387,10 +388,10 @@ namespace OrchestratorService.Application.Services
                 );
 
                 // STEP 3 — Cache result
-                _logger.LogInformation("Caching dashboard for manager {ManagerId} for {Minutes} minutes",
-                    managerId, CachedTimeInMins);
+                _logger.LogInformation("Caching dashboard for manager {ManagerId} for {Seconds} seconds",
+                    managerId, CachedTimeInSeconds);
 
-                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromMinutes(CachedTimeInMins));
+                _inMemoryCache.Set(cacheKey, dto, TimeSpan.FromSeconds(CachedTimeInSeconds));
 
                 _logger.LogInformation("Manager dashboard successfully built for manager {ManagerId}", managerId);
 
@@ -430,7 +431,8 @@ namespace OrchestratorService.Application.Services
         private ManagerSummaryCardsDto BuildManagerSummary(IReadOnlyList<TaskItemDto> tasks, IEnumerable<JournalEntryDto> journals)
         {
             return new ManagerSummaryCardsDto(
-                HighPriorityCount: tasks.Count(x => x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
+                HighPriorityCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)
+                                                        && x.Priority.Equals("high", StringComparison.OrdinalIgnoreCase)),
                 NewTasksCount: tasks.Count(x => x.Status.Equals("NotStarted", StringComparison.OrdinalIgnoreCase)),
                 InProgressTasksCount: tasks.Count(x => x.Status.Equals("Pending", StringComparison.OrdinalIgnoreCase)),
                 UrgentTasksCount: tasks.Count(x => !x.Status.Equals("Completed", StringComparison.OrdinalIgnoreCase)

@@ -3,7 +3,6 @@ using JournalService.Infrastructure.Common.Extensions;
 using JournalService.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace JournalService.Repositories
 {

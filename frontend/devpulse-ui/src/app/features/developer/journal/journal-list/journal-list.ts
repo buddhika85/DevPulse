@@ -254,6 +254,7 @@ export class JournalList implements OnInit, OnDestroy {
   }
 
   private fetchAllUserJournals() {
+    this.loadingService.show();
     const sub = this.orchestratorApi.getMyJournals(true).subscribe({
       next: (value: JournalEntryWithTasksAndFeedbackDto[]) => {
         this.journalsOfUser = value;

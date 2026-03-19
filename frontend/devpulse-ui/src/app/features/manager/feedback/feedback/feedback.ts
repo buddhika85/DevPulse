@@ -147,6 +147,7 @@ export class Feedback {
   }
 
   private fetchAllTeamJournals() {
+    this.loadingService.show();
     const sub = this.orchestratorApi.getTeamJournals(false).subscribe({
       next: (value: TeamJournalEntryWithTasksAndFeedbackDto[]) => {
         this.journalsOfTeam = value;

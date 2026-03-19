@@ -86,10 +86,15 @@
         ></apx-chart>
 
         <div class="task-counts">
-          <p>Total: <strong>10</strong></p>
-          <p>Completed: <strong>5</strong></p>
-          <p>In Progress: <strong>3</strong></p>
-          <p>Not Started: <strong>2</strong></p>
+          <p>
+            Completed: <strong>{{ completedTaskCount }}</strong>
+          </p>
+          <p>
+            In Progress: <strong>{{ inProgressTaskCount }}</strong>
+          </p>
+          <p>
+            Not Started: <strong>{{ notStartedTaskCount }}</strong>
+          </p>
         </div>
       }
     </div>
