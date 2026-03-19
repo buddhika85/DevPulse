@@ -20,6 +20,7 @@ namespace OrchestratorService.Application.Services
         private readonly IMemoryCache _inMemoryCache;
         private readonly ILogger<JournalService> _logger;
         private const byte CachedTimeInMins = 1;                // Cache time in minutes
+        private const byte CachedTimeInSeconds = 10;                // Cache time in seconds
 
         public JournalService(IJournalServiceClient journalServiceClient, ITaskJournalLinkServiceClient taskJournalLinkService, ITaskServiceClient taskServiceClient, IUserServiceClient userServiceClient,
             IMemoryCache inMemoryCache, ILogger<JournalService> logger)
@@ -291,7 +292,7 @@ namespace OrchestratorService.Application.Services
                 _logger.LogInformation("Step 6 - Getting fully hydarted journals for manager {ManagerId} at {Time}", managerId, DateTime.UtcNow);
                 IReadOnlyList<TeamJournalEntryWithTasksAndFeedbackDto> dtos = HydrateTeamJournalsWithFeedbacks(
                                                         journalsWithFeedbacks, taskJournalLinks, tasks, managers, teamMembers);
-                _inMemoryCache.Set(cacheKey, dtos, TimeSpan.FromMinutes(CachedTimeInMins));
+                _inMemoryCache.Set(cacheKey, dtos, TimeSpan.FromSeconds(CachedTimeInSeconds));
                 return dtos;
             }
             catch (Exception ex)
@@ -376,7 +377,7 @@ namespace OrchestratorService.Application.Services
                 _logger.LogInformation("Step 5 - Getting fully hydarted journals for user {UserId} at {Time}", userId, DateTime.UtcNow);
                 IReadOnlyList<JournalEntryWithTasksAndFeedbackDto> dtos = HydrateJournalsWithFeedbacks(
                                                         journalsWithFeedbacks, taskJournalLinks, tasks, managers);
-                _inMemoryCache.Set(cacheKey, dtos, TimeSpan.FromMinutes(CachedTimeInMins));
+                _inMemoryCache.Set(cacheKey, dtos, TimeSpan.FromSeconds(CachedTimeInSeconds));
                 return dtos;
             }
             catch (Exception ex)

@@ -7,6 +7,7 @@ using SharedLib.DTOs.Journal;
 using SharedLib.DTOs.ManagerDashboard;
 using SharedLib.DTOs.Task;
 using SharedLib.DTOs.User;
+using SharedLib.Helpers;
 using System.Globalization;
 using ManagerDashboardDto = SharedLib.DTOs.ManagerDashboard.ManagerDashboardDto;
 
@@ -243,7 +244,7 @@ namespace OrchestratorService.Application.Services
                     ),
                     TaskStatusesDonutChartDto: BuildTaskStatuses(tasks),
                     JournalFeedbackCountsBarChartDto: BuildFeedbackCounts(journalsWithFeedback),
-                    LastUpdated: DateTime.Now.ToString("hh:mm tt"),
+                    LastUpdated: TimeHelper.GetAusSydTime(),
                     UserId: userId,
                     UserDisplayName: user.DisplayName
                 );
@@ -380,7 +381,7 @@ namespace OrchestratorService.Application.Services
                     FeedbackDonutChartDto: BuildFeedbackFeedbackDonutChart(journalsWithFeedbacks),
                     TasksWithStatus: BuildTasksWithStatus(tasks),
 
-                    LastUpdated: DateTime.Now.ToString("hh:mm tt"),
+                    LastUpdated: TimeHelper.GetAusSydTime(),
                     ManagerId: managerId,
                     ManagerDisplayName: user.DisplayName
                 );
