@@ -1,0 +1,250 @@
+<div class="overview-container">
+  <!-- Hero Section -->
+  <section class="section hero">
+    <div class="content hero-content">
+      <h1 class="title">DevPulse</h1>
+      <p class="tagline">
+        A lightweight, end‑to‑end engineering productivity platform built with
+        .NET, Azure, and Angular.
+      </p>
+    </div>
+  </section>
+
+  <!-- What DevPulse Is -->
+  <section class="section what">
+    <div class="content what-content">
+      <h2 class="section-title">What DevPulse Is</h2>
+      <p class="description">
+        DevPulse is a focused engineering productivity platform that helps
+        developers and managers track work, surface blockers early, and maintain
+        a healthy delivery rhythm. It brings together daily updates, progress
+        visibility, and lightweight reporting into one simple, modern workflow.
+      </p>
+    </div>
+  </section>
+
+  <!-- Why I Built DevPulse -->
+  <section class="section why">
+    <div class="content why-content">
+      <h2 class="section-title">Why I Built DevPulse</h2>
+
+      <p class="description">
+        DevPulse began during a period where I was recovering, upskilling, and
+        preparing for the next step in my career. I wanted to use that time
+        intentionally — to deepen my knowledge of Azure, modern .NET,
+        distributed systems, and CI/CD practices, while building something
+        meaningful end‑to‑end.
+      </p>
+
+      <p class="description">
+        Instead of learning these technologies in isolation, I decided to create
+        a real product that would challenge me across architecture, cloud
+        services, API design, containerization, and deployment pipelines.
+        DevPulse became that project — a practical, hands‑on way to sharpen my
+        engineering skills and build something I could confidently demo in
+        interviews.
+      </p>
+
+      <p class="description">
+        At the same time, I wanted DevPulse to solve a real problem: helping
+        developers communicate progress clearly and helping managers understand
+        team health without micromanagement. The result is a lightweight
+        platform that reflects both my learning journey and my approach to
+        building clean, reliable systems.
+      </p>
+    </div>
+  </section>
+
+  <!-- Architecture Overview -->
+  <section class="section architecture">
+    <div class="content architecture-content">
+      <h2 class="section-title">Architecture Overview</h2>
+
+      <p class="description">
+        DevPulse is built as a lightweight, cloud‑native system following a
+        clean, layered architecture. The goal was to design something simple
+        enough to demo, yet structured enough to reflect real production
+        patterns used in modern engineering teams.
+      </p>
+
+      <p class="description">
+        The system is composed of multiple .NET microservices running in Azure
+        Container Apps, fronted by an orchestrator service that acts as the
+        backend‑for‑frontend (BFF) for the Angular UI. Azure API Management
+        provides a secure and consistent entry point, while data is stored
+        across SQL Database and Cosmos DB depending on access patterns.
+      </p>
+
+      <p class="description">
+        This architecture allowed me to explore containerization, distributed
+        system boundaries, API design, authentication flows, and CI/CD pipelines
+        in a realistic but manageable way. The diagram below illustrates how the
+        components interact across the client, gateway, orchestrator,
+        microservices, and data layers.
+      </p>
+
+      <div class="diagram-placeholder">
+        <!-- Architecture Diagram Placeholder -->
+        <img
+          src="assets/diagrams/Architecture.png"
+          alt="DevPulse Architecture Diagram"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- ER -->
+  <section class="section er-diagram">
+    <div class="content er-content">
+      <h2 class="section-title">Domain ER Diagram</h2>
+
+      <p class="description">
+        The DevPulse domain model is intentionally simple and focused on the
+        core entities needed for the MVP. The goal was to design a clean,
+        predictable structure that supports journaling, mood tracking, and task
+        assignment without unnecessary complexity.
+      </p>
+
+      <p class="description">
+        Each entity is modeled with clear ownership boundaries, and
+        relationships are kept minimal to avoid tight coupling between features.
+        This ER diagram reflects the domain as implemented across the
+        microservices and highlights how developers, managers, tasks, moods, and
+        journals relate to each other.
+      </p>
+
+      <div class="diagram-placeholder">
+        <img src="assets/diagrams/ER.png" alt="DevPulse ER Diagram" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Use Case-->
+  <section class="section usecase-diagram">
+    <div class="content usecase-content">
+      <h2 class="section-title">Use Case Diagram</h2>
+
+      <p class="description">
+        The DevPulse MVP supports three primary personas — Developers, Managers,
+        and Admins — each interacting with the system in different ways. The use
+        case model captures the functional boundaries of the platform and
+        highlights how each role contributes to the daily workflow of
+        journaling, feedback, and task management.
+      </p>
+
+      <p class="description">
+        This diagram provides a high‑level view of the system’s behavior,
+        showing how core actions such as writing journals, providing feedback,
+        managing moods, and assigning tasks are distributed across the actors.
+        It also illustrates the system‑generated processes that support the user
+        experience, such as daily summary reports.
+      </p>
+
+      <div class="diagram-placeholder">
+        <img
+          src="assets/diagrams/UseCase.png"
+          alt="DevPulse Use Case Diagram"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="section tech">
+    <div class="content tech-content">
+      <h2 class="section-title">Tech Stack</h2>
+
+      <p class="description">
+        DevPulse is built using a modern, cloud‑ready stack designed for
+        reliability, maintainability, and smooth developer experience. The
+        backend follows clean architectural principles with clear separation of
+        concerns, predictable domain boundaries, and lightweight orchestration.
+      </p>
+
+      <ul class="tech-list">
+        <li>
+          <strong>Frontend:</strong> Angular 20, TypeScript, Angular Material,
+          SCSS
+        </li>
+
+        <li><strong>Backend:</strong> ASP.NET Core 8 Web API with C#</li>
+
+        <li>
+          <strong>Architecture Patterns:</strong>
+          Domain‑Driven Design (DDD), CQRS with MediatR, Repository Pattern,
+          Database‑per‑Service, Event‑Driven Messaging (Azure Service Bus)
+        </li>
+
+        <li>
+          <strong>Cloud:</strong> Azure Container Apps, Azure Functions, Azure
+          SQL, Azure Blob Storage, Azure Container Registry, Azure Application
+          Insights, Azure APIM, Azure Key Vault
+        </li>
+
+        <li><strong>Authentication:</strong> Microsoft Entra ID</li>
+
+        <li>
+          <strong>DevOps:</strong> Azure DevOps Pipelines (CI/CD), Dockerisation
+          of microservices, Azure Container Registry, Azure Container Apps
+        </li>
+
+        <li>
+          <strong>Database:</strong> SQL Server, EF Core (Code‑First +
+          Migrations), Azure Cosmos DB
+        </li>
+
+        <li><strong>Testing:</strong> xUnit, Moq, FluentAssertions</li>
+
+        <li>
+          <strong>Documentation & Tools:</strong> Swagger/OpenAPI, Postman, Git
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CI CD-->
+  <section class="section cicd">
+    <div class="content cicd-content">
+      <h2 class="section-title">CI/CD Pipeline & Automated Testing</h2>
+
+      <p class="description">
+        DevPulse uses a fully automated CI/CD pipeline built with Azure DevOps.
+        Every commit triggers a clean build, runs the full test suite, creates
+        Docker images for each microservice, and pushes them to Azure Container
+        Registry. Successful builds are automatically deployed to Azure
+        Container Apps, ensuring fast and reliable delivery.
+      </p>
+
+      <p class="description">
+        The solution includes meaningful unit tests using xUnit, Moq, and
+        FluentAssertions. These tests validate domain logic, service
+        orchestration, error handling, and repository behavior. Test results are
+        surfaced directly in the pipeline, providing immediate feedback and
+        preventing regressions.
+      </p>
+
+      <div class="diagram-placeholder">
+        <!-- CI/CD Pipeline Screenshot -->
+        <img src="assets/diagrams/CI-CD.png" alt="DevPulse CI/CD Pipeline" />
+      </div>
+
+      <div class="diagram-placeholder">
+        <!-- Unit Test Screenshot -->
+        <img src="assets/diagrams/UnitTests.png" alt="DevPulse Unit Tests" />
+      </div>
+    </div>
+  </section>
+  <!-- Vision -->
+  <section class="section vision">
+    <div class="content">
+      <!-- Vision Placeholder -->
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="section footer">
+    <div class="content">
+      <!-- Closing Line Placeholder -->
+    </div>
+  </section>
+</div>

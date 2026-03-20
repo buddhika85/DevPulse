@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -10,31 +10,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="8.9.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-	  <PackageReference Include="FluentAssertions" Version="7.0.0" />
-	  <PackageReference Include="Moq" Version="4.20.69" />
-
-	  <PackageReference Include="coverlet.collector" Version="6.0.0">
+    <PackageReference Include="coverlet.collector" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Commands\" />
-    <Folder Include="Application\Services\" />
-    <Folder Include="Common\" />
-    <Folder Include="Infrastructure\Repositories\" />
-    <Folder Include="Persistence\" />
+    <ProjectReference Include="..\..\backend\SharedLib\SharedLib.csproj" />
+    <ProjectReference Include="..\..\backend\TaskJournalLinkService\TaskJournalLinkService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TaskService\TaskService.csproj" />
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>

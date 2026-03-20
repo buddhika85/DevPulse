@@ -9,7 +9,14 @@
       @let dto = userDto();
       <nav class="nav-links">
         <a
-          routerLink="/"
+          routerLink="/overview"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >Overview</a
+        >
+
+        <a
+          routerLink="/dashboard"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           >Dashboard</a

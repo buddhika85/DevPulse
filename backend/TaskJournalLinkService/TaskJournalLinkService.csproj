@@ -51,7 +51,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\Cosmos\" />
     <Folder Include="Logs\" />
   </ItemGroup>
 

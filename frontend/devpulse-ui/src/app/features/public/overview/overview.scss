@@ -1,0 +1,166 @@
+// .overview-container {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 4rem;
+//   padding: 2rem 1.5rem;
+
+//   .section {
+//     width: 100%;
+//     display: flex;
+//     justify-content: center;
+
+//     .content {
+//       width: 100%;
+//       max-width: 900px;
+//       padding: 1rem;
+//     }
+//   }
+
+//   /* Hero Section Styling */
+//   .hero {
+//     text-align: center;
+//     padding-top: 2rem;
+//     padding-bottom: 2rem;
+//   }
+// }
+
+// /* Responsive Breakpoints */
+// @media (min-width: 768px) {
+//   .overview-container {
+//     padding: 3rem 2rem;
+//     gap: 5rem;
+
+//     .section .content {
+//       padding: 1.5rem;
+//     }
+//   }
+// }
+
+// @media (min-width: 1200px) {
+//   .overview-container {
+//     padding: 4rem 3rem;
+//     gap: 6rem;
+//   }
+// }
+
+// // Hero section
+// .hero {
+//   text-align: center;
+
+//   .hero-content {
+//     padding: 3rem 1rem;
+
+//     .title {
+//       font-size: 2.4rem;
+//       font-weight: 700;
+//       margin-bottom: 1rem;
+//       color: #1a1a1a;
+//     }
+
+//     .tagline {
+//       font-size: 1.2rem;
+//       font-weight: 400;
+//       max-width: 650px;
+//       margin: 0 auto;
+//       color: #444;
+//       line-height: 1.6;
+//     }
+//   }
+// }
+
+// @media (min-width: 768px) {
+//   .hero .hero-content .title {
+//     font-size: 3rem;
+//   }
+
+//   .hero .hero-content .tagline {
+//     font-size: 1.3rem;
+//   }
+// }
+// // End Hero
+
+// // what dev pulse is
+
+// .what {
+//   .what-content {
+//     .section-title {
+//       font-size: 1.8rem;
+//       font-weight: 600;
+//       margin-bottom: 1rem;
+//       color: #1a1a1a;
+//       text-align: center;
+//     }
+
+//     .description {
+//       font-size: 1.1rem;
+//       line-height: 1.7;
+//       color: #444;
+//       max-width: 750px;
+//       margin: 0 auto;
+//       text-align: center;
+//     }
+//   }
+// }
+
+// @media (min-width: 768px) {
+//   .what .what-content .section-title {
+//     font-size: 2rem;
+//   }
+
+//   .what .what-content .description {
+//     font-size: 1.15rem;
+//   }
+// }
+
+// // End what dev pulse is
+
+// // Why I built
+
+// .why {
+//   .why-content {
+//     .section-title {
+//       font-size: 1.8rem;
+//       font-weight: 600;
+//       margin-bottom: 1rem;
+//       color: #1a1a1a;
+//       text-align: center;
+//     }
+
+//     .description {
+//       font-size: 1.1rem;
+//       line-height: 1.7;
+//       color: #444;
+//       max-width: 750px;
+//       margin: 0.75rem auto;
+//       text-align: center;
+//     }
+//   }
+// }
+
+// @media (min-width: 768px) {
+//   .why .why-content .section-title {
+//     font-size: 2rem;
+//   }
+
+//   .why .why-content .description {
+//     font-size: 1.15rem;
+//   }
+// }
+
+// // End Why I built
+
+// // Architecture Overview
+
+// // End Architecture Overview
+
+// // Tech Stack
+
+// // End Tech Stack
+
+// // Vision
+
+// // End Vision
+
+// // Footer
+
+// // End Footer

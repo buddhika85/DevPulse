@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Shell } from './layout/shell/shell'; // ✅ Layout wrapper for all child routes
 import { roleguardGuard } from './core/guards/roleguard-guard';
+import { landingGuard } from './core/guards/landing-guard';
 
 // ✅ Define the main route configuration for DevPulse
 // SHELL component is eager loaded, eveything else are child compoenents and they are lazy loaded inside router outlet of Shell
@@ -12,9 +13,21 @@ export const routes: Routes = [
     // ✅ Child routes rendered inside <router-outlet> of Shell Lazy Loaded
     children: [
       {
-        path: '', // ✅ Default child route (e.g., dashboard)
+        path: '',
+        canActivate: [landingGuard],
+        pathMatch: 'full',
         loadComponent: () =>
-          import('./features/dashboard/dashboard').then((m) => m.Dashboard), // ✅ Lazy-load standalone Dashboard component
+          import('./features/public/overview/overview').then((m) => m.Overview),
+      },
+      {
+        path: 'overview',
+        loadComponent: () =>
+          import('./features/public/overview/overview').then((m) => m.Overview),
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
 
       // error page route
