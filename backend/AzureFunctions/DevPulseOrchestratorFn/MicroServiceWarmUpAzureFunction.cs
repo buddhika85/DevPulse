@@ -30,7 +30,9 @@ public class MicroServiceWarmUpAzureFunction
 
     [Function("MicroServiceWarmUpAzureFunction")]
     //public async Task RunAsync([TimerTrigger("0 */15 * * * *")] TimerInfo myTimer)              // runs at the start of every 15 min interval
-    public async Task RunAsync([TimerTrigger("%WarmUpSettings__CronSchedule%")] TimerInfo myTimer)
+    public async Task RunAsync([TimerTrigger("0 */5 * * * *")] TimerInfo myTimer)
+
+    //public async Task RunAsync([TimerTrigger("%WarmUpSettings__CronSchedule%")] TimerInfo myTimer)
     {
         try
         {
