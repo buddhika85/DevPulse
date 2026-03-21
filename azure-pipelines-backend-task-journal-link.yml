@@ -35,7 +35,7 @@ steps:
     displayName: 'Publish Test Results'
     inputs:
       testResultsFormat: 'VSTest'
-      testResultsFiles: '**/*.trx'
+      testResultsFiles: '$(Agent.TempDirectory)/**/*.trx'
       failTaskOnFailedTests: true
 
   # Step 2: Build docker image and push to ACR with new tag, 
