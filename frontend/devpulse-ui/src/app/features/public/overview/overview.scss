@@ -1,166 +1,453 @@
-// .overview-container {
-//   display: flex;
-//   flex-direction: column;
-//   gap: 4rem;
-//   padding: 2rem 1.5rem;
+/* ================================
+   GLOBAL SECTION SPACING
+   ================================ */
 
-//   .section {
-//     width: 100%;
-//     display: flex;
-//     justify-content: center;
+.section {
+  padding: 70px 0; /* smoother vertical rhythm */
+}
 
-//     .content {
-//       width: 100%;
-//       max-width: 900px;
-//       padding: 1rem;
-//     }
-//   }
+/* Optional subtle dividers between sections */
+.section + .section {
+  border-top: 1px solid #eee;
+}
 
-//   /* Hero Section Styling */
-//   .hero {
-//     text-align: center;
-//     padding-top: 2rem;
-//     padding-bottom: 2rem;
-//   }
-// }
+/* Improve paragraph rhythm */
+.description + .description {
+  margin-top: 12px;
+}
 
-// /* Responsive Breakpoints */
-// @media (min-width: 768px) {
-//   .overview-container {
-//     padding: 3rem 2rem;
-//     gap: 5rem;
+/* ================================
+   HERO SECTION
+   ================================ */
 
-//     .section .content {
-//       padding: 1.5rem;
-//     }
-//   }
-// }
+.hero {
+  background: linear-gradient(135deg, #f5f9fc 0%, #eef4f8 100%);
+  text-align: center;
+  padding: 100px 0 80px;
+  position: relative;
+}
 
-// @media (min-width: 1200px) {
-//   .overview-container {
-//     padding: 4rem 3rem;
-//     gap: 6rem;
-//   }
-// }
+/* Optional soft fade into next section */
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(245, 249, 252, 0), #ffffff);
+}
 
-// // Hero section
-// .hero {
-//   text-align: center;
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
 
-//   .hero-content {
-//     padding: 3rem 1rem;
+.hero .title {
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: #0f4c81;
+  margin-bottom: 16px;
+}
 
-//     .title {
-//       font-size: 2.4rem;
-//       font-weight: 700;
-//       margin-bottom: 1rem;
-//       color: #1a1a1a;
-//     }
+.hero .tagline {
+  font-size: 1.25rem;
+  color: #555;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
 
-//     .tagline {
-//       font-size: 1.2rem;
-//       font-weight: 400;
-//       max-width: 650px;
-//       margin: 0 auto;
-//       color: #444;
-//       line-height: 1.6;
-//     }
-//   }
-// }
+/* ================================
+   WHAT DEVPULSE IS
+   ================================ */
 
-// @media (min-width: 768px) {
-//   .hero .hero-content .title {
-//     font-size: 3rem;
-//   }
+.what {
+  background: #ffffff;
+}
 
-//   .hero .hero-content .tagline {
-//     font-size: 1.3rem;
-//   }
-// }
-// // End Hero
+.what-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
 
-// // what dev pulse is
+.what .section-title {
+  margin-bottom: 20px;
+}
 
-// .what {
-//   .what-content {
-//     .section-title {
-//       font-size: 1.8rem;
-//       font-weight: 600;
-//       margin-bottom: 1rem;
-//       color: #1a1a1a;
-//       text-align: center;
-//     }
+.what .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
 
-//     .description {
-//       font-size: 1.1rem;
-//       line-height: 1.7;
-//       color: #444;
-//       max-width: 750px;
-//       margin: 0 auto;
-//       text-align: center;
-//     }
-//   }
-// }
+/* ================================
+   WHY I BUILT DEVPULSE
+   ================================ */
 
-// @media (min-width: 768px) {
-//   .what .what-content .section-title {
-//     font-size: 2rem;
-//   }
+.why {
+  background: #f9fbfc;
+}
 
-//   .what .what-content .description {
-//     font-size: 1.15rem;
-//   }
-// }
+.why-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
 
-// // End what dev pulse is
+.why .section-title {
+  margin-bottom: 20px;
+}
 
-// // Why I built
+.why .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 20px;
+  line-height: 1.75;
+}
 
-// .why {
-//   .why-content {
-//     .section-title {
-//       font-size: 1.8rem;
-//       font-weight: 600;
-//       margin-bottom: 1rem;
-//       color: #1a1a1a;
-//       text-align: center;
-//     }
+/* ================================
+   ARCHITECTURE OVERVIEW
+   ================================ */
 
-//     .description {
-//       font-size: 1.1rem;
-//       line-height: 1.7;
-//       color: #444;
-//       max-width: 750px;
-//       margin: 0.75rem auto;
-//       text-align: center;
-//     }
-//   }
-// }
+.architecture {
+  background: #ffffff;
+}
 
-// @media (min-width: 768px) {
-//   .why .why-content .section-title {
-//     font-size: 2rem;
-//   }
+.architecture-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
 
-//   .why .why-content .description {
-//     font-size: 1.15rem;
-//   }
-// }
+.architecture .section-title {
+  margin-bottom: 20px;
+}
 
-// // End Why I built
+.architecture .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
 
-// // Architecture Overview
+.architecture .diagram-placeholder {
+  margin-top: 32px;
+  text-align: center;
+}
 
-// // End Architecture Overview
+.architecture .diagram-placeholder img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
 
-// // Tech Stack
+.diagram-caption {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+  margin-top: 8px;
+}
 
-// // End Tech Stack
+/* ================================
+   DOMAIN ER DIAGRAM
+   ================================ */
 
-// // Vision
+.er-diagram {
+  background: #ffffff;
+}
 
-// // End Vision
+.er-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
 
-// // Footer
+.er-diagram .section-title {
+  margin-bottom: 20px;
+}
 
-// // End Footer
+.er-diagram .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
+
+.er-diagram .diagram-placeholder {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.er-diagram .diagram-placeholder img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ================================
+   USE CASE DIAGRAM
+   ================================ */
+
+.usecase-diagram {
+  background: #ffffff;
+}
+
+.usecase-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.usecase-diagram .section-title {
+  margin-bottom: 20px;
+}
+
+.usecase-diagram .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
+
+.usecase-diagram .diagram-placeholder {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.usecase-diagram .diagram-placeholder img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ================================
+   TECH STACK
+   ================================ */
+
+.tech {
+  background: #f9fbfc;
+}
+
+.tech-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.tech .section-title {
+  margin-bottom: 20px;
+}
+
+.tech .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
+
+.tech-list {
+  margin-top: 16px;
+  padding-left: 20px;
+}
+
+.tech-list li {
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.tech-list li strong {
+  color: #0f4c81;
+  font-weight: 600;
+}
+
+/* ================================
+   CI/CD PIPELINE & TESTING
+   ================================ */
+
+.cicd {
+  background: #ffffff;
+}
+
+.cicd-content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.cicd .section-title {
+  margin-bottom: 20px;
+}
+
+.cicd .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.7;
+}
+
+.cicd .diagram-placeholder {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.cicd .diagram-placeholder img {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 6px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cicd .diagram-caption {
+  font-size: 0.9rem;
+  color: #666;
+  text-align: center;
+  margin-top: 8px;
+}
+
+/* ================================
+   DEMO VIDEO PLACEHOLDER
+   ================================ */
+
+.demo-video {
+  background: #ffffff;
+}
+
+.demo-video .content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.demo-video .section-title {
+  margin-bottom: 20px;
+}
+
+.video-placeholder {
+  width: 100%;
+  height: 320px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  margin-top: 20px;
+}
+
+.video-coming-soon {
+  color: #777;
+  font-size: 1rem;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.demo-video-frame {
+  width: 100%;
+  height: 320px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ================================
+   VISION
+   ================================ */
+
+.vision {
+  background: #f9fbfc;
+}
+
+.vision .content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.vision .section-title {
+  margin-bottom: 20px;
+}
+
+.vision .description {
+  font-size: 1.1rem;
+  color: #444;
+  margin-bottom: 18px;
+  line-height: 1.75;
+}
+
+.vision-list {
+  margin-top: 16px;
+  padding-left: 20px;
+}
+
+.vision-list li {
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.vision-list li strong {
+  color: #0f4c81;
+  font-weight: 600;
+}
+
+/* ================================
+   FOOTER
+   ================================ */
+
+.footer {
+  background: #ffffff;
+  padding: 40px 0;
+}
+
+.footer .content {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.footer .closing-line {
+  text-align: center;
+  font-size: 1rem;
+  color: #555;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+/* Optional divider above footer */
+.footer .content::before {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 2px;
+  background: #ccc;
+  margin: 0 auto 20px;
+  border-radius: 2px;
+}
+
+/* ================================
+   MOBILE REFINEMENTS
+   ================================ */
+
+@media (max-width: 600px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+  }
+
+  .diagram-placeholder img {
+    border-radius: 4px;
+  }
+
+  .video-placeholder {
+    height: 220px;
+  }
+}
+
+// diagrams
+.diagram-placeholder img {
+  cursor: zoom-in;
+  transition: transform 0.2s ease;
+}
+
+.diagram-placeholder img:hover {
+  transform: scale(1.02);
+}
