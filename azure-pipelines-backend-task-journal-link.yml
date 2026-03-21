@@ -22,6 +22,24 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+  # Step 1: Run Unit Tests in TaskJournalLinkService.Tests,
+  # generate .trx  files & publish them to Azure DevOps & then show a Tests tab in the pipeline
+  - task: DotNetCoreCLI@2
+    displayName: 'Run Unit Tests'
+    inputs:
+      command: test
+      projects: '**/*Tests.csproj'
+      arguments: '--logger trx'
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      failTaskOnFailedTests: true
+
+  # Step 2: Build docker image and push to ACR with new tag, 
+  # Ask ACA to pull newly pushed image from ACR
   - task: AzureCLI@2
     displayName: 'Build Docker Image and Deploy to ACA'
     inputs:
@@ -59,7 +77,7 @@ steps:
           --revision-suffix $fulltag
 
 
-  # Step 2: Warm up the ACA endpoint to avoid cold start latency
+  # Step 3: Warm up the ACA endpoint to avoid cold start latency
   # This ensures the service is responsive immediately after deployment.
   - script: |
       echo "Warming up Task-Journal-Link-Service..."
