@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SharedLib.DTOs.Journal;
-using SharedLib.DTOs.TaskJournalLink;
-using TaskJournalLinkService.Domain.Models;
+﻿using SharedLib.DTOs.Journal;
 using TaskJournalLinkService.Mapper;
 using TaskJournalLinkService.Repositories;
 

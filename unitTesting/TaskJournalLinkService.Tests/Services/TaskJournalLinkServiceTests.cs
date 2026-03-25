@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using SharedLib.UnitTesting;
+using TaskJournalLinkService.Mapper;
 using TaskJournalLinkService.Repositories;
 using TaskJournalLinkService.Services;
 
@@ -21,6 +22,8 @@ namespace TaskJournalLinkService.Tests.Services
 
             _cut = new TaskJournalLinkService.Services.TaskJournalLinkService(_mockRepository.Object, _mockLogger.Object);
         }
+
+        #region GetLinksByJournalIdAsync
 
         [Fact]
         public async Task GetLinksByJournalIdAsync_ReturnsLinksArray_WhenLinksAvailable()
@@ -150,5 +153,66 @@ namespace TaskJournalLinkService.Tests.Services
                 x => x.GetLinksByJournalIdAsync(journalId, It.IsAny<CancellationToken>()),
                 Times.Once());
         }
+
+        #endregion GetLinksByJournalIdAsync
+
+        [Fact]
+        public async Task GetLinksForJournalIdsAsync_ShouldReturnMappedDtos_WhenRepositoryReturnsEntities()
+        {
+            // Arrange
+            IReadOnlyList<Guid> journalIds = [Guid.NewGuid(), Guid.NewGuid()];
+            var testDate = new DateTime(2024, 01, 01);
+            var repositoryEntities = new Domain.Models.TaskJournalLinkDocument[]
+            {
+                new(Guid.NewGuid(), Guid.NewGuid(), journalIds[0].ToString(), testDate),
+                new(Guid.NewGuid(), Guid.NewGuid(), journalIds[0].ToString(), testDate),
+                new(Guid.NewGuid(), Guid.NewGuid(), journalIds[1].ToString(), testDate)
+            };
+            _mockRepository
+                .Setup(x => x.GetLinksByJournalIdAsync(journalIds, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(repositoryEntities);
+            var expectedDtos = TaskJournalLinkMapper.ToDtos(repositoryEntities).ToList();
+            var journalIdsStr = string.Join(",", journalIds);
+
+            // Act
+            var result = await _cut.GetLinksForJournalIdsAsync(journalIds, CancellationToken.None);
+
+            // Assert - Result
+            result.Should().NotBeNull();
+            result.Should().NotBeEmpty();
+            result.Should().HaveCount(expectedDtos.Count);
+            result.Should().BeEquivalentTo(expectedDtos);
+
+
+            // Assert - Logging
+            _mockLogger.VerifyMessage(LogLevel.Warning,
+                "Empty journalIds list provided",
+                Times.Never());
+
+            _mockLogger.VerifyMessage(LogLevel.Information,
+                $"Retrieving TaskJournalLinks for JournalIds {journalIdsStr}",
+                Times.Once());
+
+            _mockLogger.VerifyMessage(LogLevel.Information,
+                $"Retrieved {repositoryEntities.Length} TaskJournalLink documents for JournalIds {journalIdsStr}",
+                Times.Once());
+
+            _mockLogger.VerifyMessage(LogLevel.Information,
+                $"Mapped {expectedDtos.Count} TaskJournalLink DTOs for JournalIds {journalIdsStr}",
+                Times.Once());
+
+
+            _mockLogger.VerifyMessage(LogLevel.Error,
+                $"Error retrieving TaskJournalLinks for JournalIds {journalIdsStr}",
+                Times.Never());
+
+
+            // Assert - Repository call
+            _mockRepository.Verify(x => x.GetLinksByJournalIdAsync(journalIds, It.IsAny<CancellationToken>()),
+                Times.Once());
+        }
     }
+
+
+    // empty list, exception path, null input
 }
