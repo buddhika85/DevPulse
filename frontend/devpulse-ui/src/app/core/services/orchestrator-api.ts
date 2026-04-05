@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { Observable, of } from 'rxjs';
 import {
@@ -20,12 +20,15 @@ import { DeveloperDashboardDto } from '../models/developer-dashboard-dto';
 @Injectable({
   providedIn: 'root',
 })
-export class OrchestratorApiService {
+export class OrchestratorApiService implements OnDestroy {
   // orchestratorApi micro service URL
   private apiUrl = environment.msal.protectedResources.orchestratorApi.url;
   private dashbaordControllerUrl = `${this.apiUrl}api/dashboard`;
   private tasksControllerUrl = `${this.apiUrl}api/tasks`;
   private orchestratorJournalsControllerUrl = `${this.apiUrl}api/journals`;
+
+  // for cancellation in .NET API calls - cancellation token
+  private abortController = new AbortController();
 
   constructor(private http: HttpClient) {}
 
@@ -58,6 +61,17 @@ export class OrchestratorApiService {
     );
   }
 
+  /*
+    This method now supports cancellation.
+
+    - Angular uses AbortController to cancel HTTP requests.
+    - When the user navigates away, ngOnDestroy() will fire.
+    - abortController.abort() will cancel the HTTP request.
+    - Browser closes the connection.
+    - ASP.NET Core receives the disconnect and triggers HttpContext.RequestAborted.
+    - That CancellationToken flows into your .NET controller and services.
+  */
+
   getMyJournals(
     includeDeleted: boolean,
   ): Observable<JournalEntryWithTasksAndFeedbackDto[]> {
@@ -67,6 +81,7 @@ export class OrchestratorApiService {
       `${this.orchestratorJournalsControllerUrl}/my-journals`,
       {
         params: queryString,
+        //signal: this.abortController.signal, // <-- cancellation support, TO DO: we need to update Angular Core package to get this to work
       },
     );
   }
@@ -89,5 +104,16 @@ export class OrchestratorApiService {
       `${this.orchestratorJournalsControllerUrl}`,
       dto,
     );
+  }
+
+  /*
+    Services CAN implement OnDestroy.
+    Angular will call ngOnDestroy() when the service is destroyed
+    (typically when the module providing it is destroyed).
+
+    This is where we cancel any in-flight HTTP requests.
+  */
+  ngOnDestroy(): void {
+    this.abortController.abort(); // <-- triggers cancellation
   }
 }

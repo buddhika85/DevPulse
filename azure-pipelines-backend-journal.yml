@@ -43,6 +43,7 @@ steps:
 
         echo "Building and pushing image to ACR..."
 
+        # Build docker image for JournalService
         az acr build \
           --registry $(acrName) \
           --image $(imageName):$fulltag \

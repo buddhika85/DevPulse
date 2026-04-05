@@ -26,6 +26,16 @@ namespace JournalService.Controllers
             _mediator = mediator;
         }
 
+        /*
+         I use IActionResult instead of ActionResult<T> in endpoints that can return multiple shapes — 
+        for example, a list on success, but ProblemDetails or BadRequest on failure. 
+        ActionResult<T> is type‑safe for success paths, but it becomes restrictive when you need to return different error types. 
+        Using IActionResult keeps the API flexible while still allowing me to return strongly typed success responses like Ok(dtos).”
+
+         Typed results are great for success paths, but real APIs return multiple shapes. 
+         For endpoints with mixed responses, I prefer IActionResult because it avoids unnecessary generic constraints while keeping the API clean and expressive.
+         */
+
         //GetAllJournalEntriesAsync
         [Authorize(AuthenticationSchemes = "DevPulseJwt", Roles = $"{nameof(UserRole.Admin)}")]
         [HttpGet("all")]
@@ -40,8 +50,8 @@ namespace JournalService.Controllers
                 var query = new GetJournalEntriesQuery();
                 _logger.LogDebug("Dispatching GetJournalEntriesQuery: {@Query}", query);
 
-                var users = await _mediator.Send(query, cancellationToken);
-                return Ok(users);
+                IReadOnlyList<JournalEntryDto> dtos = await _mediator.Send(query, cancellationToken);
+                return Ok(dtos);
             }
             catch (Exception ex)
             {

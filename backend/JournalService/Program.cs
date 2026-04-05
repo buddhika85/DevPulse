@@ -111,8 +111,9 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 
-// MapControllers - defines endpoints/routing table by scanning thought entire application at START UP, before any request arrive, not request time.
-// Use Routing middleware needs this endpoints table at REQUEST TIME.
+// MapControllers - defines routing table (by scanning thought entire application at START UP, before any request arrive, not request time.)
+// UseRouting middleware needs this endpoints table at REQUEST TIME.
+// Invokes Endpoint - performs model binding, model validation, filters, and controller action  method execution and then calls next() which is app.Run() terminal middlware
 app.MapControllers();                                                      
 
 
@@ -133,8 +134,7 @@ using (var scope = app.Services.CreateScope())
 // starting application
 try
 {
-    // app.Run will use Routing middleware added using useRouting(), matches endpoints at REQUEST TIME. Looks at HTTP requests Path and HTTP method and selects which EndPoint to use at run time.
-    // For this routing table produced by MapControllers middleware is a pre-requisit.  
+    // This is the final terminal middleware, it has no next() call
     app.Run();
 }
 catch (Exception ex)

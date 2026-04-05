@@ -32,10 +32,10 @@ FROM base AS final
 # Set working directory for the final image
 WORKDIR /app
 
-# Copy the published output from the build stage
+# Copy the published output from the build stage’s /app/publish folder into the /app folder (denoted by . as current WORKDIR s /app) of the final runtime image.
 COPY --from=build /app/publish .
 
-# Define the command to run your app when the container starts
+# Define the command which is - dotnet JournalService.dll - to run your app when the container starts
 ENTRYPOINT ["dotnet", "JournalService.dll"]
 
 

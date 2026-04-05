@@ -3,6 +3,8 @@ trigger:
     include:
       - main
 
+# Give me a hosted build agent running Ubuntu Linux.
+# starts faster, runs tasks quicker, costs less for azure dev ops to run ubuntu agent than windows agent
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -18,10 +20,12 @@ steps:
     displayName: 'Install .NET SDK'
 
   # Restore TaskService dependencies
+  # Downloads and all NuGet package dependencies & Transitive Dependencies the project needs by looking at .CSPROJ file
   - script: dotnet restore backend/TaskService/TaskService.csproj
     displayName: 'Restore TaskService dependencies'
 
   # Build TaskService
+  # It compiles the TaskService project and produces the DLLs in the Release build folder.”
   - script: dotnet build backend/TaskService/TaskService.csproj --configuration Release
     displayName: 'Build TaskService'
 
@@ -30,6 +34,7 @@ steps:
     displayName: 'Run TaskService tests'
 
   # Publish TaskService
+  # Further optimizes built output for production ready deployment, by removing debug-only files and produces clean, minimal optimized version
   - script: dotnet publish backend/TaskService/TaskService.csproj --configuration Release --output $(Build.ArtifactStagingDirectory)/taskservice
     displayName: 'Publish TaskService'
     # ArtifactStagingDirectory - it’s a built-in Azure DevOps pipeline variable that points to a temporary folder on the build agent where your pipeline can stage files before publishing or deploying.

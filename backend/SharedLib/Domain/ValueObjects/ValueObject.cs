@@ -33,14 +33,14 @@
         }
 
         // Enables intuitive equality comparison using == operator.
-        // Calls Equals override rather than original == which compares memoty addresses
+        // Calls Equals override rather than original == which compares memory addresses
         public static bool operator ==(ValueObject left, ValueObject right)
         {
             return Equals(left, right);
         }
 
         // Enables intuitive inequality comparison using != operator.
-        // Calls Equals override rather than original == which compares memoty addresses
+        // Calls Equals override rather than original == which compares memory addresses
         public static bool operator !=(ValueObject left, ValueObject right)
         {
             return !Equals(left, right);

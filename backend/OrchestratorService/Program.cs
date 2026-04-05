@@ -38,7 +38,7 @@ builder.Services.AddSwaggerGen(options =>                                   // S
 });
 
 
-builder.Services.AddMemoryCache();
+//builder.Services.AddMemoryCache();
 
 
 builder.Services.AddControllers();
