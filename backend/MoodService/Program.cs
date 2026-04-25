@@ -16,7 +16,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddConfiguredCors(builder.Configuration);                          // CORS config added
 
-builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);                                           // Serilog logging
+builder.Host.AddSerilogLogging(builder.Services, builder.Configuration);            // Serilog logging
+
+builder.Services.AddAppInsightsTracing(builder.Configuration);                      // Adding Azure Application Insights Telemetry Tracing
 
 
 
