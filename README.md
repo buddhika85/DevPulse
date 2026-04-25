@@ -1,8 +1,29 @@
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=buddhika85_DevPulse)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse)
- 
+
  # DevPulse — Distributed Engineering Productivity Platform
 
 DevPulse is a cloud‑hosted engineering productivity platform built on .NET 8, Azure, and event‑driven microservices. It demonstrates real‑world distributed systems design, secure authentication, containerized deployments, and production‑grade CI/CD automation.
+
+---
+
+## Code Quality (SonarCloud)
+
+[![Quality Gate](https://sonarcloud.io/api/project_badges/quality_gate?project=buddhika85_DevPulse)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse)
+[![SonarCloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse)
+
+DevPulse is continuously scanned using SonarCloud to ensure high standards of reliability, maintainability, and security across all microservices.
+
+| Metric | Status |
+|--------|--------|
+| **Bugs** | [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=bugs)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Code Smells** | [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Vulnerabilities** | [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Maintainability** | [![Maintainability](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Reliability** | [![Reliability](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Security** | [![Security](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+| **Technical Debt** | [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=buddhika85_DevPulse&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse) |
+
+🔗 **View full analysis:**  
+https://sonarcloud.io/summary/new_code?id=buddhika85_DevPulse
 
 ---
 
