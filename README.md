@@ -143,6 +143,8 @@ cd frontend
 npm install
 ng serve
 
+---
+
 ## 8. Live Demo & Repository
 
 Live Demo (Overview Page):  
