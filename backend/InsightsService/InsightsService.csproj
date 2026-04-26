@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+	  
+	<!--Dapper ORM-->
+    <PackageReference Include="Dapper" Version="2.1.72" />
+	  
+	<!-- Graph QL-->
+    <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.15" />
+    <PackageReference Include="HotChocolate.Data" Version="15.1.15" />
+    <PackageReference Include="HotChocolate.Types" Version="15.1.15" />
+	  
+    <!-- Data access - Read Only - for SQL and COSMOS DBs-->
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+	<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
+	<!--The Cosmos DB SDK (v3.x) still uses Newtonsoft.Json internally, even when you configure it to use System.Text.Json for your own models.-->
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+    <!-- API documentation-->
+	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.26" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+	  
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\SqlQueries\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -60,6 +60,7 @@
     <Folder Include="Application\Common\Models\" />
     <Folder Include="Application\Mapping\" />
     <Folder Include="Configuration\" />
+    <Folder Include="Domain\ValueObjects\" />
     <Folder Include="Logs\" />
     <Folder Include="Migrations\" />
   </ItemGroup>

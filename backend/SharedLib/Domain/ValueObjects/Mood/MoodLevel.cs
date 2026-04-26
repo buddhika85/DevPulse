@@ -60,6 +60,27 @@ namespace MoodService.Domain.ValueObjects
             };
         }
 
+        /// <summary>
+        /// Create a <see cref="MoodLevel"/> from an integer score.
+        /// Valid scores: -2, -1, 0, 1, 2. When multiple moods share the same score
+        /// the first defined variant is returned (for example, <see cref="Happy"/> for 2).
+        /// </summary>
+        /// <param name="score">Score value representing the mood.</param>
+        /// <returns>Corresponding <see cref="MoodLevel"/> instance.</returns>
+        /// <exception cref="ArgumentException">Thrown when the score is outside the supported range.</exception>
+        public static MoodLevel From(int score)
+        {
+            return score switch
+            {
+                2 => Happy,
+                1 => Calm,
+                0 => Neutral,
+                -1 => Tired,
+                -2 => Sad,
+                _ => throw new ArgumentException($"Invalid MoodLevel score: {score}", nameof(score))
+            };
+        }
+
         protected override IEnumerable<object> GetEqualityComponents()
         {
             yield return Value;
