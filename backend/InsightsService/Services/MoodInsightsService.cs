@@ -2,6 +2,7 @@
 using InsightsService.Data;
 using InsightsService.Models;
 using MoodService.Domain.ValueObjects;
+using System.Data;
 
 namespace InsightsService.Services;
 
@@ -27,8 +28,10 @@ public class MoodInsightsService : IMoodInsightsService
      */
     public async Task<IEnumerable<MoodStatsDto>> GetAverageMoodAsync(int daysBack)
     {
-        using var conn = _context.MoodDb();
+        // open connection
+        using IDbConnection conn = _context.MoodDb();               
 
+        // raw SQL - full control
         var sql = @"
             SELECT 
                 UserId,
@@ -37,7 +40,10 @@ public class MoodInsightsService : IMoodInsightsService
             WHERE Day >= DATEADD(day, -@Days, GETDATE());
         ";
 
-        var rows = await conn.QueryAsync<MoodEntryRow>(sql, new { Days = daysBack });
+        // parameterized query - no strring concatenation - no sql injection  -- new { Days = daysBack }
+        // execute query in DB async 
+        // map the results to MoodEntryRow
+        IEnumerable<MoodEntryRow> rows = await conn.QueryAsync<MoodEntryRow>(sql, new { Days = daysBack });
 
         var result = from row in rows
                      group row by row.UserId into usersGroup

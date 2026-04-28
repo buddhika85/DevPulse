@@ -7,6 +7,28 @@ namespace InsightsService.GraphQL;
 // Resolver class
 // A resolver is simply a C# method that HotChocolate calls when a GraphQL field is requested.
 //Class name → Query root
+/*
+ Banana Cake Pop
+-- full query
+query {
+  moodStats(daysBack: 100) {
+    userId
+    daysBack
+    moodEntriesCount
+    totalMoodScore
+    avgMoodScore
+    avgMoodString
+  }
+}
+
+-- shaping the query oly get average stats - magic of graphQL
+query {
+  moodStats(daysBack: 100) {   
+    avgMoodScore
+    avgMoodString
+  }
+}
+ */
 public class InsightsQuery
 {
     // Method names → GraphQL fields
